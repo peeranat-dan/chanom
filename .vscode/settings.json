@@ -9,7 +9,7 @@
   "oxc.fmt.configPath": "oxfmt.config.ts",
   "oxc.typeAware": true,
   "git.addAICoAuthor": "off",
-  "cSpell.words": ["oxfmt", "oxlint"],
+  "cSpell.words": ["oxfmt", "oxlint", "chanom"],
   "[markdown]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
