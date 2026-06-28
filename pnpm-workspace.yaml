@@ -1,0 +1,17 @@
+packages:
+  - apps/*
+  - packages/*
+
+catalog:
+  '@changesets/cli': 2.31.0
+  '@tsconfig/node-lts': 24.0.0
+  '@tsconfig/node-ts': 23.6.4
+  oxfmt: 0.56.0
+  oxlint: 1.71.0
+  rollup-plugin-visualizer: 7.0.1
+  tsdown: 0.22.3
+  turbo: 2.10.0
+  typescript: 6.0.3
+  vite: 8.1.0
+
+catalogMode: strict

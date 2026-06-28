@@ -1,0 +1,60 @@
+{
+  "name": "@chanom/vite-config",
+  "version": "0.0.0",
+  "description": "Opinionated, optimized Vite config factory for libraries and React apps.",
+  "keywords": [
+    "config",
+    "vite",
+    "vite-config"
+  ],
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "prepublishOnly": "tsdown"
+  },
+  "devDependencies": {
+    "@chanom/dev-config": "workspace:*",
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "rollup-plugin-visualizer": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "rollup-plugin-visualizer": "catalog:",
+    "vite": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "rollup-plugin-visualizer": {
+      "optional": true
+    }
+  }
+}

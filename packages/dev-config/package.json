@@ -1,0 +1,26 @@
+{
+  "name": "@chanom/dev-config",
+  "version": "0.0.0",
+  "description": "Shared oxlint and oxfmt config",
+  "files": [
+    "oxfmt",
+    "oxlint"
+  ],
+  "type": "module",
+  "exports": {
+    "./oxfmt/config": "./oxfmt/index.ts",
+    "./oxfmt/base": "./oxfmt/base-config.ts",
+    "./oxlint/config": "./oxlint/index.ts",
+    "./oxlint/base": "./oxlint/base-config.ts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@tsconfig/node-ts": "catalog:"
+  },
+  "peerDependencies": {
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:"
+  }
+}
