@@ -4,10 +4,13 @@ packages:
 
 catalog:
   '@changesets/cli': 2.31.0
+  '@clack/prompts': 1.6.0
   '@tsconfig/node-lts': 24.0.0
   '@tsconfig/node-ts': 23.6.4
+  '@types/node': 26.0.1
   oxfmt: 0.56.0
   oxlint: 1.71.0
+  picocolors: 1.1.1
   rollup-plugin-visualizer: 7.0.1
   tsdown: 0.22.3
   turbo: 2.10.0

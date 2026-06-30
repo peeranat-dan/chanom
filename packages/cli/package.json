@@ -1,0 +1,30 @@
+{
+  "name": "@chanom/cli",
+  "version": "0.0.0",
+  "description": "",
+  "keywords": [],
+  "type": "module",
+  "bin": {
+    "chanom": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "prepublishOnly": "tsdown"
+  },
+  "dependencies": {
+    "@clack/prompts": "catalog:",
+    "picocolors": "catalog:"
+  },
+  "devDependencies": {
+    "@chanom/dev-config": "workspace:*",
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}
