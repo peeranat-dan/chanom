@@ -3,21 +3,64 @@
   "version": "0.0.1",
   "description": "Shared oxlint and oxfmt config",
   "files": [
-    "oxfmt",
-    "oxlint"
+    "dist"
   ],
   "type": "module",
   "exports": {
-    "./oxfmt/config": "./oxfmt/index.ts",
-    "./oxfmt/base": "./oxfmt/base-config.ts",
-    "./oxlint/config": "./oxlint/index.ts",
-    "./oxlint/base": "./oxlint/base-config.ts"
+    "./oxfmt/config": {
+      "development": "./src/oxfmt/index.ts",
+      "types": "./dist/oxfmt/index.d.ts",
+      "default": "./dist/oxfmt/index.js"
+    },
+    "./oxfmt/base": {
+      "development": "./src/oxfmt/base-config.ts",
+      "types": "./dist/oxfmt/base-config.d.ts",
+      "default": "./dist/oxfmt/base-config.js"
+    },
+    "./oxlint/config": {
+      "development": "./src/oxlint/index.ts",
+      "types": "./dist/oxlint/index.d.ts",
+      "default": "./dist/oxlint/index.js"
+    },
+    "./oxlint/base": {
+      "development": "./src/oxlint/base-config.ts",
+      "types": "./dist/oxlint/base-config.d.ts",
+      "default": "./dist/oxlint/base-config.js"
+    }
   },
   "publishConfig": {
+    "exports": {
+      "./oxfmt/config": {
+        "types": "./dist/oxfmt/index.d.ts",
+        "default": "./dist/oxfmt/index.js"
+      },
+      "./oxfmt/base": {
+        "types": "./dist/oxfmt/base-config.d.ts",
+        "default": "./dist/oxfmt/base-config.js"
+      },
+      "./oxlint/config": {
+        "types": "./dist/oxlint/index.d.ts",
+        "default": "./dist/oxlint/index.js"
+      },
+      "./oxlint/base": {
+        "types": "./dist/oxlint/base-config.d.ts",
+        "default": "./dist/oxlint/base-config.js"
+      }
+    },
     "access": "public"
   },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "prepublishOnly": "tsdown"
+  },
   "devDependencies": {
-    "@tsconfig/node-ts": "catalog:"
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
   },
   "peerDependencies": {
     "oxfmt": "catalog:",
