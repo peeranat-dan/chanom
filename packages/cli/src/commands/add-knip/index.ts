@@ -6,7 +6,9 @@ import { isPackageInstalled, readPkg, type Pkg } from '../../utils/pkg.ts';
 import { getMissingScripts } from './logic.ts';
 
 export function getPackages(pkg: Pkg): string[] {
-  return isPackageInstalled(pkg, 'knip') ? [] : [`knip@${__KNIP_VERSION__}`, '@chanom/dev-config'];
+  return isPackageInstalled(pkg, 'knip')
+    ? []
+    : [`knip@${__KNIP_VERSION__}`, `@chanom/dev-config@${__DEV_CONFIG_VERSION__}`];
 }
 
 export function apply(cwd: string, esm: boolean): void {

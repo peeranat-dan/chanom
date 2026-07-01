@@ -8,7 +8,7 @@ import { getMissingScripts } from './logic.ts';
 export function getPackages(pkg: Pkg): string[] {
   return isPackageInstalled(pkg, 'oxfmt')
     ? []
-    : [`oxfmt@${__OXFMT_VERSION__}`, '@chanom/dev-config'];
+    : [`oxfmt@${__OXFMT_VERSION__}`, `@chanom/dev-config@${__DEV_CONFIG_VERSION__}`];
 }
 
 export function apply(cwd: string, esm: boolean): void {
