@@ -4,8 +4,6 @@ import { join } from 'node:path';
 export type SetupFile =
   | 'oxlint'
   | 'oxfmt'
-  | 'eslint'
-  | 'prettier'
   | 'knip'
   | 'husky'
   | 'lint-staged'
@@ -31,16 +29,7 @@ const CONFIG_FILES: Record<SetupFile, string[]> = {
     'oxfmt.config.mts',
     '.oxfmtrc.json',
   ],
-  eslint: [
-    '.eslintrc.json',
-    '.eslintrc.js',
-    '.eslintrc.cjs',
-    'eslint.config.js',
-    'eslint.config.mjs',
-    'eslint.config.ts',
-  ],
-  prettier: ['.prettierrc', '.prettierrc.json', '.prettierrc.js', 'prettier.config.js'],
-  knip: ['knip.json', 'knip.ts', '.knip.json'],
+  knip: ['knip.json', 'knip.ts', 'knip.config.ts', 'knip.config.mts', '.knip.json'],
   husky: ['.husky'],
   'lint-staged': ['.lintstagedrc.json', '.lintstagedrc.js', 'lint-staged.config.js'],
   commitlint: ['.commitlintrc.json', '.commitlintrc.js', 'commitlint.config.js'],
@@ -61,8 +50,6 @@ export function detectSetup(cwd = process.cwd()): Record<SetupFile, string | nul
   return {
     oxlint: detectSetupFile('oxlint', cwd),
     oxfmt: detectSetupFile('oxfmt', cwd),
-    eslint: detectSetupFile('eslint', cwd),
-    prettier: detectSetupFile('prettier', cwd),
     knip: detectSetupFile('knip', cwd),
     husky: detectSetupFile('husky', cwd),
     'lint-staged': detectSetupFile('lint-staged', cwd),

@@ -6,15 +6,13 @@ import * as git from '../../utils/git.ts';
 import { installDev } from '../../utils/install.ts';
 import { isEsm, readPkg } from '../../utils/pkg.ts';
 import * as addCommitlint from '../add-commitlint/index.ts';
-import * as addEslint from '../add-eslint/index.ts';
 import * as addHusky from '../add-husky/index.ts';
 import * as addKnip from '../add-knip/index.ts';
 import * as addLintStaged from '../add-lint-staged/index.ts';
 import * as addOxfmt from '../add-oxfmt/index.ts';
 import * as addOxlint from '../add-oxlint/index.ts';
-import * as addPrettier from '../add-prettier/index.ts';
 
-type Topping = 'oxlint' | 'oxfmt' | 'eslint' | 'prettier' | 'knip';
+type Topping = 'oxlint' | 'oxfmt' | 'knip';
 type Sweetness = 'light' | 'medium';
 
 export async function brew(cwd = process.cwd()): Promise<void> {
@@ -35,9 +33,7 @@ export async function brew(cwd = process.cwd()): Promise<void> {
     options: [
       { value: 'oxlint', label: 'oxlint', hint: 'fast Rust-based linter' },
       { value: 'oxfmt', label: 'oxfmt', hint: 'fast Rust-based formatter' },
-      { value: 'eslint', label: 'eslint', hint: 'stub config' },
-      { value: 'prettier', label: 'prettier', hint: 'stub config' },
-      { value: 'knip', label: 'knip', hint: 'stub config' },
+      { value: 'knip', label: 'knip', hint: 'dead code remover' },
     ],
     required: false,
   });
@@ -70,14 +66,6 @@ export async function brew(cwd = process.cwd()): Promise<void> {
     packages.push(...addOxfmt.getPackages(pkg));
   }
 
-  if (toppings.includes('eslint')) {
-    packages.push(...addEslint.getPackages(pkg));
-  }
-
-  if (toppings.includes('prettier')) {
-    packages.push(...addPrettier.getPackages(pkg));
-  }
-
   if (toppings.includes('knip')) {
     packages.push(...addKnip.getPackages(pkg));
   }
@@ -100,18 +88,16 @@ export async function brew(cwd = process.cwd()): Promise<void> {
 
   if (toppings.includes('oxlint')) addOxlint.apply(cwd, esm);
   if (toppings.includes('oxfmt')) addOxfmt.apply(cwd, esm);
-  if (toppings.includes('eslint')) addEslint.apply(cwd, esm);
-  if (toppings.includes('prettier')) addPrettier.apply(cwd);
-  if (toppings.includes('knip')) addKnip.apply(cwd);
+  if (toppings.includes('knip')) addKnip.apply(cwd, esm);
   if (sweetness === 'medium') {
     addHusky.apply(cwd, pm);
     addLintStaged.apply(
       cwd,
       toppings.filter((t): t is addLintStaged.Linter =>
-        (['oxlint', 'eslint'] as const).includes(t as addLintStaged.Linter),
+        (['oxlint'] as const).includes(t as addLintStaged.Linter),
       ),
       toppings.filter((t): t is addLintStaged.Formatter =>
-        (['oxfmt', 'prettier'] as const).includes(t as addLintStaged.Formatter),
+        (['oxfmt'] as const).includes(t as addLintStaged.Formatter),
       ),
     );
     addCommitlint.apply(cwd);

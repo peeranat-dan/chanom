@@ -7,6 +7,10 @@ export default {
   entry: ['index.html', 'src/main.tsx'],
   project: ['src/**/*.{ts,tsx}'],
   ignore: [...(baseConfig.ignore ?? []), '**/*.stories.tsx', 'src/vite-env.d.ts'],
-  ignoreDependencies: [...(baseConfig.ignoreDependencies ?? []), '@types/react', '@types/react-dom'],
+  ignoreDependencies: [
+    ...(baseConfig.ignoreDependencies ?? []),
+    '@types/react',
+    '@types/react-dom',
+  ],
   vite: true,
 } satisfies KnipConfig;
