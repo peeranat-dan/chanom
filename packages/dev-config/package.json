@@ -26,6 +26,16 @@
       "development": "./src/oxlint/base-config.ts",
       "types": "./dist/oxlint/base-config.d.ts",
       "default": "./dist/oxlint/base-config.js"
+    },
+    "./knip/config": {
+      "development": "./src/knip/index.ts",
+      "types": "./dist/knip/index.d.ts",
+      "default": "./dist/knip/index.js"
+    },
+    "./knip/base": {
+      "development": "./src/knip/base-config.ts",
+      "types": "./dist/knip/base-config.d.ts",
+      "default": "./dist/knip/base-config.js"
     }
   },
   "publishConfig": {
@@ -45,6 +55,14 @@
       "./oxlint/base": {
         "types": "./dist/oxlint/base-config.d.ts",
         "default": "./dist/oxlint/base-config.js"
+      },
+      "./knip/config": {
+        "types": "./dist/knip/index.d.ts",
+        "default": "./dist/knip/index.js"
+      },
+      "./knip/base": {
+        "types": "./dist/knip/base-config.d.ts",
+        "default": "./dist/knip/base-config.js"
       }
     },
     "access": "public"
@@ -57,12 +75,14 @@
   "devDependencies": {
     "@tsconfig/node-lts": "catalog:",
     "@tsconfig/node-ts": "catalog:",
+    "knip": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:"
   },
   "peerDependencies": {
+    "knip": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:"
   }
