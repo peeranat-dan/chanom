@@ -11,13 +11,16 @@
     "format:check": "oxfmt --check",
     "changeset": "changeset",
     "changeset:version": "changeset version",
-    "changeset:release": "turbo run build && changeset publish"
+    "changeset:release": "turbo run build && changeset publish",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@changesets/cli": "catalog:",
     "@chanom/dev-config": "workspace:",
     "@tsconfig/node-lts": "catalog:",
     "@tsconfig/node-ts": "catalog:",
+    "husky": "catalog:",
+    "lint-staged": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "turbo": "catalog:",

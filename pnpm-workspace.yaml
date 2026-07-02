@@ -8,7 +8,9 @@ catalog:
   '@tsconfig/node-lts': 24.0.0
   '@tsconfig/node-ts': 23.6.4
   '@types/node': 26.0.1
+  husky: 9.1.7
   knip: 6.23.0
+  lint-staged: 17.0.8
   oxfmt: 0.56.0
   oxlint: 1.71.0
   picocolors: 1.1.1
