@@ -12,11 +12,14 @@
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:release": "turbo run build && changeset publish",
-    "prepare": "husky"
+    "prepare": "husky",
+    "commitlint": "commitlint --edit"
   },
   "devDependencies": {
     "@changesets/cli": "catalog:",
     "@chanom/dev-config": "workspace:",
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
     "@tsconfig/node-lts": "catalog:",
     "@tsconfig/node-ts": "catalog:",
     "husky": "catalog:",
