@@ -1,5 +1,11 @@
 # @chanom/cli
 
+## 0.0.3
+
+### Patch Changes
+
+- improve cli implementation
+
 ## 0.0.2
 
 ### Patch Changes

@@ -1,15 +1,15 @@
 {
   "name": "@chanom/cli",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "keywords": [],
-  "type": "module",
   "bin": {
     "chanom": "./dist/index.js"
   },
   "files": [
     "dist"
   ],
+  "type": "module",
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
