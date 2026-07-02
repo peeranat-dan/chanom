@@ -1,7 +1,8 @@
 import { log } from '@clack/prompts';
 import { writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
+import { detectSetupFile } from '../../utils/detect-setup.ts';
 import { isPackageInstalled, readPkg, type Pkg } from '../../utils/pkg.ts';
 import { getMissingScripts } from './logic.ts';
 
@@ -12,11 +13,16 @@ export function getPackages(pkg: Pkg): string[] {
 }
 
 export function apply(cwd: string, esm: boolean): void {
-  const ext = esm ? 'ts' : 'mts';
-  writeFileSync(
-    join(cwd, `knip.config.${ext}`),
-    `export { default } from '@chanom/dev-config/knip/config';\n`,
-  );
+  const existing = detectSetupFile('knip', cwd);
+  if (existing) {
+    log.warn(`\`${basename(existing)}\` already exists - skipping knip config`);
+  } else {
+    const ext = esm ? 'ts' : 'mts';
+    writeFileSync(
+      join(cwd, `knip.config.${ext}`),
+      `export { default } from '@chanom/dev-config/knip/config';\n`,
+    );
+  }
 
   const { pkg, pkgPath } = readPkg(cwd);
 

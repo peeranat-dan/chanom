@@ -3,6 +3,14 @@ import { join } from 'node:path';
 
 export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun';
 
+/** How to run a locally installed binary with each package manager. */
+export const PM_EXEC: Record<PackageManager, string[]> = {
+  pnpm: ['pnpm', 'exec'],
+  npm: ['npx', '--no', '--'],
+  yarn: ['yarn'],
+  bun: ['bunx'],
+};
+
 const KNOWN_PMS: PackageManager[] = ['pnpm', 'yarn', 'bun', 'npm'];
 
 function fromPkgJson(cwd: string): PackageManager | undefined {

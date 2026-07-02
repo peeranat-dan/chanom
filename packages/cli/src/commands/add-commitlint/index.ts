@@ -1,6 +1,9 @@
+import { log } from '@clack/prompts';
 import { existsSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
+import { PM_EXEC, type PackageManager } from '../../utils/detect-pm.ts';
+import { detectSetupFile } from '../../utils/detect-setup.ts';
 import { isPackageInstalled, type Pkg } from '../../utils/pkg.ts';
 
 export function getPackages(pkg: Pkg): string[] {
@@ -14,13 +17,23 @@ export function getPackages(pkg: Pkg): string[] {
   return missing;
 }
 
-export function apply(cwd: string): void {
-  writeFileSync(
-    join(cwd, '.commitlintrc.json'),
-    JSON.stringify({ extends: ['@commitlint/config-conventional'] }, null, 2) + '\n',
-  );
+export function apply(cwd: string, pm: PackageManager): void {
+  const existing = detectSetupFile('commitlint', cwd);
+  if (existing) {
+    log.warn(`\`${basename(existing)}\` already exists - skipping commitlint config`);
+  } else {
+    writeFileSync(
+      join(cwd, '.commitlintrc.json'),
+      JSON.stringify({ extends: ['@commitlint/config-conventional'] }, null, 2) + '\n',
+    );
+  }
 
   if (existsSync(join(cwd, '.husky'))) {
-    writeFileSync(join(cwd, '.husky', 'commit-msg'), 'npx --no -- commitlint --edit $' + '1\n');
+    const hookPath = join(cwd, '.husky', 'commit-msg');
+    if (existsSync(hookPath)) {
+      log.warn('`.husky/commit-msg` already exists - skipping');
+    } else {
+      writeFileSync(hookPath, [...PM_EXEC[pm], 'commitlint', '--edit', '$1'].join(' ') + '\n');
+    }
   }
 }

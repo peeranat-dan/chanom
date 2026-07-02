@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 export interface Pkg {
@@ -15,6 +15,9 @@ export function isEsm(pkg: Pkg): boolean {
 
 export function readPkg(cwd: string): { pkg: Pkg; pkgPath: string } {
   const pkgPath = join(cwd, 'package.json');
+  if (!existsSync(pkgPath)) {
+    throw new Error(`No package.json found in ${cwd}`);
+  }
   const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as Pkg;
   return { pkg, pkgPath };
 }

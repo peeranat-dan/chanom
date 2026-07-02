@@ -1,4 +1,6 @@
 import { intro, log, multiselect, outro, select, spinner } from '@clack/prompts';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import pc from 'picocolors';
 
 import { detectPm } from '../../utils/detect-pm.ts';
@@ -27,6 +29,11 @@ export async function brew(cwd = process.cwd()): Promise<void> {
   }
 
   const pm = detectPm(cwd);
+
+  if (!existsSync(join(cwd, 'package.json'))) {
+    log.error(`No package.json found. Run \`${pm} init\` first, then re-run \`chanom brew\`.`);
+    process.exit(1);
+  }
 
   const toppings = await multiselect<Topping>({
     message: 'Which toppings would you like?',
@@ -82,7 +89,11 @@ export async function brew(cwd = process.cwd()): Promise<void> {
     const s = spinner();
     const uniquePackages = Array.from(new Set(packages));
     s.start(`Installing ${uniquePackages.join(', ')}...`);
-    installDev(pm, cwd, ...uniquePackages);
+    if (!installDev(pm, cwd, ...uniquePackages)) {
+      s.stop(pc.red('Package installation failed'));
+      log.error(`\`${pm} add -D\` failed. Fix the error above and re-run \`chanom brew\`.`);
+      process.exit(1);
+    }
     s.stop('Packages installed');
   }
 
@@ -90,6 +101,7 @@ export async function brew(cwd = process.cwd()): Promise<void> {
   if (toppings.includes('oxfmt')) addOxfmt.apply(cwd, esm);
   if (toppings.includes('knip')) addKnip.apply(cwd, esm);
   if (sweetness === 'medium') {
+    const huskyExisted = existsSync(join(cwd, '.husky'));
     addHusky.apply(cwd, pm);
     addLintStaged.apply(
       cwd,
@@ -99,8 +111,9 @@ export async function brew(cwd = process.cwd()): Promise<void> {
       toppings.filter((t): t is addLintStaged.Formatter =>
         (['oxfmt'] as const).includes(t as addLintStaged.Formatter),
       ),
+      !huskyExisted,
     );
-    addCommitlint.apply(cwd);
+    addCommitlint.apply(cwd, pm);
   }
 
   const s2 = spinner();
