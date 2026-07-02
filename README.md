@@ -22,6 +22,7 @@ pnpm exec turbo run build lint format:check
 
 | Package                                         | Description                                                         | README                                       |
 | ----------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------- |
+| [`@chanom/cli`](./packages/cli)                 | Interactive CLI that brews dev tooling config into your project     | [`README`](./packages/cli/README.md)         |
 | [`@chanom/dev-config`](./packages/dev-config)   | Shared [oxlint](https://oxc.rs/) + [oxfmt](https://oxc.rs/) presets | [`README`](./packages/dev-config/README.md)  |
 | [`@chanom/vite-config`](./packages/vite-config) | Vite config factory for libraries and React apps                    | [`README`](./packages/vite-config/README.md) |
 
