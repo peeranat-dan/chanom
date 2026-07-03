@@ -3,13 +3,14 @@ import { writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
 import { detectSetupFile } from '../../utils/detect-setup.ts';
-import { isPackageInstalled, readPkg, type Pkg } from '../../utils/pkg.ts';
+import { getOutdatedPackage, readPkg, type Pkg } from '../../utils/pkg.ts';
 import { getMissingScripts } from './logic.ts';
 
 export function getPackages(pkg: Pkg): string[] {
-  return isPackageInstalled(pkg, 'oxlint')
-    ? []
-    : [`oxlint@${__OXLINT_VERSION__}`, `@chanom/dev-config@${__DEV_CONFIG_VERSION__}`];
+  return [
+    getOutdatedPackage(pkg, 'oxlint', __OXLINT_VERSION__),
+    getOutdatedPackage(pkg, '@chanom/dev-config', __DEV_CONFIG_VERSION__),
+  ].filter((p): p is string => p !== undefined);
 }
 
 export function apply(cwd: string, esm: boolean): void {

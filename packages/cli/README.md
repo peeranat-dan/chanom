@@ -38,7 +38,7 @@ Based on your answers, `brew` will:
 
 - Initialize a git repo if one doesn't exist yet (with a `.gitignore`)
 - Detect your package manager (`pnpm`, `npm`, `yarn`, or `bun`) from `package.json`/`packageManager` or the invoking user agent
-- Install the packages needed for your selected toppings, skipping any already installed
+- Install the packages needed for your selected toppings, upgrading `oxlint`, `oxfmt`, and `@chanom/dev-config` to the expected version if an older one is already installed
 - Write config files (`oxlint.config.ts`, `oxfmt.config.ts`, `knip.config.ts`, `.commitlintrc.json`, `.lintstagedrc.json`) and wire up `package.json` scripts
 - If `medium` sweetness is selected, run `husky init` and add `pre-commit` / `commit-msg` hooks
 - Stage and commit the changes it made

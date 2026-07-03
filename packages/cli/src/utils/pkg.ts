@@ -25,3 +25,14 @@ export function readPkg(cwd: string): { pkg: Pkg; pkgPath: string } {
 export function isPackageInstalled(pkg: Pkg, name: string): boolean {
   return name in (pkg.dependencies ?? {}) || name in (pkg.devDependencies ?? {});
 }
+
+function stripRangePrefix(version: string): string {
+  return version.replace(/^[\^~]/, '');
+}
+
+export function getOutdatedPackage(pkg: Pkg, name: string, version: string): string | undefined {
+  const installed = pkg.dependencies?.[name] ?? pkg.devDependencies?.[name];
+  return installed !== undefined && stripRangePrefix(installed) === version
+    ? undefined
+    : `${name}@${version}`;
+}
