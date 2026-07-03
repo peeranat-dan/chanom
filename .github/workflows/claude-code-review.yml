@@ -1,0 +1,50 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: claude-code-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  claude-review:
+    if: github.event.pull_request.draft == false && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this pull request. This is a pnpm/Turborepo monorepo
+            (packages/*) linted and formatted with oxlint/oxfmt, built with
+            tsdown/Vite/TypeScript, and versioned with Changesets.
+
+            Focus on:
+            1. Correctness — logic errors, edge cases, broken workspace/catalog references
+            2. Consistency with existing oxlint/oxfmt conventions in the touched packages
+            3. Missing or incorrect Changesets entries for user-facing changes under packages/
+            4. Type safety and public API/README accuracy for the affected package(s)
+            5. Test coverage for new or changed behavior
+
+            Leave inline comments for specific issues and a brief top-level
+            summary. Do not comment if you find nothing worth flagging.
+
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
