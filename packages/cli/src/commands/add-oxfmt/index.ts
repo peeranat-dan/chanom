@@ -3,13 +3,13 @@ import { writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
 import { detectSetupFile } from '../../utils/detect-setup.ts';
-import { getOutdatedPackage, readPkg, type Pkg } from '../../utils/pkg.ts';
+import { getMismatchedPackage, readPkg, type Pkg } from '../../utils/pkg.ts';
 import { getMissingScripts } from './logic.ts';
 
 export function getPackages(pkg: Pkg): string[] {
   return [
-    getOutdatedPackage(pkg, 'oxfmt', __OXFMT_VERSION__),
-    getOutdatedPackage(pkg, '@chanom/dev-config', __DEV_CONFIG_VERSION__),
+    getMismatchedPackage(pkg, 'oxfmt', __OXFMT_VERSION__),
+    getMismatchedPackage(pkg, '@chanom/dev-config', __DEV_CONFIG_VERSION__),
   ].filter((p): p is string => p !== undefined);
 }
 

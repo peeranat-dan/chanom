@@ -30,7 +30,9 @@ function stripRangePrefix(version: string): string {
   return version.replace(/^[\^~]/, '');
 }
 
-export function getOutdatedPackage(pkg: Pkg, name: string, version: string): string | undefined {
+// Flags a mismatch in either direction (older or newer), not just "outdated", since the
+// generated config files must match the pinned version exactly.
+export function getMismatchedPackage(pkg: Pkg, name: string, version: string): string | undefined {
   const installed = pkg.dependencies?.[name] ?? pkg.devDependencies?.[name];
   return installed !== undefined && stripRangePrefix(installed) === version
     ? undefined
