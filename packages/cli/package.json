@@ -13,7 +13,9 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "prepublishOnly": "tsdown"
+    "prepublishOnly": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
@@ -25,10 +27,12 @@
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
     "@effect/language-service": "catalog:",
+    "@effect/vitest": "catalog:",
     "@tsconfig/node-lts": "catalog:",
     "@tsconfig/node-ts": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
