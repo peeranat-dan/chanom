@@ -17,10 +17,14 @@
   },
   "dependencies": {
     "@clack/prompts": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-node": "catalog:",
+    "effect": "catalog:",
     "picocolors": "catalog:"
   },
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
+    "@effect/language-service": "catalog:",
     "@tsconfig/node-lts": "catalog:",
     "@tsconfig/node-ts": "catalog:",
     "@types/node": "catalog:",

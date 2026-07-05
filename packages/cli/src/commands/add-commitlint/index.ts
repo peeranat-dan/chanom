@@ -1,6 +1,6 @@
 import { log } from '@clack/prompts';
-import { existsSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { FileSystem, Path } from '@effect/platform';
+import { Effect } from 'effect';
 
 import { PM_EXEC, type PackageManager } from '../../utils/detect-pm.ts';
 import { detectSetupFile } from '../../utils/detect-setup.ts';
@@ -17,23 +17,35 @@ export function getPackages(pkg: Pkg): string[] {
   return missing;
 }
 
-export function apply(cwd: string, pm: PackageManager): void {
-  const existing = detectSetupFile('commitlint', cwd);
-  if (existing) {
-    log.warn(`\`${basename(existing)}\` already exists - skipping commitlint config`);
-  } else {
-    writeFileSync(
-      join(cwd, '.commitlintrc.json'),
-      JSON.stringify({ extends: ['@commitlint/config-conventional'] }, null, 2) + '\n',
-    );
-  }
+export const apply = (cwd: string, pm: PackageManager) =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
 
-  if (existsSync(join(cwd, '.husky'))) {
-    const hookPath = join(cwd, '.husky', 'commit-msg');
-    if (existsSync(hookPath)) {
-      log.warn('`.husky/commit-msg` already exists - skipping');
+    const existing = detectSetupFile('commitlint', cwd);
+
+    if (existing) {
+      log.warn(`\`${path.basename(existing)}\` already exists - skipping commitlint config`);
     } else {
-      writeFileSync(hookPath, [...PM_EXEC[pm], 'commitlint', '--edit', '$1'].join(' ') + '\n');
+      yield* fs.writeFileString(
+        path.join(cwd, '.commitlintrc.json'),
+        JSON.stringify({ extends: ['@commitlint/config-conventional'] }, null, 2) + '\n',
+      );
     }
-  }
-}
+
+    const huskyDir = path.join(cwd, '.husky');
+    const huskyExists = yield* fs.exists(huskyDir);
+
+    if (huskyExists) {
+      const hookPath = path.join(huskyDir, 'commit-msg');
+      const hookExists = yield* fs.exists(hookPath);
+      if (hookExists) {
+        log.warn('`.husky/commit-msg` already exists - skipping');
+      } else {
+        yield* fs.writeFileString(
+          hookPath,
+          [...PM_EXEC[pm], 'commitlint', '--edit', '$1'].join(' ') + '\n',
+        );
+      }
+    }
+  });

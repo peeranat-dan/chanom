@@ -1,5 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { FileSystem, Path } from '@effect/platform';
+import { Data, Effect } from 'effect';
 
 export interface Pkg {
   type?: 'module' | 'commonjs';
@@ -9,18 +9,30 @@ export interface Pkg {
   scripts?: Record<string, string>;
 }
 
+export class PkgNotFound extends Data.TaggedError('PkgNotFound')<{
+  readonly cwd: string;
+}> {}
+
 export function isEsm(pkg: Pkg): boolean {
   return pkg.type === 'module';
 }
 
-export function readPkg(cwd: string): { pkg: Pkg; pkgPath: string } {
-  const pkgPath = join(cwd, 'package.json');
-  if (!existsSync(pkgPath)) {
-    throw new Error(`No package.json found in ${cwd}`);
-  }
-  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as Pkg;
-  return { pkg, pkgPath };
-}
+export const readPkg = (cwd: string) =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
+    const pkgPath = path.join(cwd, 'package.json');
+    const pkgExists = yield* fs.exists(pkgPath);
+
+    if (!pkgExists) {
+      return yield* new PkgNotFound({ cwd });
+    }
+
+    const pkgContent = yield* fs.readFileString(pkgPath);
+    const pkg = JSON.parse(pkgContent) as Pkg;
+
+    return { pkg, pkgPath };
+  });
 
 export function isPackageInstalled(pkg: Pkg, name: string): boolean {
   return name in (pkg.dependencies ?? {}) || name in (pkg.devDependencies ?? {});
