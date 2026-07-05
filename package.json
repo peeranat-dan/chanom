@@ -26,6 +26,7 @@
     "lint-staged": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "oxlint-tsgolint": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   },
