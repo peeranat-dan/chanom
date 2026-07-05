@@ -24,8 +24,8 @@ export function parsePmUserAgent(agent: string | undefined): PackageManager | un
 }
 
 export interface PmHints {
-  readonly packageManagerField?: string | undefined;
-  readonly userAgent?: string | undefined;
+  readonly packageManagerField: string | undefined;
+  readonly userAgent: string | undefined;
   readonly fallback?: PackageManager;
 }
 
