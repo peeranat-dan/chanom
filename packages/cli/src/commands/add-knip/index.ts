@@ -1,9 +1,9 @@
 import { log } from '@clack/prompts';
-import { writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { FileSystem, Path } from '@effect/platform';
+import { Effect } from 'effect';
 
 import { detectSetupFile } from '../../utils/detect-setup.ts';
-import { isPackageInstalled, readPkg, type Pkg } from '../../utils/pkg.ts';
+import { isPackageInstalled, type Pkg } from '../../utils/pkg.ts';
 import { getMissingScripts } from './logic.ts';
 
 export function getPackages(pkg: Pkg): string[] {
@@ -12,33 +12,33 @@ export function getPackages(pkg: Pkg): string[] {
     : [`knip@${__KNIP_VERSION__}`, `@chanom/dev-config@${__DEV_CONFIG_VERSION__}`];
 }
 
-export function apply(cwd: string, esm: boolean): void {
-  const existing = detectSetupFile('knip', cwd);
-  if (existing) {
-    log.warn(`\`${basename(existing)}\` already exists - skipping knip config`);
-  } else {
-    const ext = esm ? 'ts' : 'mts';
-    writeFileSync(
-      join(cwd, `knip.config.${ext}`),
-      `export { default } from '@chanom/dev-config/knip/config';\n`,
-    );
-  }
+// Mutates `pkg.scripts` in place; the caller owns writing package.json.
+export const apply = (cwd: string, esm: boolean, pkg: Pkg) =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
 
-  const { pkg, pkgPath } = readPkg(cwd);
+    const existing = detectSetupFile('knip', cwd);
 
-  pkg.scripts ??= {};
-  const missing = getMissingScripts(pkg.scripts);
+    if (existing) {
+      log.warn(`\`${path.basename(existing)}\` already exists - skipping knip config`);
+    } else {
+      const fileExtension = esm ? 'ts' : 'mts';
+      yield* fs.writeFileString(
+        path.join(cwd, `knip.config.${fileExtension}`),
+        `export { default } from '@chanom/dev-config/knip/config';\n`,
+      );
+    }
 
-  for (const [key, value] of Object.entries(missing)) {
-    pkg.scripts[key] = value;
-  }
+    pkg.scripts ??= {};
+    const missing = getMissingScripts(pkg.scripts);
 
-  const skipped = (['knip'] as const).filter((k) => !(k in missing));
-  for (const key of skipped) {
-    log.warn(`\`${key}\` script already exists in package.json - skipping`);
-  }
+    for (const [key, value] of Object.entries(missing)) {
+      pkg.scripts[key] = value;
+    }
 
-  if (Object.keys(missing).length > 0) {
-    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-  }
-}
+    const skipped = (['knip'] as const).filter((k) => !(k in missing));
+    for (const key of skipped) {
+      log.warn(`\`${key}\` script already exists in package.json - skipping`);
+    }
+  });

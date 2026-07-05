@@ -1,9 +1,9 @@
 import { log } from '@clack/prompts';
-import { writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { FileSystem, Path } from '@effect/platform';
+import { Effect } from 'effect';
 
 import { detectSetupFile } from '../../utils/detect-setup.ts';
-import { getMismatchedPackage, readPkg, type Pkg } from '../../utils/pkg.ts';
+import { getMismatchedPackage, type Pkg } from '../../utils/pkg.ts';
 import { getMissingScripts } from './logic.ts';
 
 export function getPackages(pkg: Pkg): string[] {
@@ -13,33 +13,33 @@ export function getPackages(pkg: Pkg): string[] {
   ].filter((p): p is string => p !== undefined);
 }
 
-export function apply(cwd: string, esm: boolean): void {
-  const existing = detectSetupFile('oxfmt', cwd);
-  if (existing) {
-    log.warn(`\`${basename(existing)}\` already exists - skipping oxfmt config`);
-  } else {
-    const ext = esm ? 'ts' : 'mts';
-    writeFileSync(
-      join(cwd, `oxfmt.config.${ext}`),
-      `export { default } from '@chanom/dev-config/oxfmt/config';\n`,
-    );
-  }
+// Mutates `pkg.scripts` in place; the caller owns writing package.json.
+export const apply = (cwd: string, esm: boolean, pkg: Pkg) =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
 
-  const { pkg, pkgPath } = readPkg(cwd);
+    const existing = detectSetupFile('oxfmt', cwd);
 
-  pkg.scripts ??= {};
-  const missing = getMissingScripts(pkg.scripts);
+    if (existing) {
+      log.warn(`\`${path.basename(existing)}\` already exists - skipping oxfmt config`);
+    } else {
+      const fileExtension = esm ? 'ts' : 'mts';
+      yield* fs.writeFileString(
+        path.join(cwd, `oxfmt.config.${fileExtension}`),
+        `export { default } from '@chanom/dev-config/oxfmt/config';\n`,
+      );
+    }
 
-  for (const [key, value] of Object.entries(missing)) {
-    pkg.scripts[key] = value;
-  }
+    pkg.scripts ??= {};
+    const missing = getMissingScripts(pkg.scripts);
 
-  const skipped = (['format', 'format:check'] as const).filter((k) => !(k in missing));
-  for (const key of skipped) {
-    log.warn(`\`${key}\` script already exists in package.json - skipping`);
-  }
+    for (const [key, value] of Object.entries(missing)) {
+      pkg.scripts[key] = value;
+    }
 
-  if (Object.keys(missing).length > 0) {
-    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-  }
-}
+    const skipped = (['format', 'format:check'] as const).filter((k) => !(k in missing));
+    for (const key of skipped) {
+      log.warn(`\`${key}\` script already exists in package.json - skipping`);
+    }
+  });
