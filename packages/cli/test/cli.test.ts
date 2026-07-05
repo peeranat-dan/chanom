@@ -1,0 +1,73 @@
+import { describe, expect, it } from '@effect/vitest';
+import { Effect } from 'effect';
+
+import { run } from '../src/cli.ts';
+import { makeTestEnv } from './support/env.ts';
+
+describe('run', () => {
+  it.effect('reports unknown commands and exits with 1', () => {
+    const env = makeTestEnv();
+    return Effect.gen(function* () {
+      const exitCode = yield* run('teanom', '/project');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.errors).toEqual([
+        'Unknown command: teanom\nAvailable commands: brew',
+      ]);
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('reports a missing command as (none)', () => {
+    const env = makeTestEnv();
+    return Effect.gen(function* () {
+      const exitCode = yield* run(undefined, '/project');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.errors[0]).toContain('Unknown command: (none)');
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('exits with 0 when the user cancels a prompt', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': '{}' },
+      dirs: ['/project/.git'],
+    });
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project');
+      expect(exitCode).toBe(0);
+      expect(env.prompter.log.errors).toEqual([]);
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('reports a missing package.json and exits with 1', () => {
+    const env = makeTestEnv({ dirs: ['/project/.git'] });
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.errors).toEqual([
+        'No package.json found in /project. Run this inside a project.',
+      ]);
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('reports a failed install and exits with 1', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': '{}' },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': ['oxlint'],
+        'How sweet would you like it?': 'light',
+      },
+      commands: ({ cmd }) =>
+        cmd === 'pnpm'
+          ? { exitCode: 1, stdout: '', stderr: '' }
+          : { exitCode: 0, stdout: '', stderr: '' },
+    });
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.errors).toEqual(['Package installation with pnpm failed.']);
+      expect(env.prompter.log.spinners).toContainEqual(
+        expect.objectContaining({ stop: expect.stringContaining('installation failed') }),
+      );
+    }).pipe(Effect.provide(env.layer));
+  });
+});

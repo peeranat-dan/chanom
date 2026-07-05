@@ -6,6 +6,7 @@
       "outputs": ["dist/**"]
     },
     "lint": {},
-    "format:check": {}
+    "format:check": {},
+    "test": {}
   }
 }
