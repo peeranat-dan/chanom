@@ -1,38 +1,24 @@
-import { FileSystem, Path } from '@effect/platform';
-import { Data, Effect } from 'effect';
+import { Data } from 'effect';
 
 export interface Pkg {
-  type?: 'module' | 'commonjs';
-  packageManager?: string;
-  dependencies?: Record<string, string>;
-  devDependencies?: Record<string, string>;
-  scripts?: Record<string, string>;
+  readonly type?: 'module' | 'commonjs';
+  readonly packageManager?: string;
+  readonly dependencies?: Readonly<Record<string, string>>;
+  readonly devDependencies?: Readonly<Record<string, string>>;
+  readonly scripts?: Readonly<Record<string, string>>;
 }
 
 export class PkgNotFound extends Data.TaggedError('PkgNotFound')<{
   readonly cwd: string;
 }> {}
 
+export class PkgInvalid extends Data.TaggedError('PkgInvalid')<{
+  readonly pkgPath: string;
+}> {}
+
 export function isEsm(pkg: Pkg): boolean {
   return pkg.type === 'module';
 }
-
-export const readPkg = (cwd: string) =>
-  Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem;
-    const path = yield* Path.Path;
-    const pkgPath = path.join(cwd, 'package.json');
-    const pkgExists = yield* fs.exists(pkgPath);
-
-    if (!pkgExists) {
-      return yield* new PkgNotFound({ cwd });
-    }
-
-    const pkgContent = yield* fs.readFileString(pkgPath);
-    const pkg = JSON.parse(pkgContent) as Pkg;
-
-    return { pkg, pkgPath };
-  });
 
 export function isPackageInstalled(pkg: Pkg, name: string): boolean {
   return name in (pkg.dependencies ?? {}) || name in (pkg.devDependencies ?? {});
