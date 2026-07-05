@@ -1,41 +1,24 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { FileSystem, Path } from '@effect/platform';
+import { Effect } from 'effect';
 
-export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun';
+import { type PackageManager, resolvePm } from '../domain/package-manager.ts';
 
-/** How to run a locally installed binary with each package manager. */
-export const PM_EXEC: Record<PackageManager, string[]> = {
-  pnpm: ['pnpm', 'exec'],
-  npm: ['npx', '--no', '--'],
-  yarn: ['yarn'],
-  bun: ['bunx'],
-};
+export const detectPm = (
+  cwd: string,
+  userAgent: string | undefined = process.env['npm_config_user_agent'],
+  fallback: PackageManager = 'pnpm',
+): Effect.Effect<PackageManager, never, FileSystem.FileSystem | Path.Path> =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
+    const pkgPath = path.join(cwd, 'package.json');
 
-const KNOWN_PMS: PackageManager[] = ['pnpm', 'yarn', 'bun', 'npm'];
+    const packageManagerField = yield* fs.readFileString(pkgPath).pipe(
+      Effect.flatMap((contents) =>
+        Effect.try(() => (JSON.parse(contents) as { packageManager?: string }).packageManager),
+      ),
+      Effect.orElseSucceed(() => undefined),
+    );
 
-function fromPkgJson(cwd: string): PackageManager | undefined {
-  const pkgPath = join(cwd, 'package.json');
-  if (!existsSync(pkgPath)) return undefined;
-
-  try {
-    const { packageManager } = JSON.parse(readFileSync(pkgPath, 'utf-8')) as {
-      packageManager?: string;
-    };
-    if (!packageManager) return undefined;
-
-    const name = packageManager.split('@')[0] as PackageManager;
-    return KNOWN_PMS.includes(name) ? name : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function fromUserAgent(): PackageManager | undefined {
-  const agent = process.env['npm_config_user_agent'];
-  if (!agent) return undefined;
-  return KNOWN_PMS.find((pm) => agent.startsWith(pm));
-}
-
-export function detectPm(cwd = process.cwd(), defaultPm: PackageManager = 'pnpm'): PackageManager {
-  return fromPkgJson(cwd) ?? fromUserAgent() ?? defaultPm;
-}
+    return resolvePm({ packageManagerField, userAgent, fallback });
+  });

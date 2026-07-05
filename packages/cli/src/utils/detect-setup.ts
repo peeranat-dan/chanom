@@ -1,59 +1,20 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { FileSystem, Path } from '@effect/platform';
+import { Effect, Option } from 'effect';
 
-export type SetupFile =
-  | 'oxlint'
-  | 'oxfmt'
-  | 'knip'
-  | 'husky'
-  | 'lint-staged'
-  | 'commitlint'
-  | 'vite';
+import { SETUP_FILE_CANDIDATES, type SetupFile } from '../domain/setup.ts';
 
-const CONFIG_FILES: Record<SetupFile, string[]> = {
-  oxlint: [
-    'oxlint.config.js',
-    'oxlint.config.cjs',
-    'oxlint.config.mjs',
-    'oxlint.config.ts',
-    'oxlint.config.cts',
-    'oxlint.config.mts',
-    '.oxlintrc.json',
-  ],
-  oxfmt: [
-    'oxfmt.config.js',
-    'oxfmt.config.cjs',
-    'oxfmt.config.mjs',
-    'oxfmt.config.ts',
-    'oxfmt.config.cts',
-    'oxfmt.config.mts',
-    '.oxfmtrc.json',
-  ],
-  knip: ['knip.json', 'knip.ts', 'knip.config.ts', 'knip.config.mts', '.knip.json'],
-  husky: ['.husky'],
-  'lint-staged': ['.lintstagedrc.json', '.lintstagedrc.js', 'lint-staged.config.js'],
-  commitlint: ['.commitlintrc.json', '.commitlintrc.js', 'commitlint.config.js'],
-  vite: ['vite.config.ts', 'vite.config.js', 'vite.config.mjs'],
-};
+/** Finds an existing config file for the given tool, if any. */
+export const detectSetupFile = (type: SetupFile, cwd: string) =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
 
-export function detectSetupFile(type: SetupFile, cwd = process.cwd()): string | null {
-  for (const filename of CONFIG_FILES[type]) {
-    const filepath = join(cwd, filename);
-    if (existsSync(filepath)) {
-      return filepath;
+    for (const candidate of SETUP_FILE_CANDIDATES[type]) {
+      const filepath = path.join(cwd, candidate);
+      if (yield* fs.exists(filepath)) {
+        return Option.some(filepath);
+      }
     }
-  }
-  return null;
-}
 
-export function detectSetup(cwd = process.cwd()): Record<SetupFile, string | null> {
-  return {
-    oxlint: detectSetupFile('oxlint', cwd),
-    oxfmt: detectSetupFile('oxfmt', cwd),
-    knip: detectSetupFile('knip', cwd),
-    husky: detectSetupFile('husky', cwd),
-    'lint-staged': detectSetupFile('lint-staged', cwd),
-    commitlint: detectSetupFile('commitlint', cwd),
-    vite: detectSetupFile('vite', cwd),
-  };
-}
+    return Option.none<string>();
+  });

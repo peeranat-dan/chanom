@@ -1,46 +1,36 @@
-import { log } from '@clack/prompts';
 import { FileSystem, Path } from '@effect/platform';
-import { Effect } from 'effect';
+import { Effect, Option } from 'effect';
 
+import type { Pkg } from '../../domain/pkg.ts';
+
+import { Prompter } from '../../services/prompter.ts';
 import { detectSetupFile } from '../../utils/detect-setup.ts';
-import { getMismatchedPackage, type Pkg } from '../../utils/pkg.ts';
-import { getMissingScripts } from './logic.ts';
+import { configFile, getScriptPlan } from './logic.ts';
 
-export function getPackages(pkg: Pkg): string[] {
-  return [
-    getMismatchedPackage(pkg, 'oxlint', __OXLINT_VERSION__),
-    getMismatchedPackage(pkg, '@chanom/dev-config', __DEV_CONFIG_VERSION__),
-  ].filter((p): p is string => p !== undefined);
-}
+export { getPackages } from './logic.ts';
 
-// Mutates `pkg.scripts` in place; the caller owns writing package.json.
+/** Returns a copy of `pkg` with missing scripts added; the caller owns writing package.json. */
 export const apply = (cwd: string, esm: boolean, pkg: Pkg) =>
   Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
+    const prompter = yield* Prompter;
 
-    const existing = detectSetupFile('oxlint', cwd);
+    const existing = yield* detectSetupFile('oxlint', cwd);
 
-    if (existing) {
-      log.warn(`\`${path.basename(existing)}\` already exists - skipping oxlint config`);
-    } else {
-      const fileExtension = esm ? 'ts' : 'mts';
-      yield* fs.writeFileString(
-        path.join(cwd, `oxlint.config.${fileExtension}`),
-        `export { default } from '@chanom/dev-config/oxlint/config';\n`,
+    if (Option.isSome(existing)) {
+      yield* prompter.warn(
+        `\`${path.basename(existing.value)}\` already exists - skipping oxlint config`,
       );
+    } else {
+      const config = configFile(esm);
+      yield* fs.writeFileString(path.join(cwd, config.fileName), config.contents);
     }
 
-    pkg.scripts ??= {};
-
-    const missing = getMissingScripts(pkg.scripts);
-
-    for (const [key, value] of Object.entries(missing)) {
-      pkg.scripts[key] = value;
+    const plan = getScriptPlan(pkg.scripts);
+    for (const key of plan.skipped) {
+      yield* prompter.warn(`\`${key}\` script already exists in package.json - skipping`);
     }
 
-    const skipped = (['lint', 'lint:fix'] as const).filter((k) => !(k in missing));
-    for (const key of skipped) {
-      log.warn(`\`${key}\` script already exists in package.json - skipping`);
-    }
+    return { ...pkg, scripts: plan.scripts };
   });

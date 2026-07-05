@@ -7,10 +7,7 @@ const oxlintVersion = new RegExp(/^\s+oxlint:\s+(.+)$/m).exec(workspace)?.[1] ??
 const oxfmtVersion = new RegExp(/^\s+oxfmt:\s+(.+)$/m).exec(workspace)?.[1] ?? 'latest';
 const knipVersion = new RegExp(/^\s+knip:\s+(.+)$/m).exec(workspace)?.[1] ?? 'latest';
 
-const devConfigPkg = readFileSync(
-  join(import.meta.dirname, '../dev-config/package.json'),
-  'utf-8',
-);
+const devConfigPkg = readFileSync(join(import.meta.dirname, '../dev-config/package.json'), 'utf-8');
 const devConfigVersion = (JSON.parse(devConfigPkg) as { version: string }).version;
 
 export default defineConfig({
