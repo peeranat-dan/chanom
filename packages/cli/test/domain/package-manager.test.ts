@@ -35,9 +35,19 @@ describe('resolvePm', () => {
   });
 
   it('falls back to the user agent, then the fallback', () => {
-    expect(resolvePm({ userAgent: 'npm/10.0.0 node/v22' })).toBe('npm');
-    expect(resolvePm({ fallback: 'bun' })).toBe('bun');
-    expect(resolvePm({})).toBe('pnpm');
+    expect(
+      resolvePm({
+        userAgent: 'npm/10.0.0 node/v22',
+        fallback: undefined,
+        packageManagerField: undefined,
+      }),
+    ).toBe('npm');
+    expect(
+      resolvePm({ fallback: 'bun', userAgent: undefined, packageManagerField: undefined }),
+    ).toBe('bun');
+    expect(
+      resolvePm({ fallback: 'pnpm', userAgent: undefined, packageManagerField: undefined }),
+    ).toBe('pnpm');
   });
 
   it('ignores an unparseable field and keeps resolving', () => {
