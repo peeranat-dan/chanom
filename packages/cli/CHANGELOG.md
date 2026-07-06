@@ -1,5 +1,15 @@
 # @chanom/cli
 
+## 0.1.0
+
+### Minor Changes
+
+- 097de84: add debug flag to chanom cli
+
+### Patch Changes
+
+- 097de84: show invalid package error in cli when processing malformed package.json
+
 ## 0.0.4
 
 ### Patch Changes
