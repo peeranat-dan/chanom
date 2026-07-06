@@ -2,6 +2,11 @@
   "name": "@chanom/dev-config",
   "version": "0.0.3",
   "description": "Shared oxlint and oxfmt config",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peeranat-dan/chanom.git",
+    "directory": "packages/dev-config"
+  },
   "files": [
     "dist"
   ],
