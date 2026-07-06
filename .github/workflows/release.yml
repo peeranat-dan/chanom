@@ -30,10 +30,15 @@ jobs:
       - name: Build shared configs
         run: pnpm turbo run build --filter=@chanom/dev-config
 
+      - name: Compose version commit message
+        id: commit-message
+        run: echo "message=$(node scripts/get-changeset-version.ts)" >> "$GITHUB_OUTPUT"
+
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
           version: pnpm changeset:version
           publish: pnpm changeset:release
+          commit: ${{ steps.commit-message.outputs.message }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
