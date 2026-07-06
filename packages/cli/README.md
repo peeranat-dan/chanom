@@ -24,6 +24,14 @@ pnpm add -D @chanom/cli
 chanom brew
 ```
 
+Add `--debug` to trace what the CLI is doing and see exactly where it failed:
+
+```sh
+chanom brew --debug
+```
+
+Debug mode logs each step (detected package manager, planned packages, every command it spawns and its exit code) to stderr, and on failure prints the full error trace including which step failed.
+
 `brew` walks you through two prompts:
 
 1. **Toppings** - which tools to add, any combination (or none):

@@ -1,5 +1,6 @@
 import * as clack from '@clack/prompts';
 import { Data, Effect } from 'effect';
+import pc from 'picocolors';
 
 export class Cancelled extends Data.TaggedError('Cancelled') {}
 
@@ -40,6 +41,8 @@ export class Prompter extends Effect.Service<Prompter>()('cli/Prompter', {
     outro: (message: string): Effect.Effect<void> => Effect.sync(() => clack.outro(message)),
     warn: (message: string): Effect.Effect<void> => Effect.sync(() => clack.log.warn(message)),
     error: (message: string): Effect.Effect<void> => Effect.sync(() => clack.log.error(message)),
+    debug: (message: string): Effect.Effect<void> =>
+      Effect.sync(() => clack.log.message(pc.dim(message))),
     select: <T>(params: SelectParams<T>): Effect.Effect<T, Cancelled> =>
       guardCancel(() =>
         clack.select<T>({

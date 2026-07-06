@@ -42,4 +42,4 @@ export const apply = (
         yield* fs.writeFileString(hookPath, 'lint-staged\n');
       }
     }
-  });
+  }).pipe(Effect.withSpan('add-lint-staged.apply'));

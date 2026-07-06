@@ -23,6 +23,17 @@ export class CommandRunner extends Effect.Service<CommandRunner>()('cli/CommandR
     const make = (cmd: string, args: readonly string[], cwd: string) =>
       Command.make(cmd, ...args).pipe(Command.workingDirectory(cwd));
 
+    const traced = <E>(
+      cmd: string,
+      args: readonly string[],
+      cwd: string,
+      effect: Effect.Effect<number, E>,
+    ): Effect.Effect<number, E> =>
+      Effect.logDebug(`spawning \`${cmd} ${args.join(' ')}\` in ${cwd}`).pipe(
+        Effect.andThen(effect),
+        Effect.tap((code) => Effect.logDebug(`\`${cmd} ${args.join(' ')}\` exited with ${code}`)),
+      );
+
     const capture = (
       cmd: string,
       args: readonly string[],
@@ -30,11 +41,13 @@ export class CommandRunner extends Effect.Service<CommandRunner>()('cli/CommandR
     ): Effect.Effect<CommandOutput, PlatformError> =>
       Effect.scoped(
         Effect.gen(function* () {
+          yield* Effect.logDebug(`spawning \`${cmd} ${args.join(' ')}\` in ${cwd}`);
           const proc = yield* executor.start(make(cmd, args, cwd));
           const [exitCode, stdout, stderr] = yield* Effect.all(
             [proc.exitCode, collectText(proc.stdout), collectText(proc.stderr)],
             { concurrency: 3 },
           );
+          yield* Effect.logDebug(`\`${cmd} ${args.join(' ')}\` exited with ${exitCode}`);
           return { exitCode, stdout: stdout.trim(), stderr: stderr.trim() };
         }),
       );
@@ -44,9 +57,14 @@ export class CommandRunner extends Effect.Service<CommandRunner>()('cli/CommandR
       args: readonly string[],
       cwd: string,
     ): Effect.Effect<number, PlatformError> =>
-      make(cmd, args, cwd).pipe(
-        Command.exitCode,
-        Effect.provideService(CommandExecutor.CommandExecutor, executor),
+      traced(
+        cmd,
+        args,
+        cwd,
+        make(cmd, args, cwd).pipe(
+          Command.exitCode,
+          Effect.provideService(CommandExecutor.CommandExecutor, executor),
+        ),
       );
 
     const execInherit = (
@@ -54,11 +72,16 @@ export class CommandRunner extends Effect.Service<CommandRunner>()('cli/CommandR
       args: readonly string[],
       cwd: string,
     ): Effect.Effect<number, PlatformError> =>
-      make(cmd, args, cwd).pipe(
-        Command.stdout('inherit'),
-        Command.stderr('inherit'),
-        Command.exitCode,
-        Effect.provideService(CommandExecutor.CommandExecutor, executor),
+      traced(
+        cmd,
+        args,
+        cwd,
+        make(cmd, args, cwd).pipe(
+          Command.stdout('inherit'),
+          Command.stderr('inherit'),
+          Command.exitCode,
+          Effect.provideService(CommandExecutor.CommandExecutor, executor),
+        ),
       );
 
     return {
