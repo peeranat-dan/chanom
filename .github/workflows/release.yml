@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared configs
+        run: pnpm turbo run build --filter=@chanom/dev-config
+
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
