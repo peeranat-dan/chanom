@@ -28,14 +28,17 @@ import {
 const ensureGitRepo = (cwd: string) =>
   Effect.gen(function* () {
     const git = yield* Git;
-    if (yield* git.isRepo(cwd)) return;
+    if (yield* git.isRepo(cwd)) {
+      yield* Effect.logDebug('git repository already present');
+      return;
+    }
 
     const prompter = yield* Prompter;
     const s = yield* prompter.spinner('Git not found, initializing repository...');
     yield* git.init(cwd);
     yield* git.writeGitignore(cwd);
     yield* s.stop('Git initialized');
-  });
+  }).pipe(Effect.withSpan('brew.ensureGitRepo'));
 
 const askRecipe = () =>
   Effect.gen(function* () {
@@ -64,11 +67,14 @@ const askRecipe = () =>
     });
 
     return { toppings, sweetness };
-  });
+  }).pipe(Effect.withSpan('brew.askRecipe'));
 
 const installPackages = (pm: PackageManager, cwd: string, packages: readonly string[]) =>
   Effect.gen(function* () {
-    if (packages.length === 0) return;
+    if (packages.length === 0) {
+      yield* Effect.logDebug('no packages to install');
+      return;
+    }
 
     const prompter = yield* Prompter;
     const installer = yield* PackageInstaller;
@@ -77,7 +83,7 @@ const installPackages = (pm: PackageManager, cwd: string, packages: readonly str
       .installDev(pm, cwd, packages)
       .pipe(Effect.tapError(() => s.stop(pc.red('Package installation failed'))));
     yield* s.stop('Packages installed');
-  });
+  }).pipe(Effect.withSpan('brew.installPackages'));
 
 const applyToppings = (cwd: string, esm: boolean, pkg: Pkg, toppings: readonly Topping[]) =>
   Effect.gen(function* () {
@@ -94,14 +100,17 @@ const applyToppings = (cwd: string, esm: boolean, pkg: Pkg, toppings: readonly T
     }
 
     return updated;
-  });
+  }).pipe(Effect.withSpan('brew.applyToppings'));
 
 const persistScripts = (pkgPath: string, pkg: Pkg, updated: Pkg) =>
   Effect.gen(function* () {
     if (JSON.stringify(updated.scripts ?? {}) !== JSON.stringify(pkg.scripts ?? {})) {
+      yield* Effect.logDebug(`writing updated scripts to ${pkgPath}`);
       yield* writePkg(pkgPath, updated);
+    } else {
+      yield* Effect.logDebug('scripts unchanged, skipping package.json write');
     }
-  });
+  }).pipe(Effect.withSpan('brew.persistScripts'));
 
 const setupCommitGate = (
   cwd: string,
@@ -123,7 +132,7 @@ const setupCommitGate = (
       !huskyExisted,
     );
     yield* addCommitlint.apply(cwd, pm);
-  });
+  }).pipe(Effect.withSpan('brew.setupCommitGate'));
 
 const commitChanges = (cwd: string) =>
   Effect.gen(function* () {
@@ -153,7 +162,7 @@ const commitChanges = (cwd: string) =>
     yield* prompter.warn(
       `${detail ? detail + '\n' : ''}Your files are staged - commit them manually when ready.`,
     );
-  });
+  }).pipe(Effect.withSpan('brew.commitChanges'));
 
 export const brew = (cwd: string = process.cwd()) =>
   Effect.gen(function* () {
@@ -164,10 +173,19 @@ export const brew = (cwd: string = process.cwd()) =>
     yield* ensureGitRepo(cwd);
 
     const pm = yield* detectPm(cwd);
+    yield* Effect.logDebug(`detected package manager: ${pm}`);
+
     const { pkg, pkgPath } = yield* readPkg(cwd);
     const { toppings, sweetness } = yield* askRecipe();
+    yield* Effect.logDebug(
+      `recipe: toppings=[${toppings.join(', ')}] sweetness=${sweetness} esm=${isEsm(pkg)}`,
+    );
 
-    yield* installPackages(pm, cwd, planPackages(pkg, toppings, sweetness, bundledVersions));
+    const packages = planPackages(pkg, toppings, sweetness, bundledVersions);
+    yield* Effect.logDebug(
+      `planned packages: ${packages.length > 0 ? packages.join(', ') : '(none)'}`,
+    );
+    yield* installPackages(pm, cwd, packages);
 
     const updated = yield* applyToppings(cwd, isEsm(pkg), pkg, toppings);
     yield* persistScripts(pkgPath, pkg, updated);

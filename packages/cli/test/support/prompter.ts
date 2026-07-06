@@ -18,6 +18,7 @@ export interface PrompterLog {
   readonly outros: string[];
   readonly warnings: string[];
   readonly errors: string[];
+  readonly debugs: string[];
   readonly spinners: SpinnerRecord[];
 }
 
@@ -31,7 +32,14 @@ export interface TestPrompter {
  * records everything it is asked to display. Unanswered prompts fail with Cancelled.
  */
 export const makeTestPrompter = (answers: Record<string, unknown> = {}): TestPrompter => {
-  const log: PrompterLog = { intros: [], outros: [], warnings: [], errors: [], spinners: [] };
+  const log: PrompterLog = {
+    intros: [],
+    outros: [],
+    warnings: [],
+    errors: [],
+    debugs: [],
+    spinners: [],
+  };
 
   const answer = <T>(message: string): Effect.Effect<T, Cancelled> =>
     message in answers ? Effect.succeed(answers[message] as T) : Effect.fail(new Cancelled());
@@ -41,6 +49,7 @@ export const makeTestPrompter = (answers: Record<string, unknown> = {}): TestPro
     outro: (message) => Effect.sync(() => void log.outros.push(message)),
     warn: (message) => Effect.sync(() => void log.warnings.push(message)),
     error: (message) => Effect.sync(() => void log.errors.push(message)),
+    debug: (message) => Effect.sync(() => void log.debugs.push(message)),
     select: <T>(params: SelectParams<T>) => answer<T>(params.message),
     multiselect: <T>(params: MultiselectParams<T>) => answer<T[]>(params.message),
     spinner: (message) =>

@@ -31,4 +31,4 @@ export const apply = (cwd: string, pm: PackageManager) =>
     if (exitCode !== 0) {
       return yield* new HuskyInitFailed({ exitCode });
     }
-  });
+  }).pipe(Effect.withSpan('add-husky.apply'));

@@ -35,4 +35,4 @@ export const apply = (cwd: string, pm: PackageManager) =>
         yield* fs.writeFileString(hookPath, commitMsgHook(pm));
       }
     }
-  });
+  }).pipe(Effect.withSpan('add-commitlint.apply'));

@@ -33,4 +33,4 @@ export const apply = (cwd: string, esm: boolean, pkg: Pkg) =>
     }
 
     return { ...pkg, scripts: plan.scripts };
-  });
+  }).pipe(Effect.withSpan('add-knip.apply'));

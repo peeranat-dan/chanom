@@ -70,4 +70,52 @@ describe('run', () => {
       );
     }).pipe(Effect.provide(env.layer));
   });
+
+  const failingInstallEnv = () =>
+    makeTestEnv({
+      files: { '/project/package.json': '{}' },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': ['oxlint'],
+        'How sweet would you like it?': 'light',
+      },
+      commands: ({ cmd }) =>
+        cmd === 'pnpm'
+          ? { exitCode: 1, stdout: '', stderr: '' }
+          : { exitCode: 0, stdout: '', stderr: '' },
+    });
+
+  it.effect('with --debug, prints a failure trace naming the failing step', () => {
+    const env = failingInstallEnv();
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project', { debug: true });
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.debugs).toHaveLength(1);
+      const trace = env.prompter.log.debugs[0];
+      expect(trace).toContain('InstallFailed');
+      expect(trace).toContain('brew.installPackages');
+      expect(trace).toContain('at brew');
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('without --debug, prints no failure trace', () => {
+    const env = failingInstallEnv();
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.debugs).toEqual([]);
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('with --debug, prompt cancellation prints no failure trace', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': '{}' },
+      dirs: ['/project/.git'],
+    });
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project', { debug: true });
+      expect(exitCode).toBe(0);
+      expect(env.prompter.log.debugs).toEqual([]);
+    }).pipe(Effect.provide(env.layer));
+  });
 });
