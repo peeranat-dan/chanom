@@ -77,4 +77,23 @@ describe('Git', () => {
       expect(fs.files.get('/project/.gitignore')).toBe('node_modules\n');
     }).pipe(Effect.provide(layer));
   });
+
+  it.effect('readGitignore reads the .gitignore contents', () => {
+    const fs = makeTestFs({ '/project/.gitignore': 'dist\n' });
+    const { layer } = makeGitLayer(undefined, fs);
+    return Effect.gen(function* () {
+      const git = yield* Git;
+      expect(yield* git.readGitignore('/project')).toBe('dist\n');
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('readGitignore fails with NotFound when .gitignore is missing', () => {
+    const { layer } = makeGitLayer();
+    return Effect.gen(function* () {
+      const git = yield* Git;
+      const error = yield* Effect.flip(git.readGitignore('/project'));
+      expect(error._tag).toBe('SystemError');
+      expect(error._tag === 'SystemError' && error.reason).toBe('NotFound');
+    }).pipe(Effect.provide(layer));
+  });
 });

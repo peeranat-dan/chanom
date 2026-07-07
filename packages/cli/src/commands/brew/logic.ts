@@ -41,6 +41,18 @@ export function planPackages(
   return [...new Set(packages)];
 }
 
+/** True when the .gitignore content already has the entry as its own line. */
+export function hasGitignoreEntry(content: string, entry: string): boolean {
+  const forms = new Set([entry, `${entry}/`, `/${entry}`, `/${entry}/`]);
+  return content.split(/\r?\n/).some((line) => forms.has(line.trim()));
+}
+
+/** .gitignore content with the entry appended, preserving existing lines and newline termination. */
+export function appendGitignoreEntry(content: string, entry: string): string {
+  if (content === '') return `${entry}\n`;
+  return content.endsWith('\n') ? `${content}${entry}\n` : `${content}\n${entry}\n`;
+}
+
 export function selectedLinters(toppings: readonly Topping[]): Linter[] {
   return toppings.filter((t): t is Linter => t === 'oxlint');
 }
