@@ -27,172 +27,175 @@ import {
   type Topping,
 } from './logic.ts';
 
-const ensureGitRepo = (cwd: string) =>
-  Effect.gen(function* () {
-    const git = yield* Git;
-    if (yield* git.isRepo(cwd)) {
-      yield* Effect.logDebug('git repository already present');
-      return;
-    }
+const ensureGitRepo = Effect.fn('brew.ensureGitRepo')(function* (cwd: string) {
+  const git = yield* Git;
+  if (yield* git.isRepo(cwd)) {
+    yield* Effect.logDebug('git repository already present');
+    return;
+  }
 
-    const prompter = yield* Prompter;
-    const s = yield* prompter.spinner('Git not found, initializing repository...');
-    yield* git.init(cwd);
-    yield* s.stop('Git initialized');
-  }).pipe(Effect.withSpan('brew.ensureGitRepo'));
+  const prompter = yield* Prompter;
+  const s = yield* prompter.spinner('Git not found, initializing repository...');
+  yield* git.init(cwd);
+  yield* s.stop('Git initialized');
+});
 
-const ensureGitIgnore = (cwd: string) =>
-  Effect.gen(function* () {
-    const git = yield* Git;
-    const prompter = yield* Prompter;
+const ensureGitIgnore = Effect.fn('brew.ensureGitIgnore')(function* (cwd: string) {
+  const git = yield* Git;
+  const prompter = yield* Prompter;
 
-    const existing = yield* git
-      .readGitignore(cwd)
-      .pipe(
-        Effect.catchTag('SystemError', (e) =>
-          e.reason === 'NotFound' ? Effect.succeed(undefined) : Effect.fail(e),
-        ),
-      );
-
-    if (existing !== undefined && hasGitignoreEntry(existing, 'node_modules')) {
-      yield* Effect.logDebug('node_modules already present in .gitignore');
-      return;
-    }
-
-    const s = yield* prompter.spinner(
-      existing === undefined ? 'Creating .gitignore...' : 'Adding node_modules to .gitignore...',
+  const existing = yield* git
+    .readGitignore(cwd)
+    .pipe(
+      Effect.catchTag('SystemError', (e) =>
+        e.reason === 'NotFound' ? Effect.succeed(undefined) : Effect.fail(e),
+      ),
     );
-    yield* git
-      .writeGitignore(cwd, appendGitignoreEntry(existing ?? '', 'node_modules'))
-      .pipe(Effect.tapError(() => s.stop(pc.red('Could not update .gitignore'))));
-    yield* s.stop(
-      existing === undefined ? '.gitignore created' : 'node_modules added to .gitignore',
-    );
-  }).pipe(Effect.withSpan('brew.ensureGitIgnore'));
 
-const askRecipe = () =>
-  Effect.gen(function* () {
-    const prompter = yield* Prompter;
+  if (existing !== undefined && hasGitignoreEntry(existing, 'node_modules')) {
+    yield* Effect.logDebug('node_modules already present in .gitignore');
+    return;
+  }
 
-    const toppings = yield* prompter.multiselect<Topping>({
-      message: 'Which toppings would you like?',
-      options: [
-        { value: 'oxlint', label: 'oxlint', hint: 'fast Rust-based linter' },
-        { value: 'oxfmt', label: 'oxfmt', hint: 'fast Rust-based formatter' },
-        { value: 'knip', label: 'knip', hint: 'dead code remover' },
-      ],
-      required: false,
-    });
+  const s = yield* prompter.spinner(
+    existing === undefined ? 'Creating .gitignore...' : 'Adding node_modules to .gitignore...',
+  );
+  yield* git
+    .writeGitignore(cwd, appendGitignoreEntry(existing ?? '', 'node_modules'))
+    .pipe(Effect.tapError(() => s.stop(pc.red('Could not update .gitignore'))));
+  yield* s.stop(existing === undefined ? '.gitignore created' : 'node_modules added to .gitignore');
+});
 
-    const sweetness = yield* prompter.select<Sweetness>({
-      message: 'How sweet would you like it?',
-      options: [
-        { value: 'light', label: 'light', hint: 'warn only, no blocking' },
-        {
-          value: 'medium',
-          label: 'medium',
-          hint: 'block on commit (husky + lint-staged + commitlint)',
-        },
-      ],
-    });
+const askRecipe = Effect.fn('brew.askRecipe')(function* () {
+  const prompter = yield* Prompter;
 
-    return { toppings, sweetness };
-  }).pipe(Effect.withSpan('brew.askRecipe'));
+  const toppings = yield* prompter.multiselect<Topping>({
+    message: 'Which toppings would you like?',
+    options: [
+      { value: 'oxlint', label: 'oxlint', hint: 'fast Rust-based linter' },
+      { value: 'oxfmt', label: 'oxfmt', hint: 'fast Rust-based formatter' },
+      { value: 'knip', label: 'knip', hint: 'dead code remover' },
+    ],
+    required: false,
+  });
 
-const installPackages = (pm: PackageManager, cwd: string, packages: readonly string[]) =>
-  Effect.gen(function* () {
-    if (packages.length === 0) {
-      yield* Effect.logDebug('no packages to install');
-      return;
-    }
+  const sweetness = yield* prompter.select<Sweetness>({
+    message: 'How sweet would you like it?',
+    options: [
+      { value: 'light', label: 'light', hint: 'warn only, no blocking' },
+      {
+        value: 'medium',
+        label: 'medium',
+        hint: 'block on commit (husky + lint-staged + commitlint)',
+      },
+    ],
+  });
 
-    const prompter = yield* Prompter;
-    const installer = yield* PackageInstaller;
-    const s = yield* prompter.spinner(`Installing ${packages.join(', ')}...`);
-    yield* installer
-      .installDev(pm, cwd, packages)
-      .pipe(Effect.tapError(() => s.stop(pc.red('Package installation failed'))));
-    yield* s.stop('Packages installed');
-  }).pipe(Effect.withSpan('brew.installPackages'));
+  return { toppings, sweetness };
+});
 
-const applyToppings = (cwd: string, esm: boolean, pkg: Pkg, toppings: readonly Topping[]) =>
-  Effect.gen(function* () {
-    let updated = pkg;
+const installPackages = Effect.fn('brew.installPackages')(function* (
+  pm: PackageManager,
+  cwd: string,
+  packages: readonly string[],
+) {
+  if (packages.length === 0) {
+    yield* Effect.logDebug('no packages to install');
+    return;
+  }
 
-    if (toppings.includes('oxlint')) {
-      updated = yield* addOxlint.apply(cwd, esm, updated);
-    }
-    if (toppings.includes('oxfmt')) {
-      updated = yield* addOxfmt.apply(cwd, esm, updated);
-    }
-    if (toppings.includes('knip')) {
-      updated = yield* addKnip.apply(cwd, esm, updated);
-    }
+  const prompter = yield* Prompter;
+  const installer = yield* PackageInstaller;
+  const s = yield* prompter.spinner(`Installing ${packages.join(', ')}...`);
+  yield* installer
+    .installDev(pm, cwd, packages)
+    .pipe(Effect.tapError(() => s.stop(pc.red('Package installation failed'))));
+  yield* s.stop('Packages installed');
+});
 
-    return updated;
-  }).pipe(Effect.withSpan('brew.applyToppings'));
+const applyToppings = Effect.fn('brew.applyToppings')(function* (
+  cwd: string,
+  esm: boolean,
+  pkg: Pkg,
+  toppings: readonly Topping[],
+) {
+  let updated = pkg;
 
-const persistScripts = (pkgPath: string, pkg: Pkg, updated: Pkg) =>
-  Effect.gen(function* () {
-    if (JSON.stringify(updated.scripts ?? {}) !== JSON.stringify(pkg.scripts ?? {})) {
-      yield* Effect.logDebug(`writing updated scripts to ${pkgPath}`);
-      yield* writePkg(pkgPath, updated);
-    } else {
-      yield* Effect.logDebug('scripts unchanged, skipping package.json write');
-    }
-  }).pipe(Effect.withSpan('brew.persistScripts'));
+  if (toppings.includes('oxlint')) {
+    updated = yield* addOxlint.apply(cwd, esm, updated);
+  }
+  if (toppings.includes('oxfmt')) {
+    updated = yield* addOxfmt.apply(cwd, esm, updated);
+  }
+  if (toppings.includes('knip')) {
+    updated = yield* addKnip.apply(cwd, esm, updated);
+  }
 
-const setupCommitGate = (
+  return updated;
+});
+
+const persistScripts = Effect.fn('brew.persistScripts')(function* (
+  pkgPath: string,
+  pkg: Pkg,
+  updated: Pkg,
+) {
+  if (JSON.stringify(updated.scripts ?? {}) === JSON.stringify(pkg.scripts ?? {})) {
+    yield* Effect.logDebug('scripts unchanged, skipping package.json write');
+  } else {
+    yield* Effect.logDebug(`writing updated scripts to ${pkgPath}`);
+    yield* writePkg(pkgPath, updated);
+  }
+});
+
+const setupCommitGate = Effect.fn('brew.setupCommitGate')(function* (
   cwd: string,
   pm: PackageManager,
   toppings: readonly Topping[],
   sweetness: Sweetness,
-) =>
-  Effect.gen(function* () {
-    if (sweetness !== 'medium') return;
+) {
+  if (sweetness !== 'medium') return;
 
-    const fs = yield* FileSystem.FileSystem;
-    const path = yield* Path.Path;
-    const huskyExisted = yield* fs.exists(path.join(cwd, '.husky'));
-    yield* addHusky.apply(cwd, pm);
-    yield* addLintStaged.apply(
-      cwd,
-      selectedLinters(toppings),
-      selectedFormatters(toppings),
-      !huskyExisted,
-    );
-    yield* addCommitlint.apply(cwd, pm);
-  }).pipe(Effect.withSpan('brew.setupCommitGate'));
+  const fs = yield* FileSystem.FileSystem;
+  const path = yield* Path.Path;
+  const huskyExisted = yield* fs.exists(path.join(cwd, '.husky'));
+  yield* addHusky.apply(cwd, pm);
+  yield* addLintStaged.apply(
+    cwd,
+    selectedLinters(toppings),
+    selectedFormatters(toppings),
+    !huskyExisted,
+  );
+  yield* addCommitlint.apply(cwd, pm);
+});
 
-const commitChanges = (cwd: string) =>
-  Effect.gen(function* () {
-    const git = yield* Git;
-    const prompter = yield* Prompter;
-    const s = yield* prompter.spinner('Committing changes...');
+const commitChanges = Effect.fn('brew.commitChanges')(function* (cwd: string) {
+  const git = yield* Git;
+  const prompter = yield* Prompter;
+  const s = yield* prompter.spinner('Committing changes...');
 
-    if (!(yield* git.hasIdentity(cwd))) {
-      yield* git.setLocalIdentity(cwd, 'Chanom', 'chanom@local');
-    }
+  if (!(yield* git.hasIdentity(cwd))) {
+    yield* git.setLocalIdentity(cwd, 'Chanom', 'chanom@local');
+  }
 
-    yield* git.stageAll(cwd);
+  yield* git.stageAll(cwd);
 
-    if (!(yield* git.hasStagedChanges(cwd))) {
-      yield* s.stop('Nothing to commit, skipping');
-      return;
-    }
+  if (!(yield* git.hasStagedChanges(cwd))) {
+    yield* s.stop('Nothing to commit, skipping');
+    return;
+  }
 
-    const result = yield* git.commit(cwd, 'chore: setup chanom configuration');
-    if (result.ok) {
-      yield* s.stop('Changes committed');
-      return;
-    }
+  const result = yield* git.commit(cwd, 'chore: setup chanom configuration');
+  if (result.ok) {
+    yield* s.stop('Changes committed');
+    return;
+  }
 
-    yield* s.stop(pc.yellow('Could not commit changes automatically'));
-    const detail = result.stderr || result.stdout;
-    yield* prompter.warn(
-      `${detail ? detail + '\n' : ''}Your files are staged - commit them manually when ready.`,
-    );
-  }).pipe(Effect.withSpan('brew.commitChanges'));
+  yield* s.stop(pc.yellow('Could not commit changes automatically'));
+  const detail = result.stderr || result.stdout;
+  yield* prompter.warn(
+    `${detail ? detail + '\n' : ''}Your files are staged - commit them manually when ready.`,
+  );
+});
 
 export const brew = (cwd: string = process.cwd()) =>
   Effect.gen(function* () {

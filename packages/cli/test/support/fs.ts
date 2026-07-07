@@ -1,5 +1,5 @@
 import { FileSystem, Path } from '@effect/platform';
-import { SystemError } from '@effect/platform/Error';
+import { SystemError, type SystemErrorReason } from '@effect/platform/Error';
 import { Effect, Layer } from 'effect';
 
 export interface TestFs {
@@ -12,10 +12,12 @@ export interface TestFs {
 /**
  * In-memory FileSystem backed by a Map, plus the pure posix Path layer.
  * A directory exists if it's in `dirs` or any file lives beneath it.
+ * Paths in `readErrors` fail reads with a SystemError of the given reason.
  */
 export const makeTestFs = (
   initialFiles: Record<string, string> = {},
   dirs: readonly string[] = [],
+  readErrors: Record<string, SystemErrorReason> = {},
 ): TestFs => {
   const files = new Map(Object.entries(initialFiles));
 
@@ -28,12 +30,13 @@ export const makeTestFs = (
     exists: (path) => Effect.succeed(exists(path)),
     readFileString: (path) => {
       const contents = files.get(path);
-      return contents === undefined
+      const reason = readErrors[path] ?? 'NotFound';
+      return contents === undefined || path in readErrors
         ? Effect.fail(
             new SystemError({
               module: 'FileSystem',
               method: 'readFileString',
-              reason: 'NotFound',
+              reason,
               pathOrDescriptor: path,
             }),
           )
