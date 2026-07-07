@@ -33,6 +33,14 @@ jobs:
           prompt: |
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
+            PR DESCRIPTION EMPTY: ${{ github.event.pull_request.body == '' }}
+
+            Before reviewing, check the PR description. If it is empty or
+            whitespace-only (verify with `gh pr view --json body`), write one
+            based on the diff and set it with `gh pr edit`. Use this structure:
+            a one-paragraph summary, a "What's changed" bullet list grouped by
+            package, and a note on changesets if any are included. Do not
+            overwrite an existing non-empty description.
 
             Review this pull request. This is a pnpm/Turborepo monorepo
             (packages/*) linted and formatted with oxlint/oxfmt, built with
@@ -49,4 +57,4 @@ jobs:
             summary. Do not comment if you find nothing worth flagging.
 
           claude_args: |
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr edit:*)"
