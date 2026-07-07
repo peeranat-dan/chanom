@@ -43,6 +43,7 @@ export class Git extends Effect.Service<Git>()('cli/Git', {
       isRepo: (cwd: string) => fs.exists(path.join(cwd, '.git')),
       writeGitignore: (cwd: string, contents = 'node_modules\n') =>
         fs.writeFileString(path.join(cwd, '.gitignore'), contents),
+      readGitignore: (cwd: string) => fs.readFileString(path.join(cwd, '.gitignore')),
     } as const;
   }),
 }) {}

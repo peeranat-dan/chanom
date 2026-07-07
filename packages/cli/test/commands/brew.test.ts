@@ -3,6 +3,8 @@ import { Effect } from 'effect';
 
 import { brew } from '../../src/commands/brew/index.ts';
 import {
+  appendGitignoreEntry,
+  hasGitignoreEntry,
   planPackages,
   selectedFormatters,
   selectedLinters,
@@ -42,6 +44,21 @@ describe('logic', () => {
       },
     };
     expect(planPackages(pkg, ['oxlint'], 'light', versions)).toEqual([]);
+  });
+
+  it('detects a node_modules entry only on its own line', () => {
+    expect(hasGitignoreEntry('node_modules\n', 'node_modules')).toBe(true);
+    expect(hasGitignoreEntry('dist\nnode_modules/\n', 'node_modules')).toBe(true);
+    expect(hasGitignoreEntry('/node_modules\n', 'node_modules')).toBe(true);
+    expect(hasGitignoreEntry('packages/*/node_modules\n', 'node_modules')).toBe(false);
+    expect(hasGitignoreEntry('# node_modules\n', 'node_modules')).toBe(false);
+    expect(hasGitignoreEntry('', 'node_modules')).toBe(false);
+  });
+
+  it('appends an entry preserving existing lines and newline termination', () => {
+    expect(appendGitignoreEntry('', 'node_modules')).toBe('node_modules\n');
+    expect(appendGitignoreEntry('dist\n', 'node_modules')).toBe('dist\nnode_modules\n');
+    expect(appendGitignoreEntry('dist', 'node_modules')).toBe('dist\nnode_modules\n');
   });
 
   it('splits toppings into linters and formatters', () => {
@@ -151,6 +168,47 @@ describe('brew', () => {
       expect(env.prompter.log.spinners).toContainEqual(
         expect.objectContaining({ stop: 'Nothing to commit, skipping' }),
       );
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('appends node_modules to an existing .gitignore without losing entries', () => {
+    const env = makeTestEnv({
+      files: {
+        '/project/package.json': '{}',
+        '/project/.gitignore': 'dist\n.env',
+      },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': [],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+      expect(env.fs.files.get('/project/.gitignore')).toBe('dist\n.env\nnode_modules\n');
+      expect(env.prompter.log.spinners).toContainEqual(
+        expect.objectContaining({ stop: 'node_modules added to .gitignore' }),
+      );
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('leaves .gitignore untouched when node_modules is already ignored', () => {
+    const env = makeTestEnv({
+      files: {
+        '/project/package.json': '{}',
+        '/project/.gitignore': 'node_modules/\ndist\n',
+      },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': [],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+      expect(env.fs.files.get('/project/.gitignore')).toBe('node_modules/\ndist\n');
     }).pipe(Effect.provide(env.layer));
   });
 

@@ -18,6 +18,8 @@ import * as addLintStaged from '../add-lint-staged/index.ts';
 import * as addOxfmt from '../add-oxfmt/index.ts';
 import * as addOxlint from '../add-oxlint/index.ts';
 import {
+  appendGitignoreEntry,
+  hasGitignoreEntry,
   planPackages,
   selectedFormatters,
   selectedLinters,
@@ -36,9 +38,37 @@ const ensureGitRepo = (cwd: string) =>
     const prompter = yield* Prompter;
     const s = yield* prompter.spinner('Git not found, initializing repository...');
     yield* git.init(cwd);
-    yield* git.writeGitignore(cwd);
     yield* s.stop('Git initialized');
   }).pipe(Effect.withSpan('brew.ensureGitRepo'));
+
+const ensureGitIgnore = (cwd: string) =>
+  Effect.gen(function* () {
+    const git = yield* Git;
+    const prompter = yield* Prompter;
+
+    const existing = yield* git
+      .readGitignore(cwd)
+      .pipe(
+        Effect.catchTag('SystemError', (e) =>
+          e.reason === 'NotFound' ? Effect.succeed(undefined) : Effect.fail(e),
+        ),
+      );
+
+    if (existing !== undefined && hasGitignoreEntry(existing, 'node_modules')) {
+      yield* Effect.logDebug('node_modules already present in .gitignore');
+      return;
+    }
+
+    const s = yield* prompter.spinner(
+      existing === undefined ? 'Creating .gitignore...' : 'Adding node_modules to .gitignore...',
+    );
+    yield* git
+      .writeGitignore(cwd, appendGitignoreEntry(existing ?? '', 'node_modules'))
+      .pipe(Effect.tapError(() => s.stop(pc.red('Could not update .gitignore'))));
+    yield* s.stop(
+      existing === undefined ? '.gitignore created' : 'node_modules added to .gitignore',
+    );
+  }).pipe(Effect.withSpan('brew.ensureGitIgnore'));
 
 const askRecipe = () =>
   Effect.gen(function* () {
@@ -171,6 +201,7 @@ export const brew = (cwd: string = process.cwd()) =>
     yield* prompter.intro(pc.magenta("🧋 Chanom - Let's brew your project!"));
 
     yield* ensureGitRepo(cwd);
+    yield* ensureGitIgnore(cwd);
 
     const pm = yield* detectPm(cwd);
     yield* Effect.logDebug(`detected package manager: ${pm}`);
