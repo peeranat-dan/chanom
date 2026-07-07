@@ -1,5 +1,11 @@
 # @chanom/cli
 
+## 0.1.1
+
+### Patch Changes
+
+- 7b2c73d: add node_modules to .gitignore automatically during brew, appending it if the file already exists
+
 ## 0.1.0
 
 ### Minor Changes
