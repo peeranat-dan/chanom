@@ -8,6 +8,7 @@ export default {
         'ana', // packages/analytics
         'cli', // packages/cli
         'dc', // packages/dev-config
+        'logger', // packages/logger
         'vc', // packages/vite-config
         'vscode', // .vscode
       ],
