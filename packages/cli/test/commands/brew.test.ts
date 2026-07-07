@@ -212,6 +212,29 @@ describe('brew', () => {
     }).pipe(Effect.provide(env.layer));
   });
 
+  it.effect('fails when .gitignore exists but cannot be read', () => {
+    const env = makeTestEnv({
+      files: {
+        '/project/package.json': '{}',
+        '/project/.gitignore': 'dist\n',
+      },
+      dirs: ['/project/.git'],
+      readErrors: { '/project/.gitignore': 'PermissionDenied' },
+      answers: {
+        'Which toppings would you like?': [],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      const error = yield* Effect.flip(brew('/project'));
+      expect(error._tag).toBe('SystemError');
+      expect(error._tag === 'SystemError' && error.reason).toBe('PermissionDenied');
+      // The unreadable .gitignore is left untouched.
+      expect(env.fs.files.get('/project/.gitignore')).toBe('dist\n');
+    }).pipe(Effect.provide(env.layer));
+  });
+
   it.effect('sets a local git identity when none is configured', () => {
     const env = makeTestEnv({
       files: { '/project/package.json': '{}' },
