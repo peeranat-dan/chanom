@@ -7,8 +7,8 @@ export default defineConfig({
   clean: true,
   // Emit .js / .d.ts (package is type:module) to match the package.json exports map.
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
-  // vite is a peer dep; visualizer is loaded lazily and optional. Never bundle either.
+  // vite and vitest are peer deps; visualizer is loaded lazily and optional. Never bundle any.
   deps: {
-    neverBundle: ['vite', 'rollup-plugin-visualizer'],
+    neverBundle: ['vite', 'vitest', 'rollup-plugin-visualizer'],
   },
 });
