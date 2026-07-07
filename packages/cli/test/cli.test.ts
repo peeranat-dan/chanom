@@ -48,6 +48,41 @@ describe('run', () => {
     }).pipe(Effect.provide(env.layer));
   });
 
+  it.effect('reports an unparseable package.json and exits with 1', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': 'not json' },
+      dirs: ['/project/.git'],
+    });
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.errors).toEqual([
+        'Could not parse /project/package.json. Is it valid JSON?',
+      ]);
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('reports a failed husky init and exits with 1', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': '{}' },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': [],
+        'How sweet would you like it?': 'medium',
+      },
+      commands: ({ cmd, args }) =>
+        // `pnpm exec husky init` fails; everything else (install, git) succeeds.
+        cmd === 'pnpm' && args[0] === 'exec'
+          ? { exitCode: 1, stdout: '', stderr: '' }
+          : { exitCode: 0, stdout: '', stderr: '' },
+    });
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.errors).toEqual(['`husky init` failed (exit code 1).']);
+    }).pipe(Effect.provide(env.layer));
+  });
+
   it.effect('reports a failed install and exits with 1', () => {
     const env = makeTestEnv({
       files: { '/project/package.json': '{}' },

@@ -54,4 +54,18 @@ describe('apply', () => {
       );
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
   });
+
+  it.effect('keeps existing scripts and warns about each skipped one', () => {
+    const fs = makeTestFs();
+    const prompter = makeTestPrompter();
+    return Effect.gen(function* () {
+      const pkg = { scripts: { format: 'prettier --write .', 'format:check': 'prettier -c .' } };
+      const updated = yield* apply('/project', true, pkg);
+      expect(updated.scripts).toEqual(pkg.scripts);
+      expect(prompter.log.warnings).toEqual([
+        '`format` script already exists in package.json - skipping',
+        '`format:check` script already exists in package.json - skipping',
+      ]);
+    }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
+  });
 });

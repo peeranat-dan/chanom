@@ -10,5 +10,19 @@ export default defineConfig({
   },
   test: {
     include: ['test/**/*.test.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      // index.ts only wires live layers to the process; env.d.ts and
+      // domain/versions.ts are type-only, with no runtime code to cover.
+      exclude: ['src/index.ts', 'src/env.d.ts', 'src/domain/versions.ts'],
+      reporter: ['text', 'html', 'lcov'],
+      thresholds: {
+        statements: 100,
+        branches: 100,
+        functions: 100,
+        lines: 100,
+      },
+    },
   },
 });
