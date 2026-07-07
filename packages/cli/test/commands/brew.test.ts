@@ -268,6 +268,29 @@ describe('brew', () => {
     }).pipe(Effect.provide(env.layer));
   });
 
+  it.effect('warns without detail when the failed commit produces no output', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': '{}' },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': ['knip'],
+        'How sweet would you like it?': 'light',
+      },
+      commands: ({ cmd, args }) => {
+        if (cmd === 'git' && args[0] === 'diff') return { exitCode: 1, stdout: '', stderr: '' };
+        if (cmd === 'git' && args[0] === 'commit') return { exitCode: 1, stdout: '', stderr: '' };
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+      expect(env.prompter.log.warnings).toContain(
+        'Your files are staged - commit them manually when ready.',
+      );
+    }).pipe(Effect.provide(env.layer));
+  });
+
   it.effect('fails with Cancelled when a prompt is aborted', () => {
     const env = makeTestEnv({
       files: { '/project/package.json': '{}' },

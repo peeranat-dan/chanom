@@ -50,6 +50,10 @@ describe('resolvePm', () => {
     ).toBe('pnpm');
   });
 
+  it('defaults to pnpm when no hint resolves', () => {
+    expect(resolvePm({ packageManagerField: undefined, userAgent: undefined })).toBe('pnpm');
+  });
+
   it('ignores an unparseable field and keeps resolving', () => {
     expect(resolvePm({ packageManagerField: 'deno@2.0.0', userAgent: 'yarn/4.5.0 node/v22' })).toBe(
       'yarn',

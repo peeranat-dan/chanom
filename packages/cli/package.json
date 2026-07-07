@@ -20,6 +20,7 @@
     "dev": "tsdown --watch",
     "prepublishOnly": "tsdown",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
   },
   "dependencies": {
@@ -36,6 +37,7 @@
     "@tsconfig/node-lts": "catalog:",
     "@tsconfig/node-ts": "catalog:",
     "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

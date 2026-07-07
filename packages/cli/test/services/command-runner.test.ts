@@ -26,4 +26,12 @@ describe('CommandRunner (live)', () => {
       expect(code).toBe(0);
     }).pipe(Effect.provide(live)),
   );
+
+  it.effect('forwards stdio and returns the exit code for execInherit', () =>
+    Effect.gen(function* () {
+      const runner = yield* CommandRunner;
+      const code = yield* runner.execInherit('node', ['-e', 'process.exitCode = 5'], process.cwd());
+      expect(code).toBe(5);
+    }).pipe(Effect.provide(live)),
+  );
 });

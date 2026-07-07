@@ -41,4 +41,17 @@ describe('apply', () => {
       expect(prompter.log.warnings).toContain('`knip.json` already exists - skipping knip config');
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
   });
+
+  it.effect('keeps an existing knip script and warns about it', () => {
+    const fs = makeTestFs();
+    const prompter = makeTestPrompter();
+    return Effect.gen(function* () {
+      const pkg = { scripts: { knip: 'knip --production' } };
+      const updated = yield* apply('/project', true, pkg);
+      expect(updated.scripts).toEqual(pkg.scripts);
+      expect(prompter.log.warnings).toEqual([
+        '`knip` script already exists in package.json - skipping',
+      ]);
+    }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
+  });
 });
