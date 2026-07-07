@@ -1,0 +1,7 @@
+{
+  "extends": ["@tsconfig/node-lts/tsconfig.json"],
+  "compilerOptions": {
+    // Browser-facing package: window/document/dataLayer are part of the API surface.
+    "lib": ["ES2023", "DOM"]
+  }
+}
