@@ -1,2 +1,1 @@
-When implement, invoke /chanom-dev skill
-When writing TypeScript, Effect, or tests, invoke /coding-standards skill
+When implementing or committing, invoke /coding-standards skill
