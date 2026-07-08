@@ -1,1 +1,1 @@
-When implement, invoke /chanom-dev skill
+When implementing or committing, invoke /coding-standards skill
