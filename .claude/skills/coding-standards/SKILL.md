@@ -11,14 +11,18 @@ already exists — these are extracted from the real codebase, not generic advic
 
 ## Which reference to load
 
-| You are writing…                                           | Load                       |
-| ---------------------------------------------------------- | -------------------------- |
-| An `Effect.Service`, command, domain/util, error, or layer | `references/effect-ts.md`  |
-| Any `.ts` file (types, imports, naming, module shape)      | `references/typescript.md` |
-| A test under `test/` (unit, service, effect, stub layers)  | `references/vitest.md`     |
+| You are writing…                                           | Load                              |
+| ---------------------------------------------------------- | --------------------------------- |
+| Any `.ts` file — general TypeScript style                  | `references/typescript.md`        |
+| TypeScript that uses Effect (imports, types, spans)        | `references/typescript-effect.md` |
+| An `Effect.Service`, command, domain/util, error, or layer | `references/effect-ts.md`         |
+| A test — general vitest style                              | `references/vitest.md`            |
+| A test for Effect code (`@effect/vitest`, layers, stubs)   | `references/vitest-effect.md`     |
 
-Most non-trivial changes touch more than one: a new command needs `effect-ts`
-+ `typescript` for the code and `vitest` for its test. Load all that apply.
+The `-effect` files are add-ons: read the general file first, then layer the
+Effect one on top. Most non-trivial changes touch several — a new command needs
+`typescript` + `typescript-effect` + `effect-ts` for the code and `vitest` +
+`vitest-effect` for its test. Load all that apply.
 
 ## Package structure
 

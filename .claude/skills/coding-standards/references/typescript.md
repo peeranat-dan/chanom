@@ -1,9 +1,11 @@
 # TypeScript conventions
 
 Strict, ESM-only TypeScript. Configs extend `@tsconfig/node-lts` +
-`@tsconfig/node-ts`, with the `@effect/language-service` plugin. oxlint runs
-with `correctness: 'error'` and the `typescript`, `unicorn`, and `oxc` plugins,
-so keep code lint-clean.
+`@tsconfig/node-ts`. oxlint runs with `correctness: 'error'` and the
+`typescript`, `unicorn`, and `oxc` plugins, so keep code lint-clean.
+
+Framework-neutral. For conventions that only apply to Effect code, read
+`typescript-effect.md` in addition to this file.
 
 ## Modules and imports
 
@@ -12,11 +14,9 @@ so keep code lint-clean.
 - Separate type-only imports with `import type`:
 
   ```ts
-  import type { PlatformError } from '@effect/platform/Error';
   import type { Config } from './config.ts';
 
-  import { FileSystem, Path } from '@effect/platform';
-  import { Effect, Option } from 'effect';
+  import { readConfig } from './config.ts';
   ```
 
 - Import grouping: type imports first, then value imports, blank-line
@@ -42,15 +42,14 @@ so keep code lint-clean.
   (`(result): result is T => …`) and reserve `as` for the rare spots the type
   system can't express (always with a comment explaining why).
 - Never use `any`. Reach for `unknown` + narrowing when a type is genuinely open.
-- Add `as const` to literal objects and to capability records returned from
-  services.
+- Add `as const` to literal objects whose exact types must be preserved.
 
 ## Naming and style
 
-- `camelCase` values/functions, `PascalCase` types/classes/service tags,
+- `camelCase` values/functions, `PascalCase` types/classes,
   `SCREAMING_SNAKE` only for true constants.
-- Directory and span names are kebab-case (`add-thing`, `'thing.doStep'`).
+- Directory names are kebab-case (`add-thing`).
 - Keep functions small and single-purpose; push branching decisions into pure
-  logic/domain helpers so orchestration reads as a straight sequence.
+  helpers so the top-level flow reads as a straight sequence.
 - Comments explain **why** (edge cases, casts, non-obvious ordering), not what
   the code already says.
