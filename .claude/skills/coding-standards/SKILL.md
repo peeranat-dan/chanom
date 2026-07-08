@@ -26,7 +26,8 @@ Match the existing layout of the package you touch:
 
 - **@chanom/cli** (`packages/cli`) — layered Effect architecture; see
   `references/effect-ts.md` for the `domain`/`services`/`commands`/`utils` split
-  and where side effects, pure logic, and tests belong.
+  and where side effects, pure logic, and tests belong. Service tags use the
+  `cli/` namespace (e.g. `cli/Git`); test stubs live in `test/support/`.
 - **@chanom/dev-config** (`packages/dev-config`) — one folder per tool
   `src/<tool>/` with `index.ts` (config factory) and `base-config.ts`. A new
   tool also needs `./<tool>/config` and `./<tool>/base` entries in package.json
