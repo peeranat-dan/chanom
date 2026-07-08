@@ -1,13 +1,13 @@
 ---
 name: coding-standards
-description: Coding standards and workflow for the chanom monorepo (Effect-TS architecture, TypeScript style, vitest testing, verify, commits). Use when adding or changing code in packages/cli, packages/dev-config, or packages/vite-config, when writing tests, or when committing work in this repo.
+description: Coding standards for the chanom monorepo. Use when writing code or tests in packages/*, or when committing work in this repo.
 ---
 
 # Coding standards
 
 pnpm + turbo monorepo. Workspace packages live in `packages/*` and `apps/*`.
 Read the relevant reference **before** writing code so new code matches what
-already exists — these are extracted from the real codebase, not generic advice.
+already exists.
 
 ## Which reference to load
 
@@ -62,5 +62,5 @@ Conventional commits, enforced by commitlint. Scope must be one of the enum in
 `commitlint.config.js`: `cli`, `dc` (dev-config), `vc` (vite-config), `vscode`.
 It should follow the pattern: `<type>(<scope>): <subject>`. Example:
 `feat(cli): add add-changesets command`. Use the scope of the package you
-touched, not the repo name — if you change `@chanom/cli`, use `cli` as the
-scope, not `chanom-dev`.
+touched, not the repo name. If you change `@chanom/cli`, use `cli` as the
+scope, not `vc` or `dc`.
