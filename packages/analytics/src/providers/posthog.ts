@@ -1,19 +1,21 @@
 import type { AnalyticsProperties, AnalyticsProvider, PageView } from '../types.ts';
 
+import { stripUndefined } from '../utils/strip-undefined.ts';
+
 /**
  * The subset of the `posthog-js` client this provider needs. Structurally
  * matches the real client, so the package itself needs no PostHog dependency —
  * the app installs `posthog-js`, initializes it, and hands the client over.
  */
 export interface PostHogClient {
-  capture: (eventName: string, properties?: AnalyticsProperties) => unknown;
-  identify: (distinctId: string, userProperties?: AnalyticsProperties) => unknown;
-  reset: () => unknown;
+  readonly capture: (eventName: string, properties?: AnalyticsProperties) => unknown;
+  readonly identify: (distinctId: string, userProperties?: AnalyticsProperties) => unknown;
+  readonly reset: () => unknown;
 }
 
 export interface PostHogOptions {
   /** An initialized `posthog-js` client (e.g. the result of `posthog.init(...)`). */
-  client: PostHogClient;
+  readonly client: PostHogClient;
 }
 
 /**
@@ -32,12 +34,15 @@ export function postHog(options: PostHogOptions): AnalyticsProvider {
       client.capture(eventName, properties);
     },
     trackPageView: (pageView?: PageView) => {
-      client.capture('$pageview', {
-        $current_url: pageView?.path,
-        title: pageView?.title,
-        $referrer: pageView?.referrer,
-        ...pageView?.properties,
-      });
+      client.capture(
+        '$pageview',
+        stripUndefined({
+          $current_url: pageView?.path,
+          title: pageView?.title,
+          $referrer: pageView?.referrer,
+          ...pageView?.properties,
+        }),
+      );
     },
     identify: (userId: string, traits?: AnalyticsProperties) => {
       client.identify(userId, traits);

@@ -113,4 +113,25 @@ describe('createAnalytics', () => {
     expect(provider.identify).not.toHaveBeenCalled();
     expect(provider.reset).not.toHaveBeenCalled();
   });
+
+  it('re-evaluates a function enabled flag on every call', async () => {
+    const provider = makeProvider('a');
+    let consent = false;
+    const analytics = createAnalytics({ providers: [provider], enabled: () => consent });
+
+    await analytics.initialize();
+    analytics.trackEvent('before-consent');
+    expect(provider.initialize).not.toHaveBeenCalled();
+    expect(provider.trackEvent).not.toHaveBeenCalled();
+
+    consent = true;
+    await analytics.initialize();
+    analytics.trackEvent('after-consent');
+    expect(provider.initialize).toHaveBeenCalledOnce();
+    expect(provider.trackEvent).toHaveBeenCalledExactlyOnceWith('after-consent', undefined);
+
+    consent = false;
+    analytics.trackEvent('after-revocation');
+    expect(provider.trackEvent).toHaveBeenCalledOnce();
+  });
 });

@@ -21,7 +21,8 @@ const defaultOnError = (error: unknown, context: ProviderErrorContext): void => 
  */
 export function createAnalytics(options: AnalyticsOptions): Analytics {
   const providers: readonly AnalyticsProvider[] = [...options.providers];
-  const enabled = options.enabled ?? true;
+  const { enabled = true } = options;
+  const isEnabled = typeof enabled === 'function' ? enabled : () => enabled;
   const onError = options.onError ?? defaultOnError;
 
   let initialized: Promise<void> | undefined;
@@ -30,7 +31,7 @@ export function createAnalytics(options: AnalyticsOptions): Analytics {
     method: ProviderErrorContext['method'],
     run: (provider: AnalyticsProvider) => void,
   ): void => {
-    if (!enabled) return;
+    if (!isEnabled()) return;
     for (const provider of providers) {
       try {
         run(provider);
@@ -57,7 +58,8 @@ export function createAnalytics(options: AnalyticsOptions): Analytics {
   return {
     providers,
     initialize: () => {
-      if (!enabled) return Promise.resolve();
+      // Not memoized while disabled, so initialization still runs once consent arrives.
+      if (!isEnabled()) return Promise.resolve();
       initialized ??= initializeAll();
       return initialized;
     },

@@ -1,25 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { googleTagManager } from '../../src/providers/google-tag-manager.ts';
-
-const stubBrowser = () => {
-  const appended: Array<{ src: string; async: boolean }> = [];
-  const fakeWindow: Record<string, unknown> = {};
-  vi.stubGlobal('window', fakeWindow);
-  vi.stubGlobal('document', {
-    createElement: () => ({ src: '', async: false }),
-    head: {
-      appendChild: (script: { src: string; async: boolean }) => {
-        appended.push(script);
-      },
-    },
-  });
-  return { fakeWindow, appended };
-};
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
+import { stubBrowser } from '../support/browser.ts';
 
 describe('googleTagManager', () => {
   it('pushes gtm.start and injects the script on initialize', () => {
@@ -43,17 +25,19 @@ describe('googleTagManager', () => {
     provider.identify?.('user-1', { plan: 'pro' });
     provider.reset?.();
 
-    expect(fakeWindow['dataLayer']).toEqual([
+    expect(fakeWindow['dataLayer']).toStrictEqual([
       { event: 'signup', plan: 'pro' },
-      {
-        event: 'page_view',
-        page_location: '/pricing',
-        page_title: 'Pricing',
-        page_referrer: undefined,
-      },
+      { event: 'page_view', page_location: '/pricing', page_title: 'Pricing' },
       { event: 'identify', user_id: 'user-1', user_traits: { plan: 'pro' } },
       { event: 'reset', user_id: undefined },
     ]);
+  });
+
+  it('omits undefined page view fields from the pushed message', () => {
+    const { fakeWindow } = stubBrowser();
+    googleTagManager({ containerId: 'GTM-TEST', loadScript: false }).trackPageView?.();
+
+    expect(fakeWindow['dataLayer']).toStrictEqual([{ event: 'page_view' }]);
   });
 
   it('supports a custom data layer name', () => {

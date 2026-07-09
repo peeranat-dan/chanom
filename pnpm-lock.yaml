@@ -336,6 +336,9 @@ importers:
       '@tsconfig/node-lts':
         specifier: 'catalog:'
         version: 24.0.0
+      '@tsconfig/node-ts':
+        specifier: 'catalog:'
+        version: 23.6.4
       oxfmt:
         specifier: 'catalog:'
         version: 0.56.0

@@ -7,7 +7,7 @@ Provider-agnostic web analytics facade. Create one analytics instance, plug in G
 - **One call site.** Product code tracks against a stable, vendor-neutral API instead of sprinkling `gtag(...)`, `dataLayer.push(...)`, and `posthog.capture(...)` everywhere.
 - **Swap or stack vendors freely.** Adding, removing, or A/B-running destinations is a one-line change where the instance is created.
 - **Fault isolation.** A throwing or blocked provider (ad-blockers love analytics scripts) is reported via `onError` and never breaks the other providers or your app.
-- **Consent-friendly.** The `enabled` flag turns the whole instance into a no-op, so wiring it to a cookie-consent banner is trivial.
+- **Consent-friendly.** Pass `enabled: () => hasConsent()` and the instance re-checks consent on every call - granting or revoking after creation takes effect immediately, no re-creation needed.
 - **SSR-safe.** Built-in providers no-op outside the browser.
 
 ## Usage
@@ -24,7 +24,7 @@ export const analytics = createAnalytics({
     googleTagManager({ containerId: 'GTM-XXXXXXX' }),
     postHog({ client: posthog }),
   ],
-  enabled: hasAnalyticsConsent(),
+  enabled: () => hasAnalyticsConsent(), // re-evaluated on every call; a plain boolean works too
 });
 
 await analytics.initialize();
@@ -52,6 +52,6 @@ const consoleProvider: AnalyticsProvider = {
 
 ## Notes on the built-in providers
 
-- **Google Analytics** (`googleAnalytics`): injects `gtag.js` on `initialize` (disable with `loadScript: false`) and configures GA4 with `send_page_view: false`, so page views flow through `trackPageView` like every other provider.
+- **Google Analytics** (`googleAnalytics`): injects `gtag.js` on `initialize` (disable with `loadScript: false`) and configures GA4 with `send_page_view: false`, so page views flow through `trackPageView` like every other provider. Events tracked before `initialize` queue on the data layer and flush once `gtag.js` loads. Script injection is independent of a custom `gtag`; combine `gtag` with `loadScript: false` when your setup already loads the script.
 - **Google Tag Manager** (`googleTagManager`): pushes structured messages onto the data layer (`{ event, ... }`); which tags fire is configured inside your GTM container. Supports a custom `dataLayerName`.
 - **Running GA and GTM together**: if your GTM container already has a GA4 tag, also adding `googleAnalytics` will double-count. Pick one route per destination.

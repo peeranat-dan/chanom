@@ -50,6 +50,7 @@
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
     "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "tsdown": "catalog:",

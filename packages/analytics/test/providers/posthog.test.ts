@@ -38,4 +38,11 @@ describe('postHog', () => {
       experiment: 'b',
     });
   });
+
+  it('omits undefined page view fields so the client falls back to its own values', () => {
+    const client = makeClient();
+    postHog({ client }).trackPageView?.();
+
+    expect(client.capture.mock.calls).toStrictEqual([['$pageview', {}]]);
+  });
 });

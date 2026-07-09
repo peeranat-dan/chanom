@@ -1,25 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { googleAnalytics } from '../../src/providers/google-analytics.ts';
-
-const stubBrowser = () => {
-  const appended: Array<{ src: string; async: boolean }> = [];
-  const fakeWindow: Record<string, unknown> = {};
-  vi.stubGlobal('window', fakeWindow);
-  vi.stubGlobal('document', {
-    createElement: () => ({ src: '', async: false }),
-    head: {
-      appendChild: (script: { src: string; async: boolean }) => {
-        appended.push(script);
-      },
-    },
-  });
-  return { fakeWindow, appended };
-};
-
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
+import { stubBrowser } from '../support/browser.ts';
 
 describe('googleAnalytics', () => {
   it('maps calls to gtag commands', () => {
@@ -47,6 +29,19 @@ describe('googleAnalytics', () => {
     ]);
   });
 
+  it('omits undefined page view fields so GA falls back to its own values', () => {
+    const gtag = vi.fn();
+    const provider = googleAnalytics({ measurementId: 'G-TEST', gtag });
+
+    provider.trackPageView?.();
+    provider.trackPageView?.({ title: 'Pricing' });
+
+    expect(gtag.mock.calls).toStrictEqual([
+      ['event', 'page_view', {}],
+      ['event', 'page_view', { page_title: 'Pricing' }],
+    ]);
+  });
+
   it('bootstraps dataLayer, gtag, and the script tag on initialize', () => {
     const { fakeWindow, appended } = stubBrowser();
     const provider = googleAnalytics({ measurementId: 'G-TEST' });
@@ -65,6 +60,22 @@ describe('googleAnalytics', () => {
 
     provider.trackEvent('click');
     expect(Array.from(dataLayer[2]!)).toEqual(['event', 'click', {}]);
+  });
+
+  it('queues events tracked before initialize instead of dropping them', () => {
+    const { fakeWindow } = stubBrowser();
+    const provider = googleAnalytics({ measurementId: 'G-TEST' });
+
+    provider.trackEvent('early-click', { plan: 'pro' });
+
+    const dataLayer = fakeWindow['dataLayer'] as ArrayLike<unknown>[];
+    expect(Array.from(dataLayer[0]!)).toEqual(['event', 'early-click', { plan: 'pro' }]);
+  });
+
+  it('injects the script even when a custom gtag is supplied', () => {
+    const { appended } = stubBrowser();
+    googleAnalytics({ measurementId: 'G-TEST', gtag: vi.fn() }).initialize?.();
+    expect(appended).toHaveLength(1);
   });
 
   it('skips script injection when loadScript is false', () => {

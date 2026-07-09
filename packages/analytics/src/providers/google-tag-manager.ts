@@ -1,15 +1,17 @@
 import type { AnalyticsProperties, AnalyticsProvider, PageView } from '../types.ts';
 
+import { stripUndefined } from '../utils/strip-undefined.ts';
+
 export interface GoogleTagManagerOptions {
   /** GTM container ID, e.g. `GTM-XXXXXXX`. */
-  containerId: string;
+  readonly containerId: string;
   /**
    * Inject the `gtm.js` script tag during `initialize`. Set to `false` when
    * GTM is already embedded in the page HTML. Defaults to `true`.
    */
-  loadScript?: boolean;
+  readonly loadScript?: boolean;
   /** Name of the global data layer array. Defaults to `dataLayer`. */
-  dataLayerName?: string;
+  readonly dataLayerName?: string;
 }
 
 type DataLayerWindow = Window & Record<string, unknown[] | undefined>;
@@ -28,7 +30,7 @@ export function googleTagManager(options: GoogleTagManagerOptions): AnalyticsPro
 
   const resolveDataLayer = (): unknown[] | undefined => {
     if (typeof window === 'undefined') return undefined;
-    const w = window as DataLayerWindow;
+    const w = window as unknown as DataLayerWindow;
     w[dataLayerName] ??= [];
     return w[dataLayerName];
   };
@@ -52,13 +54,15 @@ export function googleTagManager(options: GoogleTagManagerOptions): AnalyticsPro
       resolveDataLayer()?.push({ event: eventName, ...properties });
     },
     trackPageView: (pageView?: PageView) => {
-      resolveDataLayer()?.push({
-        event: 'page_view',
-        page_location: pageView?.path,
-        page_title: pageView?.title,
-        page_referrer: pageView?.referrer,
-        ...pageView?.properties,
-      });
+      resolveDataLayer()?.push(
+        stripUndefined({
+          event: 'page_view',
+          page_location: pageView?.path,
+          page_title: pageView?.title,
+          page_referrer: pageView?.referrer,
+          ...pageView?.properties,
+        }),
+      );
     },
     identify: (userId: string, traits?: AnalyticsProperties) => {
       resolveDataLayer()?.push({ event: 'identify', user_id: userId, user_traits: traits });

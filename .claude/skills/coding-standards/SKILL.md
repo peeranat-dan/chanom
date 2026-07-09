@@ -59,8 +59,7 @@ Done only when all three exit clean. On failure, fix and rerun until they do.
 ## Committing
 
 Conventional commits, enforced by commitlint. Scope must be one of the enum in
-`commitlint.config.js`: `cli`, `dc` (dev-config), `vc` (vite-config), `vscode`.
-It should follow the pattern: `<type>(<scope>): <subject>`. Example:
+`commitlint.config.js`. It should follow the pattern: `<type>(<scope>): <subject>`. Example:
 `feat(cli): add add-changesets command`. Use the scope of the package you
 touched, not the repo name. If you change `@chanom/cli`, use `cli` as the
 scope, not `vc` or `dc`.

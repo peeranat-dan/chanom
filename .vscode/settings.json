@@ -17,7 +17,8 @@
     "lintstagedrc",
     "oxfmt",
     "oxlint",
-    "oxlintrc"
+    "oxlintrc",
+    "vite"
   ],
   "[markdown]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
