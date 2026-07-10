@@ -8,7 +8,7 @@ import type {
 } from './types.ts';
 
 const defaultOnError = (error: unknown, context: ProviderErrorContext): void => {
-  // Default failure sink: analytics must never crash the host app, but silence would hide misconfiguration.
+  // Log instead of rethrowing so a failing provider never crashes the host app.
   // oxlint-disable-next-line no-console
   console.error(`[analytics] provider "${context.provider}" failed in ${context.method}:`, error);
 };
@@ -42,8 +42,7 @@ export function createAnalytics(options: AnalyticsOptions): Analytics {
   };
 
   const initializeAll = async (): Promise<void> => {
-    // Initialize concurrently; each provider's failure is caught individually
-    // so one bad provider cannot reject the whole initialization.
+    // Failures are caught per provider so one rejection cannot fail the rest.
     await Promise.all(
       providers.map(async (provider) => {
         try {

@@ -20,10 +20,9 @@ export interface GoogleAnalyticsOptions {
    */
   readonly loadScript?: boolean;
   /**
-   * Custom `gtag` function, mainly for tests or pre-existing setups. Defaults
-   * to `window.gtag` (created on first use if missing). Script injection is
-   * controlled solely by `loadScript`, so a custom `gtag` that only queues
-   * still gets `gtag.js` loaded unless `loadScript` is `false`.
+   * Custom `gtag` function, e.g. for tests. Defaults to `window.gtag`,
+   * created on first use if missing. Combine with `loadScript: false` when
+   * your setup already loads `gtag.js`.
    */
   readonly gtag?: Gtag;
 }
@@ -32,10 +31,9 @@ const resolveGtag = (options: GoogleAnalyticsOptions): Gtag | undefined => {
   if (options.gtag !== undefined) return options.gtag;
   if (typeof window === 'undefined') return undefined;
   const w = window as GtagWindow;
-  // Bootstrap lazily so events tracked before `initialize` queue on the data
-  // layer instead of being dropped.
+  // Bootstrap the queue so events tracked before `initialize` are not dropped.
   w.dataLayer ??= [];
-  // gtag must forward `arguments` (not a rest array) — GA's snippet relies on it.
+  // GA's snippet requires `gtag` to forward `arguments`, not a rest array.
   w.gtag ??= function gtag() {
     w.dataLayer?.push(arguments);
   };
@@ -43,10 +41,8 @@ const resolveGtag = (options: GoogleAnalyticsOptions): Gtag | undefined => {
 };
 
 /**
- * Google Analytics 4 provider. Sends events through the `gtag` command queue.
- *
- * Automatic page views are disabled (`send_page_view: false`) so page views
- * flow through `Analytics.trackPageView` like every other provider.
+ * Google Analytics 4 provider, driven through the `gtag` command queue.
+ * Automatic page views are disabled; send them via `Analytics.trackPageView`.
  */
 export function googleAnalytics(options: GoogleAnalyticsOptions): AnalyticsProvider {
   const { measurementId, loadScript = true } = options;

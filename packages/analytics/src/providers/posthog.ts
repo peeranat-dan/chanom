@@ -3,9 +3,8 @@ import type { AnalyticsProperties, AnalyticsProvider, PageView } from '../types.
 import { stripUndefined } from '../utils/strip-undefined.ts';
 
 /**
- * The subset of the `posthog-js` client this provider needs. Structurally
- * matches the real client, so the package itself needs no PostHog dependency —
- * the app installs `posthog-js`, initializes it, and hands the client over.
+ * Minimal subset of the `posthog-js` client used by this provider. Any
+ * initialized `posthog-js` instance satisfies it.
  */
 export interface PostHogClient {
   readonly capture: (eventName: string, properties?: AnalyticsProperties) => unknown;
@@ -19,11 +18,8 @@ export interface PostHogOptions {
 }
 
 /**
- * PostHog provider. Wraps an app-supplied `posthog-js` client, so PostHog
- * stays out of this package's dependency tree and the app keeps full control
- * over `posthog.init` options (autocapture, persistence, proxying, ...).
- *
- * Page views are sent as PostHog's canonical `$pageview` event.
+ * PostHog provider. Pass your own initialized `posthog-js` client; page views
+ * are captured as PostHog's canonical `$pageview` event.
  */
 export function postHog(options: PostHogOptions): AnalyticsProvider {
   const { client } = options;

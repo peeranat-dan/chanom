@@ -17,13 +17,9 @@ export interface GoogleTagManagerOptions {
 type DataLayerWindow = Window & Record<string, unknown[] | undefined>;
 
 /**
- * Google Tag Manager provider. Pushes structured messages onto the data
- * layer; which tags actually fire is configured inside the GTM container.
- *
- * Message shapes: events push `{ event: <name>, ...properties }`, page views
- * push `{ event: 'page_view', ... }`, identify pushes
- * `{ event: 'identify', user_id, user_traits }`, and reset pushes
- * `{ event: 'reset', user_id: undefined }`.
+ * Google Tag Manager provider. Pushes `{ event: <name>, ...properties }`
+ * messages onto the data layer (plus `page_view`, `identify`, and `reset`
+ * events); which tags fire is configured inside the GTM container.
  */
 export function googleTagManager(options: GoogleTagManagerOptions): AnalyticsProvider {
   const { containerId, loadScript = true, dataLayerName = 'dataLayer' } = options;
