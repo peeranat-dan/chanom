@@ -9,6 +9,7 @@ export default {
         'cli', // packages/cli
         'dc', // packages/dev-config
         'logger', // packages/logger
+        'tsc', // packages/tsconfig
         'vc', // packages/vite-config
         'vscode', // .vscode
       ],

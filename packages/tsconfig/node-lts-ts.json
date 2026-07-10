@@ -1,0 +1,6 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "display": "@chanom node-lts-ts",
+  "docs": "For packages that are both run as TypeScript and compiled for release. Node LTS lib/target and erasable-syntax constraints plus the shared base options.",
+  "extends": ["@tsconfig/node-lts/tsconfig.json", "@tsconfig/node-ts/tsconfig.json", "./base.json"]
+}
