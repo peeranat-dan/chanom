@@ -56,6 +56,8 @@ pnpm lint
 
 Done only when all three exit clean. On failure, fix and rerun until they do.
 
+If the code changes only comments or docs, you can skip the build, lint, and test steps.
+
 ## Committing
 
 Conventional commits, enforced by commitlint. Scope must be one of the enum in
