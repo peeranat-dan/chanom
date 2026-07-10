@@ -1,0 +1,11 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "display": "@chanom base",
+  "docs": "Org-wide compiler options shared by every chanom preset. Layer a runtime preset (node-lts / node-ts / node-lts-ts) on top of this.",
+  "compilerOptions": {
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true
+  }
+}

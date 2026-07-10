@@ -1,0 +1,34 @@
+{
+  "name": "@chanom/tsconfig",
+  "version": "0.0.0",
+  "description": "Shared TypeScript configuration presets for chanom packages.",
+  "keywords": [
+    "config",
+    "tsconfig",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peeranat-dan/chanom.git",
+    "directory": "packages/tsconfig"
+  },
+  "files": [
+    "base.json",
+    "node-lts.json",
+    "node-ts.json",
+    "node-lts-ts.json"
+  ],
+  "exports": {
+    "./base.json": "./base.json",
+    "./node-lts.json": "./node-lts.json",
+    "./node-ts.json": "./node-ts.json",
+    "./node-lts-ts.json": "./node-lts-ts.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:"
+  }
+}
