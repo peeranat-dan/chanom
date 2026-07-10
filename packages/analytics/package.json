@@ -1,6 +1,6 @@
 {
   "name": "@chanom/analytics",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Provider-agnostic web analytics facade: one instance fanning out to Google Analytics, Google Tag Manager, PostHog, or your own provider.",
   "keywords": [
     "analytics",
