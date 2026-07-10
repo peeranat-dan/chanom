@@ -1,3 +1,1 @@
-import oxlintConfig from '@chanom/dev-config/oxlint/config';
-
-export default oxlintConfig;
+export { default } from '@chanom/dev-config/oxlint/config';

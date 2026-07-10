@@ -1,148 +1,143 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { LOG_LEVELS, type LogLevel, createLogger, logger } from '../src/index.js';
-
-let spies: Record<LogLevel, ReturnType<typeof vi.spyOn>>;
-
-beforeEach(() => {
-  spies = {
-    debug: vi.spyOn(console, 'debug').mockImplementation(() => {}),
-    info: vi.spyOn(console, 'info').mockImplementation(() => {}),
-    warn: vi.spyOn(console, 'warn').mockImplementation(() => {}),
-    error: vi.spyOn(console, 'error').mockImplementation(() => {}),
-  };
-});
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
+import { LOG_LEVELS, createLogger } from '../src/index.ts';
+import { recordingProvider, throwingProvider } from './support/providers.ts';
 
 describe('level filtering', () => {
   it('emits every level by default', () => {
-    const log = createLogger({ environment: 'development' });
-    for (const level of LOG_LEVELS) {
-      log[level]('message');
-      expect(spies[level]).toHaveBeenCalledWith('message');
-    }
+    const { provider, records } = recordingProvider();
+    const log = createLogger({ providers: [provider] });
+    for (const level of LOG_LEVELS) log[level]('message');
+    expect(records.map((record) => record.level)).toEqual([...LOG_LEVELS]);
   });
 
   it('suppresses records below the configured level', () => {
-    const log = createLogger({ environment: 'development', level: 'warn' });
+    const { provider, records } = recordingProvider();
+    const log = createLogger({ providers: [provider], level: 'warn' });
     log.debug('a');
     log.info('b');
     log.warn('c');
     log.error('d');
-    expect(spies.debug).not.toHaveBeenCalled();
-    expect(spies.info).not.toHaveBeenCalled();
-    expect(spies.warn).toHaveBeenCalledWith('c');
-    expect(spies.error).toHaveBeenCalledWith('d');
-  });
-
-  it('suppresses everything when silent', () => {
-    const log = createLogger({ environment: 'development', level: 'silent' });
-    for (const level of LOG_LEVELS) log[level]('message');
-    for (const level of LOG_LEVELS) expect(spies[level]).not.toHaveBeenCalled();
+    expect(records).toEqual([
+      { level: 'warn', prefix: undefined, args: ['c'] },
+      { level: 'error', prefix: undefined, args: ['d'] },
+    ]);
   });
 
   it('changes the level at runtime via setLevel', () => {
-    const log = createLogger({ environment: 'development', level: 'error' });
+    const { provider, records } = recordingProvider();
+    const log = createLogger({ providers: [provider], level: 'error' });
     log.info('suppressed');
-    expect(spies.info).not.toHaveBeenCalled();
+    expect(records).toEqual([]);
 
     log.setLevel('debug');
     expect(log.level).toBe('debug');
     log.info('emitted');
-    expect(spies.info).toHaveBeenCalledWith('emitted');
+    expect(records).toEqual([{ level: 'info', prefix: undefined, args: ['emitted'] }]);
   });
 });
 
-describe('environment gating', () => {
-  it('is silent in environments outside the allowlist', () => {
-    const log = createLogger({ environment: 'production' });
+describe('enabled switch', () => {
+  it('emits nothing when disabled', () => {
+    const { provider, records } = recordingProvider();
+    const log = createLogger({ providers: [provider], enabled: false });
     for (const level of LOG_LEVELS) log[level]('message');
-    for (const level of LOG_LEVELS) expect(spies[level]).not.toHaveBeenCalled();
+    expect(records).toEqual([]);
   });
 
-  it('enables development and test by default', () => {
-    createLogger({ environment: 'development' }).info('dev');
-    createLogger({ environment: 'test' }).info('test');
-    expect(spies.info).toHaveBeenCalledTimes(2);
+  it('re-evaluates a function switch on every call', () => {
+    const { provider, records } = recordingProvider();
+    let allowed = false;
+    const log = createLogger({ providers: [provider], enabled: () => allowed });
+    log.info('suppressed');
+    expect(records).toEqual([]);
+
+    allowed = true;
+    log.info('emitted');
+    expect(records).toEqual([{ level: 'info', prefix: undefined, args: ['emitted'] }]);
+  });
+});
+
+describe('provider fan-out', () => {
+  it('hands each record to every provider in order', () => {
+    const a = recordingProvider('a');
+    const b = recordingProvider('b');
+    const log = createLogger({ providers: [a.provider, b.provider] });
+    log.info('hello', 42);
+    const expected = [{ level: 'info', prefix: undefined, args: ['hello', 42] }];
+    expect(a.records).toEqual(expected);
+    expect(b.records).toEqual(expected);
   });
 
-  it('respects a custom environment allowlist', () => {
-    const options = { environments: ['staging'] };
-    createLogger({ ...options, environment: 'staging' }).info('staging');
-    createLogger({ ...options, environment: 'development' }).info('dev');
-    expect(spies.info).toHaveBeenCalledTimes(1);
-    expect(spies.info).toHaveBeenCalledWith('staging');
+  it('defaults to the console provider', () => {
+    const spy = vi.spyOn(console, 'info').mockImplementation(() => {});
+    createLogger().info('to console');
+    expect(spy).toHaveBeenCalledWith('to console');
+    spy.mockRestore();
   });
 
-  it('emits everywhere with the "*" wildcard', () => {
-    const log = createLogger({ environments: '*', environment: 'production', level: 'error' });
-    log.error('boom');
-    expect(spies.error).toHaveBeenCalledWith('boom');
+  it('reports a throwing provider via onError and keeps the others running', () => {
+    const onError = vi.fn();
+    const { provider, records } = recordingProvider();
+    const log = createLogger({ providers: [throwingProvider(), provider], onError });
+    log.warn('careful');
+    expect(records).toHaveLength(1);
+    expect(onError).toHaveBeenCalledWith(expect.any(Error), { provider: 'boom' });
   });
 
-  it('detects the environment when none is given (vitest runs in "test")', () => {
-    const log = createLogger();
-    expect(log.environment).toBe('test');
-    log.info('detected');
-    expect(spies.info).toHaveBeenCalledWith('detected');
+  it('reports provider failures to console.error by default', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const log = createLogger({ providers: [throwingProvider()] });
+    log.info('message');
+    expect(spy).toHaveBeenCalledWith('[logger] provider "boom" failed:', expect.any(Error));
+    spy.mockRestore();
   });
 });
 
 describe('isEnabled', () => {
   it('reports per-level and overall enablement', () => {
-    const log = createLogger({ environment: 'development', level: 'warn' });
+    const log = createLogger({ providers: [], level: 'warn' });
     expect(log.isEnabled()).toBe(true);
     expect(log.isEnabled('debug')).toBe(false);
     expect(log.isEnabled('warn')).toBe(true);
     expect(log.isEnabled('error')).toBe(true);
   });
 
-  it('reports false for everything when the environment is gated off', () => {
-    const log = createLogger({ environment: 'production' });
+  it('reports false for everything when disabled', () => {
+    const log = createLogger({ providers: [], enabled: false });
     expect(log.isEnabled()).toBe(false);
     expect(log.isEnabled('error')).toBe(false);
-  });
-
-  it('reports false overall when silent', () => {
-    const log = createLogger({ environment: 'development', level: 'silent' });
-    expect(log.isEnabled()).toBe(false);
   });
 });
 
 describe('prefixes and child loggers', () => {
-  it('prints the prefix before the record', () => {
-    const log = createLogger({ environment: 'development', prefix: 'cart' });
+  it('passes the prefix to providers', () => {
+    const { provider, records } = recordingProvider();
+    const log = createLogger({ providers: [provider], prefix: 'cart' });
     log.info('added', 42);
-    expect(spies.info).toHaveBeenCalledWith('[cart]', 'added', 42);
+    expect(records).toEqual([{ level: 'info', prefix: 'cart', args: ['added', 42] }]);
   });
 
   it('joins child prefixes with ":"', () => {
-    const log = createLogger({ environment: 'development', prefix: 'cart' });
+    const { provider, records } = recordingProvider();
+    const log = createLogger({ providers: [provider], prefix: 'cart' });
     log.child('checkout').info('paid');
-    expect(spies.info).toHaveBeenCalledWith('[cart:checkout]', 'paid');
+    expect(records).toEqual([{ level: 'info', prefix: 'cart:checkout', args: ['paid'] }]);
   });
 
-  it('inherits environment gating and current level, but overrides independently', () => {
-    const parent = createLogger({ environment: 'production', prefix: 'cart' });
-    parent.child('checkout').error('never emitted');
-    expect(spies.error).not.toHaveBeenCalled();
+  it('inherits providers, enabled switch, and current level, but overrides independently', () => {
+    const off = recordingProvider();
+    createLogger({ providers: [off.provider], enabled: false })
+      .child('checkout')
+      .error('never emitted');
+    expect(off.records).toEqual([]);
 
-    const dev = createLogger({ environment: 'development', level: 'error' });
-    const child = dev.child('sub', { level: 'debug' });
+    const { provider, records } = recordingProvider();
+    const parent = createLogger({ providers: [provider], level: 'error' });
+    const child = parent.child('sub', { level: 'debug' });
     child.debug('emitted');
-    expect(spies.debug).toHaveBeenCalledWith('[sub]', 'emitted');
-    dev.debug('still suppressed');
-    expect(spies.debug).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('default logger', () => {
-  it('is a ready-to-use instance', () => {
-    expect(logger.environment).toBe('test');
-    logger.warn('careful');
-    expect(spies.warn).toHaveBeenCalledWith('careful');
+    expect(records).toEqual([{ level: 'debug', prefix: 'sub', args: ['emitted'] }]);
+    parent.debug('still suppressed');
+    expect(records).toHaveLength(1);
   });
 });

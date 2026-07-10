@@ -1,5 +1,5 @@
 {
-  "extends": ["@tsconfig/node-lts/tsconfig.json"],
+  "extends": ["@tsconfig/node-lts/tsconfig.json", "@tsconfig/node-ts/tsconfig.json"],
   "compilerOptions": {
     // The logger runs in browsers; DOM provides the `console` types without
     // pulling in @types/node.

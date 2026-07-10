@@ -1,7 +1,7 @@
 {
   "name": "@chanom/logger",
   "version": "0.0.0",
-  "description": "Tiny, zero-dependency console logger for React apps with environment gating and log-level filtering.",
+  "description": "Tiny, zero-dependency, provider-agnostic logger for web apps: fan records out to the console or your own provider, gated by an enabled switch and log-level filtering.",
   "keywords": [
     "console",
     "logger",
@@ -49,6 +49,7 @@
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
     "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "tsdown": "catalog:",
