@@ -1,6 +1,6 @@
 {
   "name": "@chanom/logger",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Tiny, zero-dependency, provider-agnostic logger for web apps: fan records out to the console or your own provider, gated by an enabled switch and log-level filtering.",
   "keywords": [
     "console",
