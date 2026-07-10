@@ -379,18 +379,15 @@ importers:
       '@chanom/internal':
         specifier: workspace:*
         version: link:../internal
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.4
       '@effect/vitest':
         specifier: 'catalog:'
         version: 0.29.0(effect@3.21.4)(vitest@3.2.6(@types/node@26.0.1)(jiti@2.7.0)(jsdom@30.0.0)(lightningcss@1.32.0)(yaml@2.9.0))
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
