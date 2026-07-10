@@ -58,26 +58,26 @@ Errors are **tagged errors** (`Data.TaggedError`), e.g. `PkgNotFound`, `InstallF
 
 Plain data types and functions. No Effect, no I/O, trivially unit-testable.
 
-| File                 | What it decides                                                                                                      |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `pkg.ts`             | The `Pkg` shape (parsed package.json), ESM detection, "is this package installed / at the pinned version?"           |
-| `scripts.ts`         | `planScripts` - merge wanted scripts into existing ones without overwriting, reporting what was added vs skipped     |
-| `package-manager.ts` | Resolving the package manager from hints (`packageManager` field > user agent > fallback), how each PM runs a binary |
-| `setup.ts`           | Which file names count as an existing config for each tool (e.g. all the `oxlint.config.*` variants)                 |
-| `versions.ts`        | The `ToolVersions` shape - pinned versions the generated configs are known to work with                              |
+| File                 | What it decides                                                                                                                                                                                 |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pkg.ts`             | The `Pkg` shape (parsed package.json), ESM detection, "is this package installed / at the pinned version?"                                                                                      |
+| `scripts.ts`         | `planScripts` - merge wanted scripts into existing ones without overwriting, reporting what was added vs skipped                                                                                |
+| `package-manager.ts` | Resolving the package manager from hints (`packageManager` field > user agent > fallback), how each PM runs a binary, which flags a workspace-root install needs (pnpm `-w`, yarn classic `-W`) |
+| `setup.ts`           | Which file names count as an existing config for each tool (e.g. all the `oxlint.config.*` variants)                                                                                            |
+| `versions.ts`        | The `ToolVersions` shape - pinned versions the generated configs are known to work with                                                                                                         |
 
 ### `src/services/` - capabilities with side effects
 
 Each is an `Effect.Service` class with a `.Default` live layer. Commands never call `child_process`, `@clack/prompts`, or git directly - they go through these:
 
-| Service            | Responsibility                                                                                                                                        |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CommandRunner`    | Low-level process spawning. Three modes: `capture` (collect output), `exitCode`, `execInherit` (stream to the user's terminal)                        |
-| `Git`              | Git operations built on `CommandRunner` (init, stage, commit, identity checks) plus `.gitignore` writing                                              |
-| `PackageInstaller` | `pnpm/npm/yarn/bun add -D ...`, failing with `InstallFailed` on a non-zero exit                                                                       |
-| `Prompter`         | All terminal interaction (intro/outro, select, multiselect, spinners, warnings) wrapping `@clack/prompts`. Cancelling a prompt fails with `Cancelled` |
+| Service            | Responsibility                                                                                                                                                               |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CommandRunner`    | Low-level process spawning. Three modes: `capture` (collect output), `exitCode`, `execInherit` (stream to the user's terminal)                                               |
+| `Git`              | Git operations built on `CommandRunner` (init, stage, commit, identity checks) plus `.gitignore` writing                                                                     |
+| `PackageInstaller` | `pnpm/npm/yarn/bun add -D ...`, detecting workspace roots (`pnpm-workspace.yaml` / `workspaces` field) to add the root flag, failing with `InstallFailed` on a non-zero exit |
+| `Prompter`         | All terminal interaction (intro/outro, select, multiselect, spinners, warnings) wrapping `@clack/prompts`. Cancelling a prompt fails with `Cancelled`                        |
 
-`Git` and `PackageInstaller` depend on `CommandRunner`, so stubbing one `CommandRunner` in tests stubs everything that shells out.
+`Git` and `PackageInstaller` depend on `CommandRunner`, so stubbing one `CommandRunner` in tests stubs everything that shells out. `PackageInstaller` also reads the target directory (via `FileSystem`/`Path`) to detect a workspace root - `pnpm-workspace.yaml` or a `workspaces` field in `package.json` - and adds the flag that PM needs for a root install: `-w` for pnpm, `-W` for yarn classic, none for npm, bun, and yarn berry (detected by `.yarnrc.yml`).
 
 ### `src/utils/` - shared effectful helpers
 
@@ -128,6 +128,7 @@ graph LR
         NC[NodeContext.layer]
     end
     P & G & PI --> CR --> NC
+    G & PI --> NC
 ```
 
 ## What happens when you run `chanom brew`
