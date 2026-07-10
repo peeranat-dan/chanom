@@ -46,7 +46,7 @@ Based on your answers, `brew` will:
 
 - Initialize a git repo if one doesn't exist yet (with a `.gitignore`)
 - Detect your package manager (`pnpm`, `npm`, `yarn`, or `bun`) - the `packageManager` field in `package.json` wins over the invoking user agent, falling back to `pnpm`
-- Install the packages needed for your selected toppings as dev dependencies
+- Install the packages needed for your selected toppings as dev dependencies - when run at a workspace root (a `pnpm-workspace.yaml` or a `workspaces` field in `package.json`), the install gets the flag your package manager needs: `-w` for pnpm, `-W` for yarn classic, none for npm, bun, and yarn berry
 - Write config files and wire up `package.json` scripts
 - If `medium` sweetness is selected, run `husky init` and add `pre-commit` / `commit-msg` hooks
 - Stage and commit the changes it made
