@@ -1,5 +1,5 @@
 {
-  "extends": ["@tsconfig/node-lts/tsconfig.json", "@tsconfig/node-ts/tsconfig.json"],
+  "extends": "@chanom/tsconfig/node-lts-ts.json",
   "compilerOptions": {
     "types": ["node"],
     "plugins": [

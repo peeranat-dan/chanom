@@ -32,10 +32,9 @@
   },
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
+    "@chanom/tsconfig": "workspace:*",
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
-    "@tsconfig/node-lts": "catalog:",
-    "@tsconfig/node-ts": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "tsdown": "catalog:",
