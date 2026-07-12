@@ -1,5 +1,11 @@
 # @chanom/cli
 
+## 0.2.2
+
+### Patch Changes
+
+- 36d3c50: fix: add oxlint-tsgolint to support type aware linting
+
 ## 0.2.1
 
 ### Patch Changes
