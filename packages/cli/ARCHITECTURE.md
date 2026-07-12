@@ -144,6 +144,9 @@ sequenceDiagram
     Brew->>Svc: detectPm (package.json + user agent)
     Brew->>Svc: readPkg
     Brew->>User: prompts: toppings + sweetness
+    alt sweetness is medium, cwd not at the work-tree root
+        Brew->>User: fail with NotAtRepoRoot (hooks only install at the root)
+    end
     Brew->>Logic: planPackages(pkg, toppings, sweetness, bundledVersions)
     Brew->>Svc: PackageInstaller.installDev(missing packages)
     Brew->>Logic: per topping: configFile + getScriptPlan
@@ -151,6 +154,7 @@ sequenceDiagram
     Brew->>Svc: writePkg (only if scripts changed)
     alt sweetness is medium
         Brew->>Svc: husky init, .lintstagedrc.json + pre-commit, .commitlintrc.json + commit-msg
+        Note over Brew,Svc: without a linter/formatter topping, lint-staged is skipped and husky's seeded pre-commit removed
     end
     Brew->>Svc: git stage all + commit (staged-but-uncommitted fallback on failure)
 ```

@@ -13,6 +13,12 @@ export const apply = Effect.fn('add-lint-staged.apply')(function* (
   formatters: readonly Formatter[] = [],
   overwritePreCommit = false,
 ) {
+  // An empty config makes lint-staged fail every commit, so write nothing.
+  if (linters.length === 0 && formatters.length === 0) {
+    yield* Effect.logDebug('no linters or formatters selected - skipping lint-staged setup');
+    return;
+  }
+
   const fs = yield* FileSystem.FileSystem;
   const path = yield* Path.Path;
   const prompter = yield* Prompter;

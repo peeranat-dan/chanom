@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest';
-import { Effect, Layer } from 'effect';
+import { Effect, Layer, Option } from 'effect';
 
 import { Git } from '../../src/services/git.ts';
 import { type CommandHandler, makeTestRunner } from '../support/command-runner.ts';
@@ -59,12 +59,67 @@ describe('Git', () => {
     }).pipe(Effect.provide(layer));
   });
 
-  it.effect('isRepo checks for a .git directory', () => {
-    const { layer } = makeGitLayer(undefined, makeTestFs({}, ['/project/.git']));
+  it.effect('isRepo asks git whether cwd is inside a work tree', () => {
+    const { layer, runner } = makeGitLayer(({ cwd }) =>
+      cwd === '/project' || cwd === '/project/packages/app'
+        ? { exitCode: 0, stdout: 'true', stderr: '' }
+        : { exitCode: 128, stdout: '', stderr: 'fatal: not a git repository' },
+    );
     return Effect.gen(function* () {
       const git = yield* Git;
       expect(yield* git.isRepo('/project')).toBe(true);
+      // Subdirectories of a repo count as inside it - no nested `git init`.
+      expect(yield* git.isRepo('/project/packages/app')).toBe(true);
       expect(yield* git.isRepo('/elsewhere')).toBe(false);
+      expect(runner.calls[0]).toEqual({
+        cmd: 'git',
+        args: ['rev-parse', '--is-inside-work-tree'],
+        cwd: '/project',
+      });
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('prefix is the path relative to the work-tree root', () => {
+    const { layer, runner } = makeGitLayer(({ cwd }) => ({
+      exitCode: 0,
+      stdout: cwd === '/project' ? '' : 'packages/app/',
+      stderr: '',
+    }));
+    return Effect.gen(function* () {
+      const git = yield* Git;
+      expect(yield* git.prefix('/project')).toEqual(Option.some(''));
+      expect(yield* git.prefix('/project/packages/app')).toEqual(Option.some('packages/app/'));
+      expect(runner.calls[0]).toEqual({
+        cmd: 'git',
+        args: ['rev-parse', '--show-prefix'],
+        cwd: '/project',
+      });
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('prefix is None outside a repository', () => {
+    const { layer } = makeGitLayer(() => ({ exitCode: 128, stdout: '', stderr: 'fatal' }));
+    return Effect.gen(function* () {
+      const git = yield* Git;
+      expect(yield* git.prefix('/elsewhere')).toEqual(Option.none());
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('root is the absolute work-tree root, None outside a repository', () => {
+    const { layer, runner } = makeGitLayer(({ cwd }) =>
+      cwd.startsWith('/project')
+        ? { exitCode: 0, stdout: '/project', stderr: '' }
+        : { exitCode: 128, stdout: '', stderr: 'fatal' },
+    );
+    return Effect.gen(function* () {
+      const git = yield* Git;
+      expect(yield* git.root('/project/packages/app')).toEqual(Option.some('/project'));
+      expect(yield* git.root('/elsewhere')).toEqual(Option.none());
+      expect(runner.calls[0]).toEqual({
+        cmd: 'git',
+        args: ['rev-parse', '--show-toplevel'],
+        cwd: '/project/packages/app',
+      });
     }).pipe(Effect.provide(layer));
   });
 

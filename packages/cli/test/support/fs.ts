@@ -46,6 +46,10 @@ export const makeTestFs = (
       Effect.sync(() => {
         files.set(path, contents);
       }),
+    remove: (path) =>
+      Effect.sync(() => {
+        files.delete(path);
+      }),
   });
 
   return { layer: Layer.merge(fileSystem, Path.layer), files };

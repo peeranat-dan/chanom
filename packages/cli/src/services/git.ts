@@ -1,7 +1,7 @@
 import type { PlatformError } from '@effect/platform/Error';
 
 import { FileSystem, Path } from '@effect/platform';
-import { Effect } from 'effect';
+import { Effect, Option } from 'effect';
 
 import { CommandRunner } from './command-runner.ts';
 
@@ -40,7 +40,22 @@ export class Git extends Effect.Service<Git>()('cli/Git', {
         ),
       hasStagedChanges: (cwd: string) =>
         exitOk(['diff', '--cached', '--quiet'], cwd).pipe(Effect.map((clean) => !clean)),
-      isRepo: (cwd: string) => fs.exists(path.join(cwd, '.git')),
+      /**
+       * True when `cwd` is anywhere inside a git work tree — a `.git` folder
+       * check would miss subdirectories (e.g. workspace packages) and lead to
+       * nested `git init` calls.
+       */
+      isRepo: (cwd: string) => exitOk(['rev-parse', '--is-inside-work-tree'], cwd),
+      /** Path of `cwd` relative to the work-tree root: empty at the root, `None` outside a repository. */
+      prefix: (cwd: string) =>
+        run(['rev-parse', '--show-prefix'], cwd).pipe(
+          Effect.map((result) => (result.ok ? Option.some(result.stdout) : Option.none())),
+        ),
+      /** Absolute path of the work-tree root, or `None` outside a repository. */
+      root: (cwd: string) =>
+        run(['rev-parse', '--show-toplevel'], cwd).pipe(
+          Effect.map((result) => (result.ok ? Option.some(result.stdout) : Option.none())),
+        ),
       writeGitignore: (cwd: string, contents = 'node_modules\n') =>
         fs.writeFileString(path.join(cwd, '.gitignore'), contents),
       readGitignore: (cwd: string) => fs.readFileString(path.join(cwd, '.gitignore')),

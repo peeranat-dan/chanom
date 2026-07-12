@@ -65,6 +65,10 @@ export const run = (
       PkgInvalid: (e) => reportError(`Could not parse ${e.pkgPath}. Is it valid JSON?`),
       InstallFailed: (e) => reportError(`Package installation with ${e.pm} failed.`),
       HuskyInitFailed: (e) => reportError(`\`husky init\` failed (exit code ${e.exitCode}).`),
+      NotAtRepoRoot: (e) =>
+        reportError(
+          `Git hooks must be set up at the repository root: ${e.root}\nRun \`chanom brew\` there, or choose light sweetness.`,
+        ),
     }),
     Effect.catchAll((e) => reportError(`Unexpected error: ${e.message}`)),
     Logger.withMinimumLogLevel(debug ? LogLevel.Debug : LogLevel.Info),

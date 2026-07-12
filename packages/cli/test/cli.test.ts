@@ -83,6 +83,32 @@ describe('run', () => {
     }).pipe(Effect.provide(env.layer));
   });
 
+  it.effect('reports brewing medium sweetness outside the repo root and exits with 1', () => {
+    const env = makeTestEnv({
+      files: { '/repo/packages/app/package.json': '{}' },
+      answers: {
+        'Which toppings would you like?': [],
+        'How sweet would you like it?': 'medium',
+      },
+      commands: ({ cmd, args }) => {
+        if (cmd === 'git' && args[1] === '--show-prefix') {
+          return { exitCode: 0, stdout: 'packages/app/', stderr: '' };
+        }
+        if (cmd === 'git' && args[1] === '--show-toplevel') {
+          return { exitCode: 0, stdout: '/repo', stderr: '' };
+        }
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/repo/packages/app');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.errors).toEqual([
+        'Git hooks must be set up at the repository root: /repo\nRun `chanom brew` there, or choose light sweetness.',
+      ]);
+    }).pipe(Effect.provide(env.layer));
+  });
+
   it.effect('reports a failed install and exits with 1', () => {
     const env = makeTestEnv({
       files: { '/project/package.json': '{}' },
