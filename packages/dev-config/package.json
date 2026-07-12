@@ -78,8 +78,7 @@
     "prepublishOnly": "tsdown"
   },
   "devDependencies": {
-    "@tsconfig/node-lts": "catalog:",
-    "@tsconfig/node-ts": "catalog:",
+    "@chanom/tsconfig": "workspace:*",
     "knip": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",

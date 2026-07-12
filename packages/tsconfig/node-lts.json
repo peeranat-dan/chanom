@@ -1,0 +1,6 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "display": "@chanom node-lts",
+  "docs": "For packages compiled ahead of time (e.g. bundled with tsdown). Node LTS lib/target plus the shared base options.",
+  "extends": ["@tsconfig/node-lts/tsconfig.json", "./base.json"]
+}

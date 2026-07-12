@@ -1,0 +1,6 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "display": "@chanom node-ts",
+  "docs": "For packages executed as TypeScript directly (type stripping). Erasable-syntax constraints plus the shared base options.",
+  "extends": ["@tsconfig/node-ts/tsconfig.json", "./base.json"]
+}
