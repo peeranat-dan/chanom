@@ -10,10 +10,11 @@ export interface ConfigFile {
 
 export function getPackages(
   pkg: Pkg,
-  versions: Pick<ToolVersions, 'oxlint' | 'devConfig'>,
+  versions: Pick<ToolVersions, 'oxlint' | 'oxlintTsgolint' | 'devConfig'>,
 ): string[] {
   return [
     getMismatchedPackage(pkg, 'oxlint', versions.oxlint),
+    getMismatchedPackage(pkg, 'oxlint-tsgolint', versions.oxlintTsgolint),
     getMismatchedPackage(pkg, '@chanom/dev-config', versions.devConfig),
   ].filter((p): p is string => p !== undefined);
 }

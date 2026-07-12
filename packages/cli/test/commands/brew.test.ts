@@ -14,6 +14,7 @@ import { makeTestEnv } from '../support/env.ts';
 
 const versions = {
   oxlint: '1.0.0-test.oxlint',
+  oxlintTsgolint: '1.0.0-test.oxlint-tsgolint',
   oxfmt: '1.0.0-test.oxfmt',
   knip: '1.0.0-test.knip',
   devConfig: '1.0.0-test.dev-config',
@@ -23,6 +24,7 @@ describe('logic', () => {
   it('plans packages for toppings and deduplicates shared dependencies', () => {
     expect(planPackages({}, ['oxlint', 'oxfmt'], 'light', versions)).toEqual([
       'oxlint@1.0.0-test.oxlint',
+      'oxlint-tsgolint@1.0.0-test.oxlint-tsgolint',
       '@chanom/dev-config@1.0.0-test.dev-config',
       'oxfmt@1.0.0-test.oxfmt',
     ]);
@@ -53,6 +55,7 @@ describe('logic', () => {
     const pkg = {
       devDependencies: {
         oxlint: '1.0.0-test.oxlint',
+        'oxlint-tsgolint': '1.0.0-test.oxlint-tsgolint',
         '@chanom/dev-config': '1.0.0-test.dev-config',
       },
     };
@@ -121,6 +124,7 @@ describe('brew', () => {
           'add',
           '-D',
           'oxlint@1.0.0-test.oxlint',
+          'oxlint-tsgolint@1.0.0-test.oxlint-tsgolint',
           '@chanom/dev-config@1.0.0-test.dev-config',
           'oxfmt@1.0.0-test.oxfmt',
           'husky',

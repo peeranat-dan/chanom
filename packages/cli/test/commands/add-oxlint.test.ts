@@ -6,14 +6,24 @@ import { configFile, getPackages, getScriptPlan } from '../../src/commands/add-o
 import { makeTestFs } from '../support/fs.ts';
 import { makeTestPrompter } from '../support/prompter.ts';
 
-const versions = { oxlint: '2.0.0', devConfig: '0.0.3' };
+const versions = { oxlint: '2.0.0', devConfig: '0.0.3', oxlintTsgolint: '0.24.0' };
 
 describe('logic', () => {
   it('requests packages that are missing or mismatched', () => {
-    expect(getPackages({}, versions)).toEqual(['oxlint@2.0.0', '@chanom/dev-config@0.0.3']);
+    expect(getPackages({}, versions)).toEqual([
+      'oxlint@2.0.0',
+      'oxlint-tsgolint@0.24.0',
+      '@chanom/dev-config@0.0.3',
+    ]);
     expect(
       getPackages(
-        { devDependencies: { oxlint: '2.0.0', '@chanom/dev-config': '0.0.3' } },
+        {
+          devDependencies: {
+            oxlint: '2.0.0',
+            'oxlint-tsgolint': '0.24.0',
+            '@chanom/dev-config': '0.0.3',
+          },
+        },
         versions,
       ),
     ).toEqual([]);
