@@ -1,11 +1,13 @@
 {
   "name": "@chanom/vite-config",
   "version": "0.0.1",
-  "description": "Opinionated, optimized Vite config factory for libraries and React apps.",
+  "description": "Opinionated, optimized Vite and Vitest config factories for libraries and React apps.",
   "keywords": [
     "config",
     "vite",
-    "vite-config"
+    "vite-config",
+    "vitest",
+    "vitest-config"
   ],
   "repository": {
     "type": "git",
@@ -23,6 +25,11 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./vitest": {
+      "development": "./src/vitest.ts",
+      "types": "./dist/vitest.d.ts",
+      "default": "./dist/vitest.js"
     }
   },
   "publishConfig": {
@@ -30,6 +37,10 @@
       ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
+      },
+      "./vitest": {
+        "types": "./dist/vitest.d.ts",
+        "default": "./dist/vitest.js"
       }
     },
     "access": "public"
@@ -51,14 +62,19 @@
     "oxlint": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "rollup-plugin-visualizer": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependenciesMeta": {
     "rollup-plugin-visualizer": {
+      "optional": true
+    },
+    "vitest": {
       "optional": true
     }
   }
