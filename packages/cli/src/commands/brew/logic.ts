@@ -31,14 +31,20 @@ export function planPackages(
     packages.push(...addKnip.getPackages(pkg, versions));
   }
   if (sweetness === 'medium') {
-    packages.push(
-      ...addHusky.getPackages(pkg),
-      ...addLintStaged.getPackages(pkg),
-      ...addCommitlint.getPackages(pkg),
-    );
+    packages.push(...addHusky.getPackages(pkg));
+    // lint-staged has nothing to run without a linter or formatter topping.
+    if (wantsLintStaged(toppings)) {
+      packages.push(...addLintStaged.getPackages(pkg));
+    }
+    packages.push(...addCommitlint.getPackages(pkg));
   }
 
   return [...new Set(packages)];
+}
+
+/** True when at least one topping gives lint-staged something to run. */
+export function wantsLintStaged(toppings: readonly Topping[]): boolean {
+  return selectedLinters(toppings).length > 0 || selectedFormatters(toppings).length > 0;
 }
 
 /** True when the .gitignore content already has the entry as its own line. */

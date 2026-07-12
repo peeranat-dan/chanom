@@ -53,6 +53,11 @@ Based on your answers, `brew` will:
 
 Cancelling a prompt (Ctrl+C) exits cleanly without touching anything further.
 
+`medium` sweetness must be brewed at the git repository root - husky can only
+install hooks from the directory that holds `.git`. Run inside a subdirectory
+(e.g. a workspace package), `brew` stops with an error naming the root before
+installing anything. `light` sweetness works anywhere in the repo.
+
 ## What gets added
 
 | Topping  | Config file          | Scripts added            |
@@ -70,6 +75,10 @@ Config files re-export presets from [`@chanom/dev-config`](../dev-config).
 - `husky` - installed via `husky init`
 - `lint-staged` - `.lintstagedrc.json` running the selected linter/formatter on staged files, wired into the `pre-commit` hook
 - `commitlint` - `.commitlintrc.json` extending `@commitlint/config-conventional`, enforced in the `commit-msg` hook
+
+When neither `oxlint` nor `oxfmt` is selected, lint-staged is skipped entirely
+(an empty config would fail every commit) and the `npm test` pre-commit hook
+seeded by `husky init` is removed - only the `commit-msg` gate remains.
 
 ## Version pinning
 

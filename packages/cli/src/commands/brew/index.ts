@@ -1,5 +1,5 @@
 import { FileSystem, Path } from '@effect/platform';
-import { Effect } from 'effect';
+import { Data, Effect, Option } from 'effect';
 import pc from 'picocolors';
 
 import type { PackageManager } from '../../domain/package-manager.ts';
@@ -25,7 +25,13 @@ import {
   selectedLinters,
   type Sweetness,
   type Topping,
+  wantsLintStaged,
 } from './logic.ts';
+
+export class NotAtRepoRoot extends Data.TaggedError('NotAtRepoRoot')<{
+  readonly cwd: string;
+  readonly root: string;
+}> {}
 
 const ensureGitRepo = Effect.fn('brew.ensureGitRepo')(function* (cwd: string) {
   const git = yield* Git;
@@ -147,6 +153,25 @@ const persistScripts = Effect.fn('brew.persistScripts')(function* (
   }
 });
 
+/**
+ * Fails when medium sweetness is chosen away from the git work-tree root:
+ * husky can only install hooks from the directory that holds `.git`, so
+ * running it in e.g. a workspace package would leave hooks that never fire.
+ */
+const ensureRepoRootForHooks = Effect.fn('brew.ensureRepoRootForHooks')(function* (
+  cwd: string,
+  sweetness: Sweetness,
+) {
+  if (sweetness !== 'medium') return;
+
+  const git = yield* Git;
+  const prefix = yield* git.prefix(cwd);
+  if (Option.isNone(prefix) || prefix.value === '') return;
+
+  const root = yield* git.root(cwd);
+  return yield* new NotAtRepoRoot({ cwd, root: Option.getOrElse(root, () => cwd) });
+});
+
 const setupCommitGate = Effect.fn('brew.setupCommitGate')(function* (
   cwd: string,
   pm: PackageManager,
@@ -157,14 +182,28 @@ const setupCommitGate = Effect.fn('brew.setupCommitGate')(function* (
 
   const fs = yield* FileSystem.FileSystem;
   const path = yield* Path.Path;
+  const prompter = yield* Prompter;
+
   const huskyExisted = yield* fs.exists(path.join(cwd, '.husky'));
   yield* addHusky.apply(cwd, pm);
-  yield* addLintStaged.apply(
-    cwd,
-    selectedLinters(toppings),
-    selectedFormatters(toppings),
-    !huskyExisted,
-  );
+
+  if (wantsLintStaged(toppings)) {
+    yield* addLintStaged.apply(
+      cwd,
+      selectedLinters(toppings),
+      selectedFormatters(toppings),
+      !huskyExisted,
+    );
+  } else {
+    yield* prompter.warn('No linters or formatters selected - skipping lint-staged');
+    // `husky init` seeds `.husky/pre-commit` with `npm test`, which would fail
+    // every commit in projects without a test script.
+    const seededHook = path.join(cwd, '.husky', 'pre-commit');
+    if (!huskyExisted && (yield* fs.exists(seededHook))) {
+      yield* fs.remove(seededHook);
+    }
+  }
+
   yield* addCommitlint.apply(cwd, pm);
 });
 
@@ -214,6 +253,7 @@ export const brew = (cwd: string = process.cwd()) =>
     yield* Effect.logDebug(
       `recipe: toppings=[${toppings.join(', ')}] sweetness=${sweetness} esm=${isEsm(pkg)}`,
     );
+    yield* ensureRepoRootForHooks(cwd, sweetness);
 
     const packages = planPackages(pkg, toppings, sweetness, bundledVersions);
     yield* Effect.logDebug(

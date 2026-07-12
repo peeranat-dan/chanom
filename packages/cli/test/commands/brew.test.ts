@@ -8,6 +8,7 @@ import {
   planPackages,
   selectedFormatters,
   selectedLinters,
+  wantsLintStaged,
 } from '../../src/commands/brew/logic.ts';
 import { makeTestEnv } from '../support/env.ts';
 
@@ -28,12 +29,24 @@ describe('logic', () => {
   });
 
   it('adds the commit-gate packages for medium sweetness', () => {
-    expect(planPackages({}, [], 'medium', versions)).toEqual([
+    expect(planPackages({}, ['oxfmt'], 'medium', versions)).toEqual([
+      'oxfmt@1.0.0-test.oxfmt',
+      '@chanom/dev-config@1.0.0-test.dev-config',
       'husky',
       'lint-staged',
       '@commitlint/cli',
       '@commitlint/config-conventional',
     ]);
+  });
+
+  it('leaves lint-staged out when no topping gives it work', () => {
+    expect(planPackages({}, [], 'medium', versions)).toEqual([
+      'husky',
+      '@commitlint/cli',
+      '@commitlint/config-conventional',
+    ]);
+    expect(planPackages({}, ['knip'], 'medium', versions)).toContain('husky');
+    expect(planPackages({}, ['knip'], 'medium', versions)).not.toContain('lint-staged');
   });
 
   it('plans nothing when everything is installed at the right version', () => {
@@ -65,6 +78,13 @@ describe('logic', () => {
     expect(selectedLinters(['oxlint', 'oxfmt', 'knip'])).toEqual(['oxlint']);
     expect(selectedFormatters(['oxlint', 'oxfmt', 'knip'])).toEqual(['oxfmt']);
     expect(selectedLinters(['knip'])).toEqual([]);
+  });
+
+  it('wants lint-staged only when a linter or formatter is selected', () => {
+    expect(wantsLintStaged(['oxlint'])).toBe(true);
+    expect(wantsLintStaged(['oxfmt'])).toBe(true);
+    expect(wantsLintStaged(['knip'])).toBe(false);
+    expect(wantsLintStaged([])).toBe(false);
   });
 });
 
@@ -157,6 +177,11 @@ describe('brew', () => {
         'Which toppings would you like?': [],
         'How sweet would you like it?': 'light',
       },
+      commands: ({ cmd, args }) =>
+        // `git rev-parse --is-inside-work-tree` exits 128 outside a repository.
+        cmd === 'git' && args[0] === 'rev-parse'
+          ? { exitCode: 128, stdout: '', stderr: 'fatal: not a git repository' }
+          : { exitCode: 0, stdout: '', stderr: '' },
     });
 
     return Effect.gen(function* () {
@@ -168,6 +193,77 @@ describe('brew', () => {
       expect(env.prompter.log.spinners).toContainEqual(
         expect.objectContaining({ stop: 'Nothing to commit, skipping' }),
       );
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('skips lint-staged and drops the seeded hook when no topping gives it work', () => {
+    const env = makeTestEnv({
+      files: {
+        '/project/package.json': JSON.stringify({ packageManager: 'pnpm@11.9.0' }),
+      },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': [],
+        'How sweet would you like it?': 'medium',
+      },
+      commands: ({ cmd, args }) => {
+        // Like the real `husky init`: seeds `.husky/` with shims and an `npm test` pre-commit.
+        if (cmd === 'pnpm' && args[0] === 'exec' && args[1] === 'husky') {
+          env.fs.files.set('/project/.husky/pre-commit', 'npm test\n');
+          env.fs.files.set('/project/.husky/_/h', '');
+        }
+        if (cmd === 'git' && args[0] === 'diff') return { exitCode: 1, stdout: '', stderr: '' };
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+
+      // lint-staged is neither installed nor configured.
+      expect(env.runner.calls).toContainEqual({
+        cmd: 'pnpm',
+        args: ['add', '-D', 'husky', '@commitlint/cli', '@commitlint/config-conventional'],
+        cwd: '/project',
+      });
+      expect(env.fs.files.has('/project/.lintstagedrc.json')).toBe(false);
+      expect(env.prompter.log.warnings).toContain(
+        'No linters or formatters selected - skipping lint-staged',
+      );
+
+      // The seeded `npm test` pre-commit is removed; commitlint still hooks in.
+      expect(env.fs.files.has('/project/.husky/pre-commit')).toBe(false);
+      expect(env.fs.files.get('/project/.husky/commit-msg')).toBe(
+        'pnpm exec commitlint --edit $1\n',
+      );
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('fails with NotAtRepoRoot when medium sweetness is brewed in a subdirectory', () => {
+    const env = makeTestEnv({
+      files: { '/repo/packages/app/package.json': '{}' },
+      answers: {
+        'Which toppings would you like?': ['oxlint'],
+        'How sweet would you like it?': 'medium',
+      },
+      commands: ({ cmd, args }) => {
+        if (cmd === 'git' && args[1] === '--show-prefix') {
+          return { exitCode: 0, stdout: 'packages/app/', stderr: '' };
+        }
+        if (cmd === 'git' && args[1] === '--show-toplevel') {
+          return { exitCode: 0, stdout: '/repo', stderr: '' };
+        }
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+
+    return Effect.gen(function* () {
+      const error = yield* Effect.flip(brew('/repo/packages/app'));
+      expect(error._tag).toBe('NotAtRepoRoot');
+      expect(error).toMatchObject({ cwd: '/repo/packages/app', root: '/repo' });
+      // Fails before installing packages or writing tool configs.
+      expect(env.runner.calls.filter((call) => call.cmd === 'pnpm')).toEqual([]);
+      expect(env.fs.files.has('/repo/packages/app/oxlint.config.ts')).toBe(false);
     }).pipe(Effect.provide(env.layer));
   });
 

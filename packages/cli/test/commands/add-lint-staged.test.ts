@@ -24,6 +24,16 @@ describe('logic', () => {
 });
 
 describe('apply', () => {
+  it.effect('writes neither config nor hook when nothing is selected', () => {
+    const fs = makeTestFs({}, ['/project/.husky']);
+    const prompter = makeTestPrompter();
+    return Effect.gen(function* () {
+      yield* apply('/project', [], []);
+      expect(fs.files.has('/project/.lintstagedrc.json')).toBe(false);
+      expect(fs.files.has('/project/.husky/pre-commit')).toBe(false);
+    }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
+  });
+
   it.effect('writes the config and the pre-commit hook when .husky exists', () => {
     const fs = makeTestFs({}, ['/project/.husky']);
     const prompter = makeTestPrompter();
