@@ -170,6 +170,48 @@ describe('brew', () => {
     }).pipe(Effect.provide(env.layer));
   });
 
+  it.effect('keeps devDependencies the package manager writes during install', () => {
+    const env = makeTestEnv({
+      files: {
+        '/project/package.json': JSON.stringify({
+          type: 'module',
+          packageManager: 'pnpm@11.9.0',
+        }),
+      },
+      dirs: ['/project/.git', '/project/.husky'],
+      answers,
+      commands: ({ cmd, args }) => {
+        // Like the real `pnpm add`: rewrites package.json with the new devDependencies.
+        if (cmd === 'pnpm' && args[0] === 'add') {
+          const manifest = JSON.parse(env.fs.files.get('/project/package.json') ?? '{}') as {
+            devDependencies?: Record<string, string>;
+          };
+          manifest.devDependencies = { oxlint: '1.0.0-test.oxlint', husky: '^9.0.0' };
+          env.fs.files.set('/project/package.json', JSON.stringify(manifest));
+        }
+        if (cmd === 'git' && args[0] === 'diff') return { exitCode: 1, stdout: '', stderr: '' };
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+
+      // The scripts write must not restore the pre-install manifest.
+      const pkg = JSON.parse(env.fs.files.get('/project/package.json') ?? '') as {
+        devDependencies?: Record<string, string>;
+        scripts?: Record<string, string>;
+      };
+      expect(pkg.devDependencies).toEqual({ oxlint: '1.0.0-test.oxlint', husky: '^9.0.0' });
+      expect(pkg.scripts).toEqual({
+        lint: 'oxlint',
+        'lint:fix': 'oxlint --fix',
+        format: 'oxfmt',
+        'format:check': 'oxfmt --check',
+      });
+    }).pipe(Effect.provide(env.layer));
+  });
+
   it.effect('initializes git and writes .gitignore when not a repo', () => {
     const env = makeTestEnv({
       files: { '/project/package.json': '{}' },

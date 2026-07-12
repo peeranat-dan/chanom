@@ -261,8 +261,12 @@ export const brew = (cwd: string = process.cwd()) =>
     );
     yield* installPackages(pm, cwd, packages);
 
-    const updated = yield* applyToppings(cwd, isEsm(pkg), pkg, toppings);
-    yield* persistScripts(pkgPath, pkg, updated);
+    // The package manager rewrites package.json during install; re-read it so
+    // persistScripts doesn't restore the pre-install manifest and drop the
+    // freshly added devDependencies.
+    const { pkg: installedPkg } = yield* readPkg(cwd);
+    const updated = yield* applyToppings(cwd, isEsm(installedPkg), installedPkg, toppings);
+    yield* persistScripts(pkgPath, installedPkg, updated);
     yield* setupCommitGate(cwd, pm, toppings, sweetness);
     yield* commitChanges(cwd);
 
