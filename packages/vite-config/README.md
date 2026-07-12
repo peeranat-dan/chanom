@@ -111,6 +111,12 @@ Three factories build Vitest configs the same way `createViteConfig` builds Vite
 - `createReactLibraryVitestConfig` – base + `jsdom` environment and global test APIs, for testing components in isolation.
 - `createReactAppVitestConfig` – like the library preset, but also processes CSS during tests (`css: true`) since app components commonly import stylesheets and CSS modules.
 
+These live behind the `@chanom/vite-config/vitest` subpath so importing `createViteConfig` never pulls in `vitest/config`. `vitest` is an optional peer dependency — install it in your project when you use this subpath:
+
+```sh
+pnpm add -D vitest
+```
+
 Like `createViteConfig`, framework plugins are passed in through `plugins`, so this package stays free of framework peer deps. Install what a given preset needs in your consuming project:
 
 - React presets: `jsdom` (the environment) and `@vitejs/plugin-react`.
@@ -121,7 +127,7 @@ Like `createViteConfig`, framework plugins are passed in through `plugins`, so t
 `vitest.config.ts`:
 
 ```ts
-import { createVitestConfig } from '@chanom/vite-config';
+import { createVitestConfig } from '@chanom/vite-config/vitest';
 
 export default createVitestConfig({ coverage: true });
 ```
@@ -135,7 +141,7 @@ pnpm add -D jsdom @vitejs/plugin-react
 `vitest.config.ts`:
 
 ```ts
-import { createReactLibraryVitestConfig } from '@chanom/vite-config';
+import { createReactLibraryVitestConfig } from '@chanom/vite-config/vitest';
 import react from '@vitejs/plugin-react';
 
 export default createReactLibraryVitestConfig({
@@ -147,7 +153,7 @@ export default createReactLibraryVitestConfig({
 ### React app
 
 ```ts
-import { createReactAppVitestConfig } from '@chanom/vite-config';
+import { createReactAppVitestConfig } from '@chanom/vite-config/vitest';
 import react from '@vitejs/plugin-react';
 
 export default createReactAppVitestConfig({

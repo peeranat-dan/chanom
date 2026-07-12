@@ -135,11 +135,3 @@ async function createViteConfig(
 
 export default createViteConfig;
 export { createViteConfig };
-
-export {
-  type CoverageOptions,
-  type CreateVitestConfigOptions,
-  createReactAppVitestConfig,
-  createReactLibraryVitestConfig,
-  createVitestConfig,
-} from './vitest';

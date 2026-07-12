@@ -25,6 +25,11 @@
       "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./vitest": {
+      "development": "./src/vitest.ts",
+      "types": "./dist/vitest.d.ts",
+      "default": "./dist/vitest.js"
     }
   },
   "publishConfig": {
@@ -32,6 +37,10 @@
       ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
+      },
+      "./vitest": {
+        "types": "./dist/vitest.d.ts",
+        "default": "./dist/vitest.js"
       }
     },
     "access": "public"
@@ -63,6 +72,9 @@
   },
   "peerDependenciesMeta": {
     "rollup-plugin-visualizer": {
+      "optional": true
+    },
+    "vitest": {
       "optional": true
     }
   }
