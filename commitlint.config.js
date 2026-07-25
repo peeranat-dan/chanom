@@ -11,6 +11,7 @@ export default {
         'logger', // packages/logger
         'vc', // packages/vite-config
         'vscode', // .vscode
+        'xlsx', // packages/xlsx
       ],
     ],
   },

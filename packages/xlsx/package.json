@@ -1,0 +1,63 @@
+{
+  "name": "@chanom/xlsx",
+  "version": "0.0.1",
+  "description": "Lossless-by-default .xlsx (ECMA-376 SpreadsheetML) parse and write library.",
+  "keywords": [
+    "excel",
+    "ooxml",
+    "spreadsheet",
+    "xlsx"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peeranat-dan/chanom.git",
+    "directory": "packages/xlsx"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "tsdown"
+  },
+  "dependencies": {
+    "fast-xml-parser": "catalog:",
+    "fflate": "catalog:"
+  },
+  "devDependencies": {
+    "@chanom/dev-config": "workspace:*",
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
