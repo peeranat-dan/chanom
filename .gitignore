@@ -39,3 +39,5 @@ storybook-static
 
 # Test
 coverage
+
+.pnpm-store
