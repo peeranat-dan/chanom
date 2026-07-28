@@ -1,0 +1,16 @@
+# my-app
+
+Brewed with [create-chanom-app](https://github.com/peeranat-dan/chanom).
+
+## Scripts
+
+| Command                | What it does                          |
+| ---------------------- | ------------------------------------- |
+| `pnpm dev`             | Start the Vite dev server             |
+| `pnpm build`           | Type-check, then build for production |
+| `pnpm preview`         | Preview the production build          |
+| `pnpm lint`            | Lint with oxlint                      |
+| `pnpm format`          | Format with oxfmt                     |
+| `pnpm knip`            | Find unused files, deps, and exports  |
+| `pnpm test`            | Run the test suite once               |
+| `pnpm test:watch`      | Run tests in watch mode               |
