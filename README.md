@@ -20,13 +20,14 @@ pnpm exec turbo run build lint format:check
 
 ## What is in this repo?
 
-| Package                                         | Description                                                         | README                                       |
-| ----------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------- |
-| [`@chanom/analytics`](./packages/analytics)     | Web analytics facade fanning out to GA, GTM, and PostHog            | [`README`](./packages/analytics/README.md)   |
-| [`@chanom/cli`](./packages/cli)                 | Interactive CLI that brews dev tooling config into your project     | [`README`](./packages/cli/README.md)         |
-| [`@chanom/dev-config`](./packages/dev-config)   | Shared [oxlint](https://oxc.rs/) + [oxfmt](https://oxc.rs/) presets | [`README`](./packages/dev-config/README.md)  |
-| [`@chanom/logger`](./packages/logger)           | Console logger with environment gating and level filtering          | [`README`](./packages/logger/README.md)      |
-| [`@chanom/vite-config`](./packages/vite-config) | Vite config factory for libraries and React apps                    | [`README`](./packages/vite-config/README.md) |
+| Package                                             | Description                                                         | README                                             |
+| --------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------- |
+| [`@chanom/analytics`](./packages/analytics)         | Web analytics facade fanning out to GA, GTM, and PostHog            | [`README`](./packages/analytics/README.md)         |
+| [`@chanom/cli`](./packages/cli)                     | Interactive CLI that brews dev tooling config into your project     | [`README`](./packages/cli/README.md)               |
+| [`create-chanom-app`](./packages/create-chanom-app) | Scaffold a Vite + React + TS app wired to the chanom shared configs | [`README`](./packages/create-chanom-app/README.md) |
+| [`@chanom/dev-config`](./packages/dev-config)       | Shared [oxlint](https://oxc.rs/) + [oxfmt](https://oxc.rs/) presets | [`README`](./packages/dev-config/README.md)        |
+| [`@chanom/logger`](./packages/logger)               | Console logger with environment gating and level filtering          | [`README`](./packages/logger/README.md)            |
+| [`@chanom/vite-config`](./packages/vite-config)     | Vite config factory for libraries and React apps                    | [`README`](./packages/vite-config/README.md)       |
 
 ## Tech stack
 
@@ -126,7 +127,7 @@ The repo ships shared VS Code settings in [`.vscode/settings.json`](./.vscode/se
 
 - Roadmap:
   - [ ] Vitest preset in `@chanom/vite-config`
-  - [ ] `create-chanom-app` CLI
+  - [x] [`create-chanom-app`](./packages/create-chanom-app) CLI
   - [ ] Shared `tsconfig` preset in `@chanom/dev-config`
   - [x] Analytics package
 

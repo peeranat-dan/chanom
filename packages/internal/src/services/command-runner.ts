@@ -16,7 +16,7 @@ const collectText = (stream: Stream.Stream<Uint8Array, PlatformError>) =>
  * Low-level process execution. Everything that shells out (git, package
  * managers, husky) goes through this service so commands can be stubbed in tests.
  */
-export class CommandRunner extends Effect.Service<CommandRunner>()('cli/CommandRunner', {
+export class CommandRunner extends Effect.Service<CommandRunner>()('internal/CommandRunner', {
   effect: Effect.gen(function* () {
     const executor = yield* CommandExecutor.CommandExecutor;
 

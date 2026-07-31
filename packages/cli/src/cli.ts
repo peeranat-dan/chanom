@@ -1,7 +1,7 @@
+import { Cancelled, Prompter } from '@chanom/internal';
 import { Cause, Chunk, Data, Effect, Logger, LogLevel } from 'effect';
 
 import { brew } from './commands/brew/index.ts';
-import { Cancelled, Prompter } from './services/prompter.ts';
 
 export class UnknownCommand extends Data.TaggedError('UnknownCommand')<{
   readonly command: string | undefined;

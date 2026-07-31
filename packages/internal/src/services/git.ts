@@ -12,7 +12,7 @@ export interface GitResult {
 }
 
 /** Git operations, built on top of {@link CommandRunner}. */
-export class Git extends Effect.Service<Git>()('cli/Git', {
+export class Git extends Effect.Service<Git>()('internal/Git', {
   effect: Effect.gen(function* () {
     const runner = yield* CommandRunner;
     const fs = yield* FileSystem.FileSystem;

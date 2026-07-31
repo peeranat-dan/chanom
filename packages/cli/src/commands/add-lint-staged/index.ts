@@ -1,7 +1,7 @@
+import { Prompter } from '@chanom/internal';
 import { FileSystem, Path } from '@effect/platform';
 import { Effect, Option } from 'effect';
 
-import { Prompter } from '../../services/prompter.ts';
 import { detectSetupFile } from '../../utils/detect-setup.ts';
 import { buildConfig, type Formatter, type Linter } from './logic.ts';
 

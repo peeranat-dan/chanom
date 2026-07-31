@@ -1,3 +1,4 @@
+import { Git, Prompter } from '@chanom/internal';
 import { FileSystem, Path } from '@effect/platform';
 import { Data, Effect, Option } from 'effect';
 import pc from 'picocolors';
@@ -6,9 +7,7 @@ import type { PackageManager } from '../../domain/package-manager.ts';
 
 import { bundledVersions } from '../../bundled-versions.ts';
 import { isEsm, type Pkg } from '../../domain/pkg.ts';
-import { Git } from '../../services/git.ts';
 import { PackageInstaller } from '../../services/package-installer.ts';
-import { Prompter } from '../../services/prompter.ts';
 import { detectPm } from '../../utils/detect-pm.ts';
 import { readPkg, writePkg } from '../../utils/pkg-file.ts';
 import * as addCommitlint from '../add-commitlint/index.ts';

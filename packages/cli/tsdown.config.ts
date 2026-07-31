@@ -2,20 +2,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { defineConfig } from 'tsdown';
 
-const workspace = readFileSync(join(import.meta.dirname, '../../pnpm-workspace.yaml'), 'utf-8');
-
-const catalogVersion = (tool: string): string => {
-  const prefix = `${tool}:`;
-  for (const line of workspace.split('\n')) {
-    const entry = line.trimStart();
-    // only indented lines are catalog entries, not top-level keys
-    if (entry !== line && entry.startsWith(prefix)) {
-      const version = entry.slice(prefix.length).trim();
-      if (version !== '') return version;
-    }
-  }
-  return 'latest';
-};
+// Shared, build-time-only catalog reader (single source of truth for both this
+// package and create-chanom-app). Imported by relative path because it is build
+// tooling, never bundled into the shipped output.
+import { catalogVersion } from '../internal/src/catalog/version.ts';
 
 const oxlintVersion = catalogVersion('oxlint');
 const oxlintTsgolintVersion = catalogVersion('oxlint-tsgolint');
@@ -29,6 +19,9 @@ export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm'],
   clean: true,
+  // @chanom/internal is private (never published); inline it so the shipped
+  // bundle is self-contained and it never appears in the dependency tree.
+  deps: { alwaysBundle: ['@chanom/internal'] },
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   define: {
     __OXLINT_VERSION__: JSON.stringify(oxlintVersion),

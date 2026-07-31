@@ -1,9 +1,9 @@
+import { Prompter } from '@chanom/internal';
 import { FileSystem, Path } from '@effect/platform';
 import { Effect, Option } from 'effect';
 
 import type { PackageManager } from '../../domain/package-manager.ts';
 
-import { Prompter } from '../../services/prompter.ts';
 import { detectSetupFile } from '../../utils/detect-setup.ts';
 import { commitMsgHook, CONFIG_CONTENTS } from './logic.ts';
 

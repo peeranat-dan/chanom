@@ -1,0 +1,56 @@
+{
+  "name": "create-chanom-app",
+  "version": "0.0.0",
+  "description": "Scaffold a Vite + React + TypeScript app, wired to the chanom shared configs.",
+  "keywords": [
+    "create",
+    "react",
+    "scaffold",
+    "starter",
+    "typescript",
+    "vite"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peeranat-dan/chanom.git",
+    "directory": "packages/create-chanom-app"
+  },
+  "bin": {
+    "create-chanom-app": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "prepublishOnly": "tsdown",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@clack/prompts": "catalog:",
+    "@effect/platform": "catalog:",
+    "@effect/platform-node": "catalog:",
+    "effect": "catalog:",
+    "picocolors": "catalog:"
+  },
+  "devDependencies": {
+    "@chanom/dev-config": "workspace:*",
+    "@chanom/internal": "workspace:*",
+    "@effect/language-service": "catalog:",
+    "@effect/vitest": "catalog:",
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

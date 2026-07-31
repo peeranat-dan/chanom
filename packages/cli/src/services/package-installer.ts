@@ -1,10 +1,10 @@
+import { CommandRunner } from '@chanom/internal';
 import { FileSystem, Path } from '@effect/platform';
 import { Data, Effect } from 'effect';
 
 import type { PackageManager, WorkspaceHints } from '../domain/package-manager.ts';
 
 import { workspaceRootFlags } from '../domain/package-manager.ts';
-import { CommandRunner } from './command-runner.ts';
 
 export class InstallFailed extends Data.TaggedError('InstallFailed')<{
   readonly pm: PackageManager;

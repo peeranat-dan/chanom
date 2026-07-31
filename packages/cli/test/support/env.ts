@@ -1,12 +1,11 @@
+import type { CommandHandler } from '@chanom/internal/testing';
 import type { SystemErrorReason } from '@effect/platform/Error';
 
+import { Git } from '@chanom/internal';
+import { makeTestFs, makeTestPrompter, makeTestRunner } from '@chanom/internal/testing';
 import { Layer } from 'effect';
 
-import { Git } from '../../src/services/git.ts';
 import { PackageInstaller } from '../../src/services/package-installer.ts';
-import { type CommandHandler, makeTestRunner } from './command-runner.ts';
-import { makeTestFs } from './fs.ts';
-import { makeTestPrompter } from './prompter.ts';
 
 export interface TestEnvOptions {
   readonly files?: Record<string, string>;
