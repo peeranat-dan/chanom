@@ -1,12 +1,10 @@
 #!/usr/bin/env node
+import { CommandRunner, Git, Prompter } from '@chanom/internal';
 import { NodeContext, NodeRuntime } from '@effect/platform-node';
 import { Effect, Layer, Logger } from 'effect';
 
 import { run } from './cli.ts';
-import { CommandRunner } from './services/command-runner.ts';
-import { Git } from './services/git.ts';
 import { PackageInstaller } from './services/package-installer.ts';
-import { Prompter } from './services/prompter.ts';
 
 const args = process.argv.slice(2);
 const debug = args.includes('--debug');

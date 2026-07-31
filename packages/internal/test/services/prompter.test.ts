@@ -7,7 +7,9 @@ import { Prompter } from '../../src/services/prompter.ts';
 const clack = vi.hoisted(() => ({
   intro: vi.fn(),
   outro: vi.fn(),
-  log: { warn: vi.fn(), error: vi.fn(), message: vi.fn() },
+  log: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), message: vi.fn() },
+  text: vi.fn(),
+  confirm: vi.fn(),
   select: vi.fn(),
   multiselect: vi.fn(),
   spinner: vi.fn(),
@@ -21,18 +23,30 @@ const withLive = <A, E>(effect: Effect.Effect<A, E, Prompter>) =>
   effect.pipe(Effect.provide(Prompter.Default));
 
 describe('Prompter (live)', () => {
-  it.effect('forwards intro, outro, warn, and error to clack', () =>
+  it.effect('forwards intro, outro, info, warn, and error to clack', () =>
     withLive(
       Effect.gen(function* () {
         const prompter = yield* Prompter;
         yield* prompter.intro('hello');
         yield* prompter.outro('bye');
+        yield* prompter.info('note');
         yield* prompter.warn('careful');
         yield* prompter.error('boom');
         expect(clack.intro).toHaveBeenCalledWith('hello');
         expect(clack.outro).toHaveBeenCalledWith('bye');
+        expect(clack.log.info).toHaveBeenCalledWith('note');
         expect(clack.log.warn).toHaveBeenCalledWith('careful');
         expect(clack.log.error).toHaveBeenCalledWith('boom');
+      }),
+    ),
+  );
+
+  it.effect('prints raw messages through clack.log.message', () =>
+    withLive(
+      Effect.gen(function* () {
+        const prompter = yield* Prompter;
+        yield* prompter.message('plan summary');
+        expect(clack.log.message).toHaveBeenCalledWith('plan summary');
       }),
     ),
   );
@@ -43,6 +57,62 @@ describe('Prompter (live)', () => {
         const prompter = yield* Prompter;
         yield* prompter.debug('spawning git');
         expect(clack.log.message).toHaveBeenCalledWith(expect.stringContaining('spawning git'));
+      }),
+    ),
+  );
+
+  it.effect('text passes params through and returns the answer', () =>
+    withLive(
+      Effect.gen(function* () {
+        clack.text.mockResolvedValueOnce('my-app');
+        const validate = (value: string) => (value === '' ? 'required' : undefined);
+        const prompter = yield* Prompter;
+        const answer = yield* prompter.text({
+          message: 'Project name?',
+          defaultValue: 'app',
+          validate,
+        });
+        expect(answer).toBe('my-app');
+        expect(clack.text).toHaveBeenCalledWith(
+          expect.objectContaining({ message: 'Project name?', defaultValue: 'app', validate }),
+        );
+      }),
+    ),
+  );
+
+  it.effect('text fails with Cancelled when the prompt is aborted', () =>
+    withLive(
+      Effect.gen(function* () {
+        clack.text.mockResolvedValueOnce(CANCEL);
+        const prompter = yield* Prompter;
+        const error = yield* Effect.flip(prompter.text({ message: 'Project name?' }));
+        expect(error._tag).toBe('Cancelled');
+      }),
+    ),
+  );
+
+  it.effect('confirm defaults initialValue to true and returns the answer', () =>
+    withLive(
+      Effect.gen(function* () {
+        clack.confirm.mockResolvedValueOnce(false);
+        const prompter = yield* Prompter;
+        const answer = yield* prompter.confirm({ message: 'Init git?' });
+        expect(answer).toBe(false);
+        expect(clack.confirm).toHaveBeenCalledWith({ message: 'Init git?', initialValue: true });
+      }),
+    ),
+  );
+
+  it.effect('confirm passes an explicit initialValue and fails with Cancelled on abort', () =>
+    withLive(
+      Effect.gen(function* () {
+        clack.confirm.mockResolvedValueOnce(CANCEL);
+        const prompter = yield* Prompter;
+        const error = yield* Effect.flip(
+          prompter.confirm({ message: 'Install?', initialValue: false }),
+        );
+        expect(error._tag).toBe('Cancelled');
+        expect(clack.confirm).toHaveBeenCalledWith({ message: 'Install?', initialValue: false });
       }),
     ),
   );

@@ -19,6 +19,20 @@ export interface MultiselectParams<T> extends SelectParams<T> {
   readonly required?: boolean;
 }
 
+export interface TextParams {
+  readonly message: string;
+  readonly placeholder?: string;
+  readonly defaultValue?: string;
+  readonly initialValue?: string;
+  /** Returns an error message to reject the input, or `undefined` to accept it. */
+  readonly validate?: (value: string) => string | undefined;
+}
+
+export interface ConfirmParams {
+  readonly message: string;
+  readonly initialValue?: boolean;
+}
+
 export interface SpinnerHandle {
   readonly stop: (message: string) => Effect.Effect<void>;
 }
@@ -35,14 +49,32 @@ const guardCancel = <T>(make: () => Promise<T | symbol>): Effect.Effect<T, Cance
  * All terminal interaction (prompts, spinners, log messages). Commands never
  * touch @clack/prompts directly, so tests can script answers and capture output.
  */
-export class Prompter extends Effect.Service<Prompter>()('cli/Prompter', {
+export class Prompter extends Effect.Service<Prompter>()('internal/Prompter', {
   succeed: {
     intro: (message: string): Effect.Effect<void> => Effect.sync(() => clack.intro(message)),
     outro: (message: string): Effect.Effect<void> => Effect.sync(() => clack.outro(message)),
     warn: (message: string): Effect.Effect<void> => Effect.sync(() => clack.log.warn(message)),
     error: (message: string): Effect.Effect<void> => Effect.sync(() => clack.log.error(message)),
+    info: (message: string): Effect.Effect<void> => Effect.sync(() => clack.log.info(message)),
+    /** Prints a message with no icon or styling (help text, plan summaries). */
+    message: (message: string): Effect.Effect<void> =>
+      Effect.sync(() => clack.log.message(message)),
     debug: (message: string): Effect.Effect<void> =>
       Effect.sync(() => clack.log.message(pc.dim(message))),
+    text: (params: TextParams): Effect.Effect<string, Cancelled> =>
+      guardCancel(() =>
+        clack.text({
+          message: params.message,
+          placeholder: params.placeholder,
+          defaultValue: params.defaultValue,
+          initialValue: params.initialValue,
+          validate: params.validate,
+        }),
+      ),
+    confirm: (params: ConfirmParams): Effect.Effect<boolean, Cancelled> =>
+      guardCancel(() =>
+        clack.confirm({ message: params.message, initialValue: params.initialValue ?? true }),
+      ),
     select: <T>(params: SelectParams<T>): Effect.Effect<T, Cancelled> =>
       guardCancel(() =>
         clack.select<T>({

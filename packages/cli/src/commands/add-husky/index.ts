@@ -1,9 +1,8 @@
+import { CommandRunner, Prompter } from '@chanom/internal';
 import { FileSystem, Path } from '@effect/platform';
 import { Data, Effect } from 'effect';
 
 import { type PackageManager, PM_EXEC } from '../../domain/package-manager.ts';
-import { CommandRunner } from '../../services/command-runner.ts';
-import { Prompter } from '../../services/prompter.ts';
 
 export { getPackages } from './logic.ts';
 

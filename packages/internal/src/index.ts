@@ -1,0 +1,4 @@
+export * from './domain/package-manager.ts';
+export * from './services/command-runner.ts';
+export * from './services/git.ts';
+export * from './services/prompter.ts';

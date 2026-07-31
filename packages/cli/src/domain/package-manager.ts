@@ -1,27 +1,11 @@
-export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun';
+import type { PackageManager } from '@chanom/internal';
 
-/** How to run a locally installed binary with each package manager. */
-export const PM_EXEC: Record<PackageManager, string[]> = {
-  pnpm: ['pnpm', 'exec'],
-  npm: ['npx', '--no', '--'],
-  yarn: ['yarn'],
-  bun: ['bunx'],
-};
-
-const KNOWN_PMS: PackageManager[] = ['pnpm', 'yarn', 'bun', 'npm'];
-
-/** Parses the `packageManager` field of package.json, e.g. `pnpm@11.9.0`. */
-export function parsePmField(field: string | undefined): PackageManager | undefined {
-  if (!field) return undefined;
-  const name = field.split('@')[0];
-  return KNOWN_PMS.find((pm) => pm === name);
-}
-
-/** Parses the `npm_config_user_agent` environment variable, e.g. `pnpm/11.9.0 npm/? node/v22`. */
-export function parsePmUserAgent(agent: string | undefined): PackageManager | undefined {
-  if (!agent) return undefined;
-  return KNOWN_PMS.find((pm) => agent.startsWith(pm));
-}
+// The package-manager basics (`PackageManager`, `PM_EXEC`, and the resolvers)
+// are shared with create-chanom-app, so they live in @chanom/internal. Only the
+// workspace-root install flags below are cli-specific (brew installs into an
+// existing project that may be a workspace root; a scaffolder never does).
+export type { PackageManager, PmHints } from '@chanom/internal';
+export { parsePmField, parsePmUserAgent, PM_EXEC, resolvePm } from '@chanom/internal';
 
 /** Signals gathered from a directory's files that mark it as a workspace root. */
 export interface WorkspaceHints {
@@ -48,20 +32,4 @@ export function workspaceRootFlags(pm: PackageManager, hints: WorkspaceHints): r
     case 'bun':
       return [];
   }
-}
-
-export interface PmHints {
-  readonly packageManagerField: string | undefined;
-  readonly userAgent: string | undefined;
-  readonly fallback?: PackageManager;
-}
-
-/** The `packageManager` field wins over the user agent, which wins over the fallback. */
-export function resolvePm(hints: PmHints): PackageManager {
-  return (
-    parsePmField(hints.packageManagerField) ??
-    parsePmUserAgent(hints.userAgent) ??
-    hints.fallback ??
-    'pnpm'
-  );
 }

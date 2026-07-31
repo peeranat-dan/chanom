@@ -2,8 +2,12 @@ import { describe, expect, it } from '@effect/vitest';
 import { Effect, Layer, Option } from 'effect';
 
 import { Git } from '../../src/services/git.ts';
-import { type CommandHandler, makeTestRunner } from '../support/command-runner.ts';
-import { makeTestFs, type TestFs } from '../support/fs.ts';
+import {
+  type CommandHandler,
+  makeTestFs,
+  makeTestRunner,
+  type TestFs,
+} from '../../src/testing/index.ts';
 
 const makeGitLayer = (handler?: CommandHandler, fs: TestFs = makeTestFs()) => {
   const runner = makeTestRunner(handler);
@@ -24,6 +28,36 @@ describe('Git', () => {
       expect(result).toEqual({ ok: false, stdout: '', stderr: 'nothing to commit' });
       expect(runner.calls).toEqual([
         { cmd: 'git', args: ['commit', '-m', 'feat: hello'], cwd: '/project' },
+      ]);
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('init runs git init', () => {
+    const { layer, runner } = makeGitLayer();
+    return Effect.gen(function* () {
+      const git = yield* Git;
+      const result = yield* git.init('/project');
+      expect(result.ok).toBe(true);
+      expect(runner.calls).toEqual([{ cmd: 'git', args: ['init'], cwd: '/project' }]);
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('stageAll runs git add .', () => {
+    const { layer, runner } = makeGitLayer();
+    return Effect.gen(function* () {
+      const git = yield* Git;
+      yield* git.stageAll('/project');
+      expect(runner.calls).toEqual([{ cmd: 'git', args: ['add', '.'], cwd: '/project' }]);
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('hasIdentity is true when git var exits zero', () => {
+    const { layer, runner } = makeGitLayer();
+    return Effect.gen(function* () {
+      const git = yield* Git;
+      expect(yield* git.hasIdentity('/project')).toBe(true);
+      expect(runner.calls).toEqual([
+        { cmd: 'git', args: ['var', 'GIT_COMMITTER_IDENT'], cwd: '/project' },
       ]);
     }).pipe(Effect.provide(layer));
   });

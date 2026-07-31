@@ -1,0 +1,56 @@
+name: E2E
+
+# Published-surface smoke: generate an app, install the real published @chanom/*
+# configs from npm, and run its full check set. Path-gated so it only runs when
+# the scaffolder (or the lockfile it builds against) changes.
+on:
+  pull_request:
+    paths:
+      - 'packages/create-chanom-app/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/e2e.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build create-chanom-app
+        run: pnpm turbo run build --filter=create-chanom-app
+
+      - name: Generate an app (default flags, install deferred)
+        working-directory: ${{ runner.temp }}
+        run: node "$GITHUB_WORKSPACE/packages/create-chanom-app/dist/index.js" my-app --yes --no-install
+
+      - name: Install generated app from npm (one retry)
+        working-directory: ${{ runner.temp }}/my-app
+        # Resolves the published @chanom/* configs, not the local workspace.
+        run: pnpm install --no-frozen-lockfile || pnpm install --no-frozen-lockfile
+
+      - name: Build the generated app
+        working-directory: ${{ runner.temp }}/my-app
+        run: pnpm build
+
+      - name: Lint the generated app
+        working-directory: ${{ runner.temp }}/my-app
+        run: pnpm lint
+
+      - name: Test the generated app
+        working-directory: ${{ runner.temp }}/my-app
+        run: pnpm test

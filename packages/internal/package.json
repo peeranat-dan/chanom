@@ -1,0 +1,45 @@
+{
+  "name": "@chanom/internal",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Private, bundled-only internals shared by @chanom/cli and create-chanom-app.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peeranat-dan/chanom.git",
+    "directory": "packages/internal"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./testing": {
+      "types": "./src/testing/index.ts",
+      "default": "./src/testing/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@clack/prompts": "catalog:",
+    "@effect/platform": "catalog:",
+    "effect": "catalog:",
+    "picocolors": "catalog:"
+  },
+  "devDependencies": {
+    "@chanom/dev-config": "workspace:*",
+    "@effect/language-service": "catalog:",
+    "@effect/platform-node": "catalog:",
+    "@effect/vitest": "catalog:",
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
