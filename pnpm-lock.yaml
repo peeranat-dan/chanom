@@ -458,12 +458,9 @@ importers:
 
   packages/dev-config:
     devDependencies:
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       knip:
         specifier: 'catalog:'
         version: 6.26.0
@@ -574,12 +571,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.58.0
