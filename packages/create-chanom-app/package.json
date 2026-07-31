@@ -1,6 +1,6 @@
 {
   "name": "create-chanom-app",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Scaffold a Vite + React + TypeScript app, wired to the chanom shared configs.",
   "keywords": [
     "create",
