@@ -34,9 +34,9 @@ describe('scaffold', () => {
   it.effect('uses the normalized project name in generated project files', () => {
     const { fs, layer } = makeEnv({
       files: {
-        [`${TEMPLATE_ROOT}/README.md.template`]: '# my-app\n\nWelcome.\n',
-        [`${TEMPLATE_ROOT}/src/app.tsx.template`]: '<h1>my-app</h1>\n',
-        [`${TEMPLATE_ROOT}/src/app.test.tsx.template`]: "name: 'my-app'\n",
+        [`${TEMPLATE_ROOT}/README.md.template`]: '# {{appName}}\n\nWelcome.\n',
+        [`${TEMPLATE_ROOT}/src/app.tsx.template`]: '<h1>{{appName}}</h1>\n',
+        [`${TEMPLATE_ROOT}/src/app.test.tsx.template`]: "name: '{{appName}}'\n",
       },
     });
     return Effect.gen(function* () {

@@ -12,8 +12,9 @@ export interface TemplateFile {
  * them. `_gitignore` also uses a placeholder name because npm strips a real
  * `.gitignore` from published packages. Files whose content is computed
  * (package.json, vite.config.ts, tsconfig.json, index.html) are generated, not
- * listed here. README.md, app.tsx, and app.test.tsx have their app-name
- * placeholders replaced while copying.
+ * listed here. Every file listed here is rendered through {@link renderTemplate}
+ * on copy, so a `{{appName}}` token (currently in README.md, app.tsx, and
+ * app.test.tsx) is substituted; a file with no token is copied unchanged.
  */
 export const TEMPLATE_FILES: readonly TemplateFile[] = [
   { src: '_gitignore.template', dest: '.gitignore' },

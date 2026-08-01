@@ -8,11 +8,10 @@ import type { Contribution } from './domain/contribution.ts';
 import { depVersions } from './bundled-versions.ts';
 import { mergeContributions } from './domain/contribution.ts';
 import { toKebabCase } from './domain/project-name.ts';
-import { renderAppTemplate } from './generate/app-template.ts';
 import { renderIndexHtml } from './generate/index-html.ts';
 import { buildPackageJson } from './generate/package-json.ts';
 import { buildPnpmWorkspace } from './generate/pnpm-workspace.ts';
-import { renderReadme } from './generate/readme.ts';
+import { renderTemplate } from './generate/template.ts';
 import { buildTsconfig } from './generate/tsconfig.ts';
 import { renderViteConfig } from './generate/vite-config.ts';
 import { TEMPLATE_FILES } from './templates.ts';
@@ -50,17 +49,19 @@ const writeFile = Effect.fn('scaffold.writeFile')(function* (
 const copyTemplates = Effect.fn('scaffold.copyTemplates')(function* (plan: ScaffoldPlan) {
   const fs = yield* FileSystem.FileSystem;
   const path = yield* Path.Path;
-  const appName = toKebabCase(plan.appName);
-  for (const file of TEMPLATE_FILES) {
-    const template = yield* fs.readFileString(path.join(plan.templatesRoot, file.src));
-    const contents =
-      file.dest === 'README.md'
-        ? renderReadme(template, appName)
-        : file.dest === 'src/app.tsx' || file.dest === 'src/app.test.tsx'
-          ? renderAppTemplate(template, appName)
-          : template;
-    yield* writeFile(plan.targetDir, file.dest, contents);
-  }
+  // One vars map for the whole run: every template is rendered through the same
+  // replacer, so a file without a `{{token}}` passes through unchanged and a new
+  // templated file needs no dispatch wiring here.
+  const vars = { appName: toKebabCase(plan.appName) };
+  yield* Effect.forEach(
+    TEMPLATE_FILES,
+    (file) =>
+      Effect.gen(function* () {
+        const template = yield* fs.readFileString(path.join(plan.templatesRoot, file.src));
+        yield* writeFile(plan.targetDir, file.dest, renderTemplate(template, vars));
+      }),
+    { concurrency: 'unbounded', discard: true },
+  );
 });
 
 const writeGeneratedFiles = Effect.fn('scaffold.writeGeneratedFiles')(function* (
