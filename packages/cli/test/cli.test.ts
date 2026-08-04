@@ -62,6 +62,27 @@ describe('run', () => {
     }).pipe(Effect.provide(env.layer));
   });
 
+  it.effect('reports a platform SystemError and exits with 1', () => {
+    const env = makeTestEnv({
+      files: {
+        '/project/package.json': '{}',
+        '/project/.gitignore': 'dist\n',
+      },
+      dirs: ['/project/.git'],
+      readErrors: { '/project/.gitignore': 'PermissionDenied' },
+      answers: {
+        'Which toppings would you like?': [],
+        'How sweet would you like it?': 'light',
+      },
+    });
+    return Effect.gen(function* () {
+      const exitCode = yield* run('brew', '/project');
+      expect(exitCode).toBe(1);
+      expect(env.prompter.log.errors).toHaveLength(1);
+      expect(env.prompter.log.errors[0]).toContain('Unexpected error:');
+    }).pipe(Effect.provide(env.layer));
+  });
+
   it.effect('reports a failed husky init and exits with 1', () => {
     const env = makeTestEnv({
       files: { '/project/package.json': '{}' },

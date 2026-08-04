@@ -43,6 +43,13 @@ const traceFailure = (cause: Cause.Cause<unknown>) =>
     yield* prompter.debug(Cause.pretty(cause));
   });
 
+/**
+ * Pins the error channel to `never` at this boundary. If `catchTags` above ever
+ * stops handling an error tag, that tag leaks into `E` and this call fails to
+ * compile — forcing every command error to be handled here.
+ */
+const allErrorsHandled = <A, R>(effect: Effect.Effect<A, never, R>) => effect;
+
 /** Runs the named command and returns the process exit code. */
 export const run = (
   name: string | undefined,
@@ -51,26 +58,30 @@ export const run = (
 ) => {
   const debug = options.debug ?? false;
 
-  return dispatch(name, cwd).pipe(
-    Effect.as(0),
-    debug ? Effect.tapErrorCause(traceFailure) : (effect) => effect,
-    Effect.catchTags({
-      Cancelled: () => Effect.succeed(0),
-      UnknownCommand: (e) =>
-        reportError(
-          `Unknown command: ${e.command ?? '(none)'}\nAvailable commands: ${Object.keys(commands).join(', ')}`,
-        ),
-      PkgNotFound: (e) =>
-        reportError(`No package.json found in ${e.cwd}. Run this inside a project.`),
-      PkgInvalid: (e) => reportError(`Could not parse ${e.pkgPath}. Is it valid JSON?`),
-      InstallFailed: (e) => reportError(`Package installation with ${e.pm} failed.`),
-      HuskyInitFailed: (e) => reportError(`\`husky init\` failed (exit code ${e.exitCode}).`),
-      NotAtRepoRoot: (e) =>
-        reportError(
-          `Git hooks must be set up at the repository root: ${e.root}\nRun \`chanom brew\` there, or choose light sweetness.`,
-        ),
-    }),
-    Effect.catchAll((e) => reportError(`Unexpected error: ${e.message}`)),
-    Logger.withMinimumLogLevel(debug ? LogLevel.Debug : LogLevel.Info),
-  );
+  return allErrorsHandled(
+    dispatch(name, cwd).pipe(
+      Effect.as(0),
+      debug ? Effect.tapErrorCause(traceFailure) : (effect) => effect,
+      Effect.catchTags({
+        BadArgument: (e) => reportError(`Unexpected error: ${e.message}`),
+        SystemError: (e) => reportError(`Unexpected error: ${e.message}`),
+      }),
+      Effect.catchTags({
+        Cancelled: () => Effect.succeed(0),
+        UnknownCommand: (e) =>
+          reportError(
+            `Unknown command: ${e.command ?? '(none)'}\nAvailable commands: ${Object.keys(commands).join(', ')}`,
+          ),
+        PkgNotFound: (e) =>
+          reportError(`No package.json found in ${e.cwd}. Run this inside a project.`),
+        PkgInvalid: (e) => reportError(`Could not parse ${e.pkgPath}. Is it valid JSON?`),
+        InstallFailed: (e) => reportError(`Package installation with ${e.pm} failed.`),
+        HuskyInitFailed: (e) => reportError(`\`husky init\` failed (exit code ${e.exitCode}).`),
+        NotAtRepoRoot: (e) =>
+          reportError(
+            `Git hooks must be set up at the repository root: ${e.root}\nRun \`chanom brew\` there, or choose light sweetness.`,
+          ),
+      }),
+    ),
+  ).pipe(Logger.withMinimumLogLevel(debug ? LogLevel.Debug : LogLevel.Info));
 };
