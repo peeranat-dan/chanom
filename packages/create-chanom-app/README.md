@@ -71,6 +71,7 @@ A minimal Vite + React + TS app wired to the chanom shared configs:
 - `oxlint.config.ts` / `oxfmt.config.ts` - re-exporting the [`@chanom/dev-config`](../dev-config) presets
 - `vitest.config.ts` and a sample `src/app.test.tsx`
 - `src/` - `main.tsx`, `app.tsx`, `index.css`, and type declarations
+- `.vscode/settings.json` and `.vscode/extensions.json` - editor settings that run oxfmt formatting and oxlint fixes on save through the [oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode), which is recommended so teammates are prompted to install it
 - `index.html`, `.gitignore`, and a starter `README.md`
 
 With the **commit-hooks** topping, it also adds husky, lint-staged, and commitlint as dev dependencies plus their config files (`.husky/pre-commit`, `.husky/commit-msg`, `.lintstagedrc.json`, `.commitlintrc.json`). The hooks materialize on the first install via the generated `prepare: "husky"` script.

@@ -102,6 +102,7 @@ commands/
 ├── add-oxlint/      oxlint.config.* + lint scripts
 ├── add-oxfmt/       oxfmt.config.* + format scripts
 ├── add-knip/        knip.config.* + knip script
+├── add-vscode/      .vscode/settings.json + extensions.json (merged, never overwritten)
 ├── add-husky/       husky init
 ├── add-lint-staged/ .lintstagedrc.json + pre-commit hook
 └── add-commitlint/  .commitlintrc.json + commit-msg hook

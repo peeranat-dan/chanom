@@ -9,7 +9,7 @@ import * as addLintStaged from '../add-lint-staged/logic.ts';
 import * as addOxfmt from '../add-oxfmt/logic.ts';
 import * as addOxlint from '../add-oxlint/logic.ts';
 
-export type Topping = 'oxlint' | 'oxfmt' | 'knip';
+export type Topping = 'oxlint' | 'oxfmt' | 'knip' | 'vscode';
 export type Sweetness = 'light' | 'medium';
 
 /** Deduplicated list of packages to install for the chosen toppings and sweetness. */
@@ -40,6 +40,16 @@ export function planPackages(
   }
 
   return [...new Set(packages)];
+}
+
+/**
+ * Path the VS Code oxc extension should read the oxfmt config from. Mirrors the
+ * name `add-oxfmt` writes, so the setting points at a real file whenever oxfmt
+ * is a selected topping; without oxfmt the default name is still the sensible
+ * value for a config the user may add later.
+ */
+export function oxfmtConfigPath(esm: boolean): string {
+  return `oxfmt.config.${esm ? 'ts' : 'mts'}`;
 }
 
 /** True when at least one topping gives lint-staged something to run. */

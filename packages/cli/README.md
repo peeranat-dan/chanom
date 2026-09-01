@@ -1,6 +1,6 @@
 # @chanom/cli
 
-Interactive CLI that brews dev tooling config into your project - oxlint, oxfmt, knip, and commit hooks, picked with a couple of prompts.
+Interactive CLI that brews dev tooling config into your project - oxlint, oxfmt, knip, VS Code settings, and commit hooks, picked with a couple of prompts.
 
 ## Install
 
@@ -38,6 +38,7 @@ Debug mode logs each step (detected package manager, planned packages, every com
    - `oxlint` - fast Rust-based linter
    - `oxfmt` - fast Rust-based formatter
    - `knip` - dead code remover
+   - `vscode` - editor settings + extension recommendations
 2. **Sweetness** - how strict to be:
    - `light` - warn only, no blocking
    - `medium` - block on commit via husky + lint-staged + commitlint
@@ -60,15 +61,24 @@ installing anything. `light` sweetness works anywhere in the repo.
 
 ## What gets added
 
-| Topping  | Config file          | Scripts added            |
-| -------- | -------------------- | ------------------------ |
-| `oxlint` | `oxlint.config.ts`\* | `lint`, `lint:fix`       |
-| `oxfmt`  | `oxfmt.config.ts`\*  | `format`, `format:check` |
-| `knip`   | `knip.config.ts`\*   | `knip`                   |
+| Topping  | Config file                                        | Scripts added            |
+| -------- | -------------------------------------------------- | ------------------------ |
+| `oxlint` | `oxlint.config.ts`\*                               | `lint`, `lint:fix`       |
+| `oxfmt`  | `oxfmt.config.ts`\*                                | `format`, `format:check` |
+| `knip`   | `knip.config.ts`\*                                 | `knip`                   |
+| `vscode` | `.vscode/settings.json`, `.vscode/extensions.json` | none                     |
 
 \* `.mts` instead of `.ts` when your project is CommonJS (no `"type": "module"` in `package.json`).
 
 Config files re-export presets from [`@chanom/dev-config`](../dev-config).
+
+The `vscode` topping installs no packages and adds no scripts. It writes editor
+settings that route formatting and lint fixes through the
+[oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode)
+on save (`editor.formatOnSave` stays off so both run in one pass), points
+`oxc.fmt.configPath` at the oxfmt config, and recommends the extension so
+teammates are prompted to install it. Only portable settings are written - no
+`cSpell.words` or other repo-specific entries.
 
 `medium` sweetness additionally adds:
 
@@ -91,6 +101,10 @@ Existing setup is never overwritten:
 - If a config file for a tool already exists (any common variant, e.g. `.oxlintrc.json` or `oxlint.config.mjs`), `brew` warns and skips writing it.
 - If a script name already exists in `package.json`, `brew` warns and leaves it alone.
 - Existing `.husky/pre-commit` and `.husky/commit-msg` hooks are kept.
+- `.vscode/settings.json` and `.vscode/extensions.json` are merged, not replaced: a
+  setting you already have wins (and is warned about), and existing extension
+  recommendations are kept. A `.vscode` file that can't be parsed as JSON (e.g. it
+  has comments) is left untouched with a warning.
 
 The final commit uses your git identity; if none is configured, a local `Chanom <chanom@local>` identity is set. If committing fails (e.g. a commit hook rejects it), your files stay staged and `brew` tells you to commit manually.
 
