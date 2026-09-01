@@ -12,10 +12,28 @@ describe('baseline', () => {
     expect(baseline.devDependencies).toContain('@chanom/vite-config');
   });
 
-  it('contributes the react vite plugin and no verbatim files of its own', () => {
+  it('contributes the react vite plugin', () => {
     expect(baseline.viteImports).toEqual(["import react from '@vitejs/plugin-react';"]);
     expect(baseline.vitePlugins).toEqual(['react()']);
-    expect(baseline.files).toEqual([]);
+  });
+
+  it('ships .vscode settings and extension recommendations', () => {
+    expect(baseline.files.map((file) => file.path)).toEqual([
+      '.vscode/settings.json',
+      '.vscode/extensions.json',
+    ]);
+
+    const settingsFile = baseline.files.find((file) => file.path === '.vscode/settings.json');
+    const settings = JSON.parse(settingsFile?.contents ?? '{}') as Record<string, unknown>;
+    expect(settings['editor.defaultFormatter']).toBe('oxc.oxc-vscode');
+    // The generated app always ships oxfmt.config.ts, never the .mts variant.
+    expect(settings['oxc.fmt.configPath']).toBe('oxfmt.config.ts');
+    expect(settings['[typescript]']).toEqual({ 'editor.defaultFormatter': 'oxc.oxc-vscode' });
+
+    const extensionsFile = baseline.files.find((file) => file.path === '.vscode/extensions.json');
+    expect(JSON.parse(extensionsFile?.contents ?? '{}')).toEqual({
+      recommendations: ['oxc.oxc-vscode'],
+    });
   });
 });
 

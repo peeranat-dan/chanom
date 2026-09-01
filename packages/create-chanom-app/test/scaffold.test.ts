@@ -28,6 +28,8 @@ describe('scaffold', () => {
       expect(fs.files.get('/out/index.html')).toContain('<title>out</title>');
       expect(fs.files.get('/out/src/main.tsx')).toBe('TEMPLATE:src/main.tsx.template\n');
       expect(fs.files.get('/out/.gitignore')).toBe('TEMPLATE:_gitignore.template\n');
+      expect(fs.files.get('/out/.vscode/settings.json')).toContain('oxc.oxc-vscode');
+      expect(fs.files.get('/out/.vscode/extensions.json')).toContain('oxc.oxc-vscode');
     }).pipe(Effect.provide(layer));
   });
 

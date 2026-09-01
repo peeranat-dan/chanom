@@ -1,6 +1,13 @@
-import { type PackageManager, PM_EXEC } from '@chanom/internal';
+import {
+  chanomSettings,
+  type PackageManager,
+  PM_EXEC,
+  RECOMMENDED_EXTENSIONS,
+} from '@chanom/internal';
 
 import type { Contribution } from './domain/contribution.ts';
+
+const asJson = (value: unknown): string => JSON.stringify(value, null, 2) + '\n';
 
 /**
  * The always-present baseline: a minimal Vite + React + TS app wired to the
@@ -40,7 +47,15 @@ export const baseline: Contribution = {
   },
   viteImports: ["import react from '@vitejs/plugin-react';"],
   vitePlugins: ['react()'],
-  files: [],
+  // The generated app is always ESM and always ships `oxfmt.config.ts`, so the
+  // oxc extension's config path is known statically here.
+  files: [
+    { path: '.vscode/settings.json', contents: asJson(chanomSettings('oxfmt.config.ts')) },
+    {
+      path: '.vscode/extensions.json',
+      contents: asJson({ recommendations: RECOMMENDED_EXTENSIONS }),
+    },
+  ],
 };
 
 const LINT_STAGED_CONFIG = {

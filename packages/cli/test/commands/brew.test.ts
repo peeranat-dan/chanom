@@ -5,6 +5,7 @@ import { brew } from '../../src/commands/brew/index.ts';
 import {
   appendGitignoreEntry,
   hasGitignoreEntry,
+  oxfmtConfigPath,
   planPackages,
   selectedFormatters,
   selectedLinters,
@@ -88,6 +89,15 @@ describe('logic', () => {
     expect(wantsLintStaged(['oxfmt'])).toBe(true);
     expect(wantsLintStaged(['knip'])).toBe(false);
     expect(wantsLintStaged([])).toBe(false);
+  });
+
+  it('installs nothing for the vscode topping', () => {
+    expect(planPackages({}, ['vscode'], 'light', versions)).toEqual([]);
+  });
+
+  it('names the oxfmt config after the module system, matching add-oxfmt', () => {
+    expect(oxfmtConfigPath(true)).toBe('oxfmt.config.ts');
+    expect(oxfmtConfigPath(false)).toBe('oxfmt.config.mts');
   });
 });
 
@@ -465,6 +475,45 @@ describe('brew', () => {
     return Effect.gen(function* () {
       const error = yield* Effect.flip(brew('/project'));
       expect(error._tag).toBe('Cancelled');
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('writes .vscode files when the topping is selected', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': JSON.stringify({ type: 'module' }) },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': ['oxfmt', 'vscode'],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+
+      const settings = JSON.parse(
+        env.fs.files.get('/project/.vscode/settings.json') ?? '{}',
+      ) as Record<string, unknown>;
+      expect(settings['oxc.fmt.configPath']).toBe('oxfmt.config.ts');
+      expect(settings['editor.defaultFormatter']).toBe('oxc.oxc-vscode');
+      expect(env.fs.files.get('/project/.vscode/extensions.json')).toContain('oxc.oxc-vscode');
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('leaves .vscode alone when the topping is not selected', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': JSON.stringify({ type: 'module' }) },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': ['oxfmt'],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+      expect(env.fs.files.has('/project/.vscode/settings.json')).toBe(false);
+      expect(env.fs.files.has('/project/.vscode/extensions.json')).toBe(false);
     }).pipe(Effect.provide(env.layer));
   });
 });
