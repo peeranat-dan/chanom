@@ -31,7 +31,8 @@ Run with no flags, the CLI walks you through:
 1. **Project name** - the target directory (kebab-cased). Defaults to `my-chanom-app`.
 2. **Initialize a git repository?** - `git init` plus an initial commit.
 3. **Add commit hooks?** - husky + lint-staged + commitlint (only asked when git is enabled).
-4. **Install dependencies now?** - runs `<pm> install` after scaffolding.
+4. **Add agent coding standards?** - the `coding-standards` skill in `.agents/skills`, linked into `.claude/skills`.
+5. **Install dependencies now?** - runs `<pm> install` after scaffolding.
 
 Every prompt has a matching flag so you can pre-answer any of them (or all, with `--yes`).
 
@@ -43,6 +44,8 @@ Every prompt has a matching flag so you can pre-answer any of them (or all, with
 | `--git` / `--no-git`          | Initialize a git repository (default: yes)                |
 | `--commit-hooks`              | Add husky + lint-staged + commitlint (requires git)       |
 | `--no-commit-hooks`           | Skip the commit-hooks topping                             |
+| `--agent-skills`              | Add the coding-standards skill (default: yes)             |
+| `--no-agent-skills`           | Skip the agent-skills topping                             |
 | `--install` / `--no-install`  | Install dependencies after scaffolding (default: install) |
 | `--pm <pnpm\|npm\|yarn\|bun>` | Package manager to record (default: detected)             |
 | `-y`, `--yes`                 | Accept all defaults, no prompts (CI-friendly)             |
@@ -75,6 +78,8 @@ A minimal Vite + React + TS app wired to the chanom shared configs:
 - `index.html`, `.gitignore`, and a starter `README.md`
 
 With the **commit-hooks** topping, it also adds husky, lint-staged, and commitlint as dev dependencies plus their config files (`.husky/pre-commit`, `.husky/commit-msg`, `.lintstagedrc.json`, `.commitlintrc.json`). The hooks materialize on the first install via the generated `prepare: "husky"` script.
+
+With the **agent-skills** topping, it adds the `coding-standards` agent skill - a router `SKILL.md` plus TypeScript, React, and Vitest references written for exactly the stack scaffolded here. The real files land in `.agents/skills/coding-standards/` so any agent tool can read them, and `.claude/skills/coding-standards` is a relative symlink pointing at that directory rather than a second copy. It contributes no packages and no scripts, so skipping it leaves both directories out entirely.
 
 ## Development
 
