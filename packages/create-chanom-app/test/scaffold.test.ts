@@ -159,4 +159,21 @@ describe('scaffold', () => {
       );
     }).pipe(Effect.provide(layer));
   });
+
+  it.effect('skips a link whose path is already taken instead of failing', () => {
+    const { fs, prompter, layer } = makeEnv({
+      files: { '/out/.claude/skills/coding-standards/SKILL.md': 'hand-maintained\n' },
+    });
+    return Effect.gen(function* () {
+      yield* scaffold({ ...basePlan, agentSkills: true });
+
+      expect(fs.symlinks.has('/out/.claude/skills/coding-standards')).toBe(false);
+      expect(fs.files.get('/out/.claude/skills/coding-standards/SKILL.md')).toBe(
+        'hand-maintained\n',
+      );
+      expect(prompter.log.warnings).toContain(
+        '`.claude/skills/coding-standards` already exists - skipping link',
+      );
+    }).pipe(Effect.provide(layer));
+  });
 });
