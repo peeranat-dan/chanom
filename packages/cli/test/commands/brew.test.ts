@@ -95,6 +95,10 @@ describe('logic', () => {
     expect(planPackages({}, ['vscode'], 'light', versions)).toEqual([]);
   });
 
+  it('installs nothing for the skills topping', () => {
+    expect(planPackages({}, ['skills'], 'light', versions)).toEqual([]);
+  });
+
   it('names the oxfmt config after the module system, matching add-oxfmt', () => {
     expect(oxfmtConfigPath(true)).toBe('oxfmt.config.ts');
     expect(oxfmtConfigPath(false)).toBe('oxfmt.config.mts');
@@ -497,6 +501,49 @@ describe('brew', () => {
       expect(settings['oxc.fmt.configPath']).toBe('oxfmt.config.ts');
       expect(settings['editor.defaultFormatter']).toBe('oxc.oxc-vscode');
       expect(env.fs.files.get('/project/.vscode/extensions.json')).toContain('oxc.oxc-vscode');
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('writes the coding-standards skill when the skills topping is selected', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': JSON.stringify({ type: 'module' }) },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': ['skills'],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+
+      expect(env.fs.files.get('/project/.agents/skills/coding-standards/SKILL.md')).toMatch(
+        /name: coding-standards/,
+      );
+      expect(env.fs.files.has('/project/.agents/skills/coding-standards/references/react.md')).toBe(
+        true,
+      );
+      // Claude Code reads .claude/skills, so it gets a link, not a copy.
+      expect(env.fs.symlinks.get('/project/.claude/skills/coding-standards')).toBe(
+        '../../.agents/skills/coding-standards',
+      );
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('leaves .agents and .claude alone when the skills topping is not selected', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': JSON.stringify({ type: 'module' }) },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': ['oxfmt'],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+      expect([...env.fs.files.keys()].some((path) => path.includes('.agents'))).toBe(false);
+      expect(env.fs.symlinks.size).toBe(0);
     }).pipe(Effect.provide(env.layer));
   });
 

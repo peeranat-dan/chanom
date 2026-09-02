@@ -6,6 +6,7 @@ import { defineConfig } from 'tsdown';
 // package and create-chanom-app). Imported by relative path because it is build
 // tooling, never bundled into the shipped output.
 import { catalogVersion } from '../internal/src/catalog/version.ts';
+import { readCodingStandardsFiles } from '../internal/src/skills/build-skill-files.ts';
 
 const oxlintVersion = catalogVersion('oxlint');
 const oxlintTsgolintVersion = catalogVersion('oxlint-tsgolint');
@@ -24,6 +25,7 @@ export default defineConfig({
   deps: { alwaysBundle: ['@chanom/internal'] },
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   define: {
+    __CODING_STANDARDS_FILES__: JSON.stringify(readCodingStandardsFiles()),
     __OXLINT_VERSION__: JSON.stringify(oxlintVersion),
     __OXLINT_TSGOLINT_VERSION__: JSON.stringify(oxlintTsgolintVersion),
     __OXFMT_VERSION__: JSON.stringify(oxfmtVersion),

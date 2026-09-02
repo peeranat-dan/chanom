@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 
+import { readCodingStandardsFiles } from '../internal/src/skills/build-skill-files.ts';
 import { CATALOG_PACKAGES, WORKSPACE_PACKAGES } from './src/domain/catalog-packages.ts';
 
 // Build-time version constants normally injected by tsdown; tests use a
@@ -11,6 +12,8 @@ const testDepVersions = Object.fromEntries([
 
 export default defineConfig({
   define: {
+    // The real authored markdown, so tests assert on shipped content.
+    __CODING_STANDARDS_FILES__: JSON.stringify(readCodingStandardsFiles()),
     __PKG_VERSION__: JSON.stringify('0.0.0-test'),
     __DEP_VERSIONS__: JSON.stringify(testDepVersions),
   },

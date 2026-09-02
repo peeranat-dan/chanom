@@ -5,6 +5,13 @@ export interface ConfigFile {
   readonly contents: string;
 }
 
+/** A symlink a topping contributes, target relative to the link's own directory. */
+export interface ConfigLink {
+  /** Link path relative to the project root, using posix separators. */
+  readonly path: string;
+  readonly target: string;
+}
+
 /**
  * A structured fragment a topping (or the baseline) folds into the generated
  * app. The scaffolder folds `[baseline, ...selectedToppings]` with a single
@@ -23,6 +30,8 @@ export interface Contribution {
   readonly vitePlugins: readonly string[];
   /** Verbatim files the topping writes (its own config, hook scripts, ...). */
   readonly files: readonly ConfigFile[];
+  /** Symlinks the topping creates, made after its files are written. */
+  readonly links: readonly ConfigLink[];
 }
 
 export const emptyContribution: Contribution = {
@@ -32,6 +41,7 @@ export const emptyContribution: Contribution = {
   viteImports: [],
   vitePlugins: [],
   files: [],
+  links: [],
 };
 
 const dedupe = (values: readonly string[]): string[] => [...new Set(values)];
@@ -40,13 +50,20 @@ const dedupe = (values: readonly string[]): string[] => [...new Set(values)];
  * Folds contributions in order into a single value. Package names, vite imports,
  * and plugins are concatenated then de-duplicated (first occurrence wins its
  * position); scripts merge with later contributions overriding earlier keys;
- * files de-duplicate by path (first writer wins).
+ * files and links de-duplicate by path (first writer wins).
  */
 export function mergeContributions(contributions: readonly Contribution[]): Contribution {
   const filesByPath = new Map<string, ConfigFile>();
   for (const contribution of contributions) {
     for (const file of contribution.files) {
       if (!filesByPath.has(file.path)) filesByPath.set(file.path, file);
+    }
+  }
+
+  const linksByPath = new Map<string, ConfigLink>();
+  for (const contribution of contributions) {
+    for (const link of contribution.links) {
+      if (!linksByPath.has(link.path)) linksByPath.set(link.path, link);
     }
   }
 
@@ -60,5 +77,6 @@ export function mergeContributions(contributions: readonly Contribution[]): Cont
     viteImports: dedupe(contributions.flatMap((c) => c.viteImports)),
     vitePlugins: dedupe(contributions.flatMap((c) => c.vitePlugins)),
     files: [...filesByPath.values()],
+    links: [...linksByPath.values()],
   };
 }

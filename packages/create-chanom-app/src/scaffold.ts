@@ -3,7 +3,7 @@ import { FileSystem, Path } from '@effect/platform';
 import { Data, Effect } from 'effect';
 import pc from 'picocolors';
 
-import type { Contribution } from './domain/contribution.ts';
+import type { ConfigLink, Contribution } from './domain/contribution.ts';
 
 import { depVersions } from './bundled-versions.ts';
 import { mergeContributions } from './domain/contribution.ts';
@@ -30,6 +30,7 @@ export interface ScaffoldPlan {
   readonly packageManagerField?: string;
   readonly git: boolean;
   readonly commitHooks: boolean;
+  readonly agentSkills: boolean;
   readonly install: boolean;
   /** Absolute path of the shipped `templates/` directory. */
   readonly templatesRoot: string;
@@ -63,6 +64,28 @@ const copyTemplates = Effect.fn('scaffold.copyTemplates')(function* (plan: Scaff
   }
 });
 
+/**
+ * Creates one topping-contributed symlink, making its parent directory first.
+ * Scaffolding into an existing directory (`create chanom-app .`) can meet a link
+ * an earlier run - or `chanom add-skills` - already made, and `symlink` fails
+ * with EEXIST on anything already there, so an occupied path is left alone and
+ * reported instead of aborting the scaffold after the files are written.
+ */
+const writeLink = Effect.fn('scaffold.writeLink')(function* (targetDir: string, link: ConfigLink) {
+  const fs = yield* FileSystem.FileSystem;
+  const path = yield* Path.Path;
+  const prompter = yield* Prompter;
+
+  const linkPath = path.join(targetDir, link.path);
+  if (yield* fs.exists(linkPath)) {
+    yield* prompter.warn(`\`${link.path}\` already exists - skipping link`);
+    return;
+  }
+
+  yield* fs.makeDirectory(path.dirname(linkPath), { recursive: true });
+  yield* fs.symlink(link.target, linkPath);
+});
+
 const writeGeneratedFiles = Effect.fn('scaffold.writeGeneratedFiles')(function* (
   plan: ScaffoldPlan,
   folded: Contribution,
@@ -86,6 +109,11 @@ const writeGeneratedFiles = Effect.fn('scaffold.writeGeneratedFiles')(function* 
   // Topping-contributed files (hook scripts, standalone tool configs).
   for (const file of folded.files) {
     yield* writeFile(plan.targetDir, file.path, file.contents);
+  }
+
+  // Links come last so their targets already exist on disk.
+  for (const link of folded.links) {
+    yield* writeLink(plan.targetDir, link);
   }
 });
 
@@ -135,7 +163,11 @@ export const scaffold = Effect.fn('scaffold')(function* (plan: ScaffoldPlan) {
   const fs = yield* FileSystem.FileSystem;
 
   const folded = mergeContributions(
-    selectContributions({ pm: plan.pm, commitHooks: plan.commitHooks }),
+    selectContributions({
+      pm: plan.pm,
+      commitHooks: plan.commitHooks,
+      agentSkills: plan.agentSkills,
+    }),
   );
 
   yield* fs.makeDirectory(plan.targetDir, { recursive: true });

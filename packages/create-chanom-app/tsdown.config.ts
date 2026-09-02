@@ -6,6 +6,7 @@ import { defineConfig } from 'tsdown';
 // Strict variant: a missing catalog key fails the build rather than shipping
 // an unpinned `latest`.
 import { catalogVersionStrict } from '../internal/src/catalog/version.ts';
+import { readCodingStandardsFiles } from '../internal/src/skills/build-skill-files.ts';
 import { CATALOG_PACKAGES, WORKSPACE_PACKAGES } from './src/domain/catalog-packages.ts';
 
 const readVersion = (relPath: string): string => {
@@ -36,6 +37,7 @@ export default defineConfig({
   copy: [{ from: 'templates', to: 'dist' }],
   outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
   define: {
+    __CODING_STANDARDS_FILES__: JSON.stringify(readCodingStandardsFiles()),
     __PKG_VERSION__: JSON.stringify(pkgVersion),
     __DEP_VERSIONS__: JSON.stringify(depVersions),
   },

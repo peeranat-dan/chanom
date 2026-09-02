@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { baseline, commitHooks, selectContributions } from '../src/toppings.ts';
+import { agentSkills, baseline, commitHooks, selectContributions } from '../src/toppings.ts';
 
 describe('baseline', () => {
   it('puts only react + react-dom in runtime dependencies (no chanom footprint)', () => {
@@ -63,14 +63,67 @@ describe('commitHooks', () => {
   });
 });
 
+describe('agentSkills', () => {
+  it('contributes skill files only - no packages or scripts', () => {
+    expect(agentSkills.dependencies).toEqual([]);
+    expect(agentSkills.devDependencies).toEqual([]);
+    expect(agentSkills.scripts).toEqual({});
+    expect(agentSkills.viteImports).toEqual([]);
+    expect(agentSkills.vitePlugins).toEqual([]);
+  });
+
+  it('writes the coding-standards skill under .agents/skills', () => {
+    const paths = agentSkills.files.map((file) => file.path);
+
+    expect(paths).toContain('.agents/skills/coding-standards/SKILL.md');
+    expect(paths.every((path) => path.startsWith('.agents/skills/'))).toBe(true);
+
+    const skill = agentSkills.files.find(
+      (file) => file.path === '.agents/skills/coding-standards/SKILL.md',
+    );
+    expect(skill?.contents).toMatch(/name: coding-standards/);
+  });
+
+  it('links .claude/skills at the .agents copy', () => {
+    expect(agentSkills.links).toEqual([
+      {
+        path: '.claude/skills/coding-standards',
+        target: '../../.agents/skills/coding-standards',
+      },
+    ]);
+  });
+});
+
 describe('selectContributions', () => {
-  it('is baseline-only when commit hooks are off', () => {
-    expect(selectContributions({ pm: 'pnpm', commitHooks: false })).toEqual([baseline]);
+  it('is baseline-only when every topping is off', () => {
+    expect(selectContributions({ pm: 'pnpm', commitHooks: false, agentSkills: false })).toEqual([
+      baseline,
+    ]);
   });
 
   it('appends the commit-hooks topping when on', () => {
-    const contributions = selectContributions({ pm: 'pnpm', commitHooks: true });
+    const contributions = selectContributions({
+      pm: 'pnpm',
+      commitHooks: true,
+      agentSkills: false,
+    });
     expect(contributions).toHaveLength(2);
     expect(contributions[0]).toBe(baseline);
+  });
+
+  it('appends the agent-skills topping when on', () => {
+    const contributions = selectContributions({
+      pm: 'pnpm',
+      commitHooks: false,
+      agentSkills: true,
+    });
+    expect(contributions).toEqual([baseline, agentSkills]);
+  });
+
+  it('appends both toppings in fold order', () => {
+    const contributions = selectContributions({ pm: 'pnpm', commitHooks: true, agentSkills: true });
+    expect(contributions).toHaveLength(3);
+    expect(contributions[0]).toBe(baseline);
+    expect(contributions[2]).toBe(agentSkills);
   });
 });

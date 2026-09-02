@@ -7,6 +7,8 @@ export interface TestFs {
   readonly layer: Layer.Layer<FileSystem.FileSystem | Path.Path>;
   /** Absolute path -> contents. Mutated by writes; inspect it in assertions. */
   readonly files: Map<string, string>;
+  /** Absolute link path -> target, as passed to `symlink`. Inspect it in assertions. */
+  readonly symlinks: Map<string, string>;
 }
 
 /**
@@ -20,10 +22,12 @@ export const makeTestFs = (
   readErrors: Record<string, SystemErrorReason> = {},
 ): TestFs => {
   const files = new Map(Object.entries(initialFiles));
+  const symlinks = new Map<string, string>();
 
   const exists = (path: string) =>
     files.has(path) ||
     dirs.includes(path) ||
+    symlinks.has(path) ||
     [...files.keys(), ...dirs].some((entry) => entry.startsWith(`${path}/`));
 
   const readDirectory = (path: string): string[] => {
@@ -63,8 +67,15 @@ export const makeTestFs = (
     remove: (path) =>
       Effect.sync(() => {
         files.delete(path);
+        symlinks.delete(path);
+      }),
+    // Recorded rather than resolved: assertions check that the right link was
+    // requested, and no test double reads through a link.
+    symlink: (target, path) =>
+      Effect.sync(() => {
+        symlinks.set(path, target);
       }),
   });
 
-  return { layer: Layer.merge(fileSystem, Path.layer), files };
+  return { layer: Layer.merge(fileSystem, Path.layer), files, symlinks };
 };

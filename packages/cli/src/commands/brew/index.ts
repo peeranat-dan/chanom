@@ -16,6 +16,7 @@ import * as addKnip from '../add-knip/index.ts';
 import * as addLintStaged from '../add-lint-staged/index.ts';
 import * as addOxfmt from '../add-oxfmt/index.ts';
 import * as addOxlint from '../add-oxlint/index.ts';
+import * as addSkills from '../add-skills/index.ts';
 import * as addVscode from '../add-vscode/index.ts';
 import {
   appendGitignoreEntry,
@@ -83,6 +84,7 @@ const askRecipe = Effect.fn('brew.askRecipe')(function* () {
       { value: 'oxfmt', label: 'oxfmt', hint: 'fast Rust-based formatter' },
       { value: 'knip', label: 'knip', hint: 'dead code remover' },
       { value: 'vscode', label: 'vscode', hint: 'editor settings + extension recommendations' },
+      { value: 'skills', label: 'skills', hint: 'coding standards for AI agents (.claude/skills)' },
     ],
     required: false,
   });
@@ -138,10 +140,13 @@ const applyToppings = Effect.fn('brew.applyToppings')(function* (
   if (toppings.includes('knip')) {
     updated = yield* addKnip.apply(cwd, esm, updated);
   }
-  // vscode contributes editor files only - no packages, no scripts - so it does
-  // not thread through `updated`.
+  // vscode and skills contribute files only - no packages, no scripts - so they
+  // do not thread through `updated`.
   if (toppings.includes('vscode')) {
     yield* addVscode.apply(cwd, oxfmtConfigPath(esm));
+  }
+  if (toppings.includes('skills')) {
+    yield* addSkills.apply(cwd);
   }
 
   return updated;

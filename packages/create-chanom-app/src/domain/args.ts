@@ -10,6 +10,7 @@ export interface ParsedArgs {
   readonly directory?: string;
   readonly git?: boolean;
   readonly commitHooks?: boolean;
+  readonly agentSkills?: boolean;
   readonly install?: boolean;
   readonly pm?: PackageManager;
   readonly yes: boolean;
@@ -25,6 +26,7 @@ interface MutableArgs {
   directory?: string;
   git?: boolean;
   commitHooks?: boolean;
+  agentSkills?: boolean;
   install?: boolean;
   pm?: PackageManager;
   yes: boolean;
@@ -66,6 +68,12 @@ export function parseArgs(argv: readonly string[]): ParseResult {
         break;
       case '--no-commit-hooks':
         args.commitHooks = false;
+        break;
+      case '--agent-skills':
+        args.agentSkills = true;
+        break;
+      case '--no-agent-skills':
+        args.agentSkills = false;
         break;
       case '--install':
         args.install = true;
