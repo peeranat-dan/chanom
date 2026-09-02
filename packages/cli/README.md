@@ -1,6 +1,6 @@
 # @chanom/cli
 
-Interactive CLI that brews dev tooling config into your project - oxlint, oxfmt, knip, VS Code settings, and commit hooks, picked with a couple of prompts.
+Interactive CLI that brews dev tooling config into your project - oxlint, oxfmt, knip, VS Code settings, agent coding standards, and commit hooks, picked with a couple of prompts.
 
 ## Install
 
@@ -39,6 +39,7 @@ Debug mode logs each step (detected package manager, planned packages, every com
    - `oxfmt` - fast Rust-based formatter
    - `knip` - dead code remover
    - `vscode` - editor settings + extension recommendations
+   - `skills` - coding standards for AI agents (`.claude/skills`)
 2. **Sweetness** - how strict to be:
    - `light` - warn only, no blocking
    - `medium` - block on commit via husky + lint-staged + commitlint
@@ -61,12 +62,13 @@ installing anything. `light` sweetness works anywhere in the repo.
 
 ## What gets added
 
-| Topping  | Config file                                        | Scripts added            |
-| -------- | -------------------------------------------------- | ------------------------ |
-| `oxlint` | `oxlint.config.ts`\*                               | `lint`, `lint:fix`       |
-| `oxfmt`  | `oxfmt.config.ts`\*                                | `format`, `format:check` |
-| `knip`   | `knip.config.ts`\*                                 | `knip`                   |
-| `vscode` | `.vscode/settings.json`, `.vscode/extensions.json` | none                     |
+| Topping  | Config file                                                                     | Scripts added            |
+| -------- | ------------------------------------------------------------------------------- | ------------------------ |
+| `oxlint` | `oxlint.config.ts`\*                                                            | `lint`, `lint:fix`       |
+| `oxfmt`  | `oxfmt.config.ts`\*                                                             | `format`, `format:check` |
+| `knip`   | `knip.config.ts`\*                                                              | `knip`                   |
+| `vscode` | `.vscode/settings.json`, `.vscode/extensions.json`                              | none                     |
+| `skills` | `.agents/skills/coding-standards/`, `.claude/skills/coding-standards` (symlink) | none                     |
 
 \* `.mts` instead of `.ts` when your project is CommonJS (no `"type": "module"` in `package.json`).
 
@@ -79,6 +81,13 @@ on save (`editor.formatOnSave` stays off so both run in one pass), points
 `oxc.fmt.configPath` at the oxfmt config, and recommends the extension so
 teammates are prompted to install it. Only portable settings are written - no
 `cSpell.words` or other repo-specific entries.
+
+The `skills` topping also installs no packages and adds no scripts. It writes
+the `coding-standards` agent skill - a router `SKILL.md` plus TypeScript, React,
+and Vitest references - into `.agents/skills/coding-standards/`, so any agent
+tool can read it, and links `.claude/skills/coding-standards` at that directory
+with a relative symlink rather than keeping a second copy. The standards target
+the stack chanom scaffolds (Vite + React + TypeScript, oxlint, oxfmt, vitest).
 
 `medium` sweetness additionally adds:
 
@@ -105,6 +114,10 @@ Existing setup is never overwritten:
   setting you already have wins (and is warned about), and existing extension
   recommendations are kept. A `.vscode` file that can't be parsed as JSON (e.g. it
   has comments) is left untouched with a warning.
+- Skill files already on disk are warned about and skipped, and an existing
+  `.claude/skills/coding-standards` (a link of your own, or a real directory you
+  maintain by hand) is left alone - so re-running never overwrites standards you
+  have edited.
 
 The final commit uses your git identity; if none is configured, a local `Chanom <chanom@local>` identity is set. If committing fails (e.g. a commit hook rejects it), your files stay staged and `brew` tells you to commit manually.
 
