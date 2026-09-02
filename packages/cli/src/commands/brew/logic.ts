@@ -9,7 +9,7 @@ import * as addLintStaged from '../add-lint-staged/logic.ts';
 import * as addOxfmt from '../add-oxfmt/logic.ts';
 import * as addOxlint from '../add-oxlint/logic.ts';
 
-export type Topping = 'oxlint' | 'oxfmt' | 'knip' | 'vscode';
+export type Topping = 'oxlint' | 'oxfmt' | 'knip' | 'vscode' | 'skills';
 export type Sweetness = 'light' | 'medium';
 
 /** Deduplicated list of packages to install for the chosen toppings and sweetness. */

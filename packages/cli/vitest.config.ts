@@ -1,8 +1,12 @@
 import { defineConfig } from 'vitest/config';
 
+import { readCodingStandardsFiles } from '../internal/src/skills/build-skill-files.ts';
+
 export default defineConfig({
   // Build-time constants normally injected by tsdown; tests use recognizable fakes.
   define: {
+    // The real authored markdown, so tests assert on shipped content.
+    __CODING_STANDARDS_FILES__: JSON.stringify(readCodingStandardsFiles()),
     __OXLINT_VERSION__: JSON.stringify('1.0.0-test.oxlint'),
     __OXLINT_TSGOLINT_VERSION__: JSON.stringify('1.0.0-test.oxlint-tsgolint'),
     __OXFMT_VERSION__: JSON.stringify('1.0.0-test.oxfmt'),

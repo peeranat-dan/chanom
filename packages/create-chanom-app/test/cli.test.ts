@@ -47,6 +47,7 @@ describe('run', () => {
       answers: {
         'Project name?': 'my-app',
         'Initialize a git repository?': false,
+        'Add agent coding standards (.agents/skills)?': false,
         'Install dependencies now?': false,
       },
     });
@@ -63,6 +64,7 @@ describe('run', () => {
         'Project name?': 'my-app',
         'Initialize a git repository?': true,
         'Add commit hooks (husky + lint-staged + commitlint)?': true,
+        'Add agent coding standards (.agents/skills)?': false,
         'Install dependencies now?': false,
       },
     });
@@ -77,12 +79,32 @@ describe('run', () => {
       answers: {
         'Project name?': 'my-app',
         'Initialize a git repository?': false,
+        'Add agent coding standards (.agents/skills)?': false,
         'Install dependencies now?': false,
       },
     });
     return Effect.gen(function* () {
       yield* run([], '/work', opts);
       expect(fs.files.has('/work/my-app/.husky/commit-msg')).toBe(false);
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('writes the coding-standards skill with --agent-skills', () => {
+    const { fs, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* run(['demo', '--yes', '--no-install', '--no-git', '--agent-skills'], '/work', opts);
+      expect(fs.files.get('/work/demo/.agents/skills/coding-standards/SKILL.md')).toMatch(
+        /name: coding-standards/,
+      );
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('writes no skill directories with --no-agent-skills', () => {
+    const { fs, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* run(['demo', '--yes', '--no-install', '--no-git', '--no-agent-skills'], '/work', opts);
+      expect([...fs.files.keys()].some((path) => path.includes('.agents'))).toBe(false);
+      expect(fs.symlinks.size).toBe(0);
     }).pipe(Effect.provide(layer));
   });
 

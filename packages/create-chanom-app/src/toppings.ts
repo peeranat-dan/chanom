@@ -1,11 +1,16 @@
 import {
   chanomSettings,
+  codingStandardsSkill,
   type PackageManager,
   PM_EXEC,
   RECOMMENDED_EXTENSIONS,
+  skillFiles,
+  skillLink,
 } from '@chanom/internal';
 
 import type { Contribution } from './domain/contribution.ts';
+
+import { emptyContribution } from './domain/contribution.ts';
 
 const asJson = (value: unknown): string => JSON.stringify(value, null, 2) + '\n';
 
@@ -56,6 +61,7 @@ export const baseline: Contribution = {
       contents: asJson({ recommendations: RECOMMENDED_EXTENSIONS }),
     },
   ],
+  links: [],
 };
 
 const LINT_STAGED_CONFIG = {
@@ -86,15 +92,32 @@ export function commitHooks(pm: PackageManager): Contribution {
       { path: '.lintstagedrc.json', contents: JSON.stringify(LINT_STAGED_CONFIG, null, 2) + '\n' },
       { path: '.commitlintrc.json', contents: JSON.stringify(COMMITLINT_CONFIG, null, 2) + '\n' },
     ],
+    links: [],
   };
 }
+
+/**
+ * The `agent-skills` topping: the chanom coding-standards skill. Real files go
+ * to `.agents/skills/` so any agent tool can read them, and `.claude/skills/`
+ * gets a symlink rather than a second copy. Contributes files and links only -
+ * no packages, no scripts - so projects that skip it get neither directory.
+ */
+export const agentSkills: Contribution = {
+  ...emptyContribution,
+  files: skillFiles(codingStandardsSkill),
+  links: [skillLink(codingStandardsSkill)],
+};
 
 export interface ToppingSelection {
   readonly pm: PackageManager;
   readonly commitHooks: boolean;
+  readonly agentSkills: boolean;
 }
 
 /** The baseline plus whichever toppings the resolved options select, in fold order. */
 export function selectContributions(selection: ToppingSelection): Contribution[] {
-  return selection.commitHooks ? [baseline, commitHooks(selection.pm)] : [baseline];
+  const contributions: Contribution[] = [baseline];
+  if (selection.commitHooks) contributions.push(commitHooks(selection.pm));
+  if (selection.agentSkills) contributions.push(agentSkills);
+  return contributions;
 }

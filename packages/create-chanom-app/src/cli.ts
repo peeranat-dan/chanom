@@ -23,6 +23,8 @@ ${pc.bold('Options')}
   ${pc.cyan('--git / --no-git')}            Initialize a git repository (default: yes)
   ${pc.cyan('--commit-hooks')}              Add husky + lint-staged + commitlint (requires git)
   ${pc.cyan('--no-commit-hooks')}           Skip the commit-hooks topping
+  ${pc.cyan('--agent-skills')}              Add the coding-standards skill to .claude/skills
+  ${pc.cyan('--no-agent-skills')}           Skip the agent-skills topping
   ${pc.cyan('--install / --no-install')}    Install dependencies after scaffolding (default: install)
   ${pc.cyan('--pm <pnpm|npm|yarn|bun>')}    Package manager to record (default: detected)
   ${pc.cyan('-y, --yes')}                   Accept all defaults, no prompts (CI-friendly)
@@ -146,6 +148,14 @@ const program = (argv: readonly string[], cwd: string, options: RunOptions) =>
           }),
         )
       : false;
+    const agentSkills = yield* resolveConfirm(
+      args.agentSkills,
+      args.yes,
+      prompter.confirm({
+        message: 'Add agent coding standards (.agents/skills)?',
+        initialValue: true,
+      }),
+    );
     const install = yield* resolveConfirm(
       args.install,
       args.yes,
@@ -160,6 +170,7 @@ const program = (argv: readonly string[], cwd: string, options: RunOptions) =>
         `${pc.dim('package mgr')}   ${pm}`,
         `${pc.dim('git')}           ${git ? 'yes' : 'no'}`,
         `${pc.dim('commit hooks')}  ${git ? (commitHooks ? 'yes' : 'no') : pc.dim('n/a')}`,
+        `${pc.dim('agent skills')}  ${agentSkills ? 'yes' : 'no'}`,
         `${pc.dim('install')}       ${install ? 'yes' : 'no'}`,
       ].join('\n'),
     );
@@ -171,6 +182,7 @@ const program = (argv: readonly string[], cwd: string, options: RunOptions) =>
       packageManagerField: packageManagerField(pm, options.userAgent),
       git,
       commitHooks,
+      agentSkills,
       install,
       templatesRoot: options.templatesRoot,
     });

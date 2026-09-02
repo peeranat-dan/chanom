@@ -12,6 +12,7 @@ const basePlan: ScaffoldPlan = {
   pm: 'pnpm',
   git: false,
   commitHooks: false,
+  agentSkills: false,
   install: false,
   templatesRoot: TEMPLATE_ROOT,
 };
@@ -143,6 +144,19 @@ describe('scaffold', () => {
     return Effect.gen(function* () {
       const error = yield* Effect.flip(scaffold({ ...basePlan, install: true }));
       expect(error._tag).toBe('InstallFailed');
+    }).pipe(Effect.provide(layer));
+  });
+  it.effect('writes skill files to .agents and links them from .claude', () => {
+    const { fs, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* scaffold({ ...basePlan, agentSkills: true });
+
+      expect(fs.files.get('/out/.agents/skills/coding-standards/SKILL.md')).toMatch(
+        /name: coding-standards/,
+      );
+      expect(fs.symlinks.get('/out/.claude/skills/coding-standards')).toBe(
+        '../../.agents/skills/coding-standards',
+      );
     }).pipe(Effect.provide(layer));
   });
 });
