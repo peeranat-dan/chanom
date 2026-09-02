@@ -15,9 +15,9 @@ export interface Skill {
 /**
  * The coding-standards skill, targeting the stack `create-chanom-app` scaffolds
  * (Vite + React + TypeScript, oxlint, oxfmt, vitest). Its markdown is authored
- * as real `.md` files under `skills/coding-standards/` and inlined at build
- * time, so `chanom brew` and `create-chanom-app` install byte-identical
- * content — the same arrangement `chanomSettings` uses for `.vscode`.
+ * as real `.md` files under `skills/coding-standards/` and inlined here at
+ * build time through the `__CODING_STANDARDS_FILES__` define, so `chanom brew`
+ * and `create-chanom-app` install byte-identical content from one source.
  */
 export const codingStandardsSkill: Skill = {
   name: 'coding-standards',
