@@ -1,5 +1,12 @@
-import { type PluginOption } from 'vite';
 import { type ViteUserConfig, defineConfig, mergeConfig } from 'vitest/config';
+
+/**
+ * The `plugins` block of a Vitest config. Sourced from `ViteUserConfig` rather
+ * than imported from `vite`: Vitest resolves its own Vite major, so a direct
+ * `vite` import can name a different copy of these types than the config we
+ * build here and fail to assign.
+ */
+type VitestPluginOption = NonNullable<ViteUserConfig['plugins']>[number];
 
 /** The `test` block of a Vitest config, with `undefined` removed. */
 type TestOptions = NonNullable<ViteUserConfig['test']>;
@@ -57,7 +64,7 @@ export interface CreateVitestConfigOptions {
    * Plugins to apply. Pass framework plugins here (e.g. `@vitejs/plugin-react`)
    * so this package stays free of framework peer deps.
    */
-  plugins?: PluginOption[];
+  plugins?: VitestPluginOption[];
   /**
    * Coverage. Pass `true` for v8 defaults, an object to tweak them, or omit to
    * leave coverage off. Requires `@vitest/coverage-v8` in the consumer.

@@ -45,7 +45,8 @@
     "format:check": "oxfmt --check",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prepublishOnly": "tsdown"
+    "prepublishOnly": "tsdown",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",

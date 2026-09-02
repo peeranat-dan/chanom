@@ -65,7 +65,7 @@ describe('Prompter (live)', () => {
     withLive(
       Effect.gen(function* () {
         clack.text.mockResolvedValueOnce('my-app');
-        const validate = (value: string) => (value === '' ? 'required' : undefined);
+        const validate = (value: string | undefined) => (value ? undefined : 'required');
         const prompter = yield* Prompter;
         const answer = yield* prompter.text({
           message: 'Project name?',

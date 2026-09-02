@@ -75,11 +75,13 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "prepublishOnly": "tsdown"
+    "prepublishOnly": "tsdown",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@tsconfig/node-lts": "catalog:",
     "@tsconfig/node-ts": "catalog:",
+    "@types/node": "catalog:",
     "knip": "catalog:",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",

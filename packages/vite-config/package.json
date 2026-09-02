@@ -52,7 +52,8 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "prepublishOnly": "tsdown"
+    "prepublishOnly": "tsdown",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
