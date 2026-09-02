@@ -64,11 +64,24 @@ const copyTemplates = Effect.fn('scaffold.copyTemplates')(function* (plan: Scaff
   }
 });
 
-/** Creates one topping-contributed symlink, making its parent directory first. */
+/**
+ * Creates one topping-contributed symlink, making its parent directory first.
+ * Scaffolding into an existing directory (`create chanom-app .`) can meet a link
+ * an earlier run - or `chanom add-skills` - already made, and `symlink` fails
+ * with EEXIST on anything already there, so an occupied path is left alone and
+ * reported instead of aborting the scaffold after the files are written.
+ */
 const writeLink = Effect.fn('scaffold.writeLink')(function* (targetDir: string, link: ConfigLink) {
   const fs = yield* FileSystem.FileSystem;
   const path = yield* Path.Path;
+  const prompter = yield* Prompter;
+
   const linkPath = path.join(targetDir, link.path);
+  if (yield* fs.exists(linkPath)) {
+    yield* prompter.warn(`\`${link.path}\` already exists - skipping link`);
+    return;
+  }
+
   yield* fs.makeDirectory(path.dirname(linkPath), { recursive: true });
   yield* fs.symlink(link.target, linkPath);
 });
