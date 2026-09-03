@@ -36,9 +36,10 @@ After implementing, from the project root:
 pnpm lint
 pnpm test
 pnpm build
+pnpm typecheck
 ```
 
-Done only when all three exit clean. On failure, fix and rerun until they do.
+Done only when all four exit clean. On failure, fix and rerun until they do.
 Run `pnpm format` before committing. Comment- or doc-only changes may skip all
 four.
 
