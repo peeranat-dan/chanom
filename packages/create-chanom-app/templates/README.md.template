@@ -9,6 +9,7 @@ Brewed with [create-chanom-app](https://github.com/peeranat-dan/chanom).
 | `pnpm dev`          | Start the Vite dev server             |
 | `pnpm build`        | Type-check, then build for production |
 | `pnpm preview`      | Preview the production build          |
+| `pnpm typecheck`    | Type-check the project                |
 | `pnpm lint`         | Lint with oxlint                      |
 | `pnpm format`       | Format with oxfmt                     |
 | `pnpm format:check` | Check formatting without writing      |

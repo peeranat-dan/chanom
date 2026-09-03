@@ -43,8 +43,8 @@ export const baseline: Contribution = {
   scripts: {
     dev: 'vite',
     build: 'tsc -b && vite build',
-    typecheck: 'tsc --noEmit',
     preview: 'vite preview',
+    typecheck: 'tsc --noEmit',
     lint: 'oxlint',
     format: 'oxfmt',
     'format:check': 'oxfmt --check',
