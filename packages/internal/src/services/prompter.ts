@@ -24,8 +24,11 @@ export interface TextParams {
   readonly placeholder?: string;
   readonly defaultValue?: string;
   readonly initialValue?: string;
-  /** Returns an error message to reject the input, or `undefined` to accept it. */
-  readonly validate?: (value: string) => string | undefined;
+  /**
+   * Returns an error message to reject the input, or `undefined` to accept it.
+   * Receives `undefined` when the field is submitted empty, matching clack.
+   */
+  readonly validate?: (value: string | undefined) => string | undefined;
 }
 
 export interface ConfirmParams {

@@ -15,7 +15,8 @@
     "changeset:version": "changeset version",
     "changeset:release": "turbo run build && changeset publish",
     "prepare": "husky",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
     "@changesets/cli": "catalog:",

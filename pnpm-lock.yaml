@@ -467,6 +467,9 @@ importers:
       '@tsconfig/node-ts':
         specifier: 'catalog:'
         version: 23.6.4
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.0.1
       knip:
         specifier: 'catalog:'
         version: 6.26.0

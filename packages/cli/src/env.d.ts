@@ -3,3 +3,7 @@ declare const __OXLINT_TSGOLINT_VERSION__: string;
 declare const __OXFMT_VERSION__: string;
 declare const __KNIP_VERSION__: string;
 declare const __DEV_CONFIG_VERSION__: string;
+declare const __CODING_STANDARDS_FILES__: readonly {
+  readonly path: string;
+  readonly contents: string;
+}[];

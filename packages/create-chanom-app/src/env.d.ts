@@ -9,3 +9,13 @@ declare const __PKG_VERSION__: string;
  * config packages) so generated apps are always pinned to a known-good set.
  */
 declare const __DEP_VERSIONS__: Readonly<Record<string, string>>;
+
+/**
+ * Inlined skill markdown, injected by this package's tsdown/vitest `define`.
+ * Declared here as well as in @chanom/internal because this package compiles
+ * internal's source directly, and tsc only auto-includes its own .d.ts files.
+ */
+declare const __CODING_STANDARDS_FILES__: readonly {
+  readonly path: string;
+  readonly contents: string;
+}[];

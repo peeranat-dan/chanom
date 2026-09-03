@@ -115,10 +115,11 @@ export function parseArgs(argv: readonly string[]): ParseResult {
 /**
  * Validates a project name / target directory. Returns an error message to
  * reject it, or `undefined` when it is acceptable. `.` (scaffold into the
- * current directory) is allowed.
+ * current directory) is allowed. Accepts `undefined` so it can be handed
+ * straight to a prompt, where an empty submission arrives as `undefined`.
  */
-export function validateProjectName(name: string): string | undefined {
-  if (name.trim() === '') return 'Please enter a project name.';
+export function validateProjectName(name: string | undefined): string | undefined {
+  if (name === undefined || name.trim() === '') return 'Please enter a project name.';
   if (name === '.') return undefined;
   if (!/^[a-z0-9._-]+$/i.test(name)) {
     return 'Use letters, numbers, dots, dashes, and underscores only.';
