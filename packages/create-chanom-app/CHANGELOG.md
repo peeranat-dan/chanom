@@ -1,5 +1,11 @@
 # create-chanom-app
 
+## 0.4.0
+
+### Minor Changes
+
+- 2574915: add typecheck script to baseline contribution
+
 ## 0.3.0
 
 ### Minor Changes
