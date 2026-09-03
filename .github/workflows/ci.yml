@@ -64,6 +64,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+        # Build config for typechecking the configuration
+      - name: Build shared configs
+        run: pnpm turbo run build --filter=@chanom/dev-config
+
       - name: Typecheck
         run: pnpm turbo run typecheck
 
