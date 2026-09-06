@@ -59,6 +59,36 @@ describe('apply', () => {
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
   });
 
+  it.effect('names existing configs the tools cannot auto-discover', () => {
+    const fs = makeTestFs(
+      {
+        '/project/oxlint.config.cts': 'export default {};\n',
+        '/project/oxfmt.config.cts': 'export default {};\n',
+      },
+      ['/project/.husky'],
+    );
+    const prompter = makeTestPrompter();
+    return Effect.gen(function* () {
+      yield* apply('/project', true, ['oxlint'], ['oxfmt']);
+      expect(JSON.parse(fs.files.get('/project/.lintstagedrc.json') ?? '')).toEqual({
+        [jsGlob]: ['oxlint --fix -c oxlint.config.cts --no-error-on-unmatched-pattern'],
+        '*': ['oxfmt -c oxfmt.config.cts --no-error-on-unmatched-pattern'],
+      });
+    }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
+  });
+
+  it.effect('names the configs it is about to scaffold for a non-esm project', () => {
+    const fs = makeTestFs({}, ['/project/.husky']);
+    const prompter = makeTestPrompter();
+    return Effect.gen(function* () {
+      yield* apply('/project', false, ['oxlint'], ['oxfmt']);
+      expect(JSON.parse(fs.files.get('/project/.lintstagedrc.json') ?? '')).toEqual({
+        [jsGlob]: ['oxlint --fix -c oxlint.config.mts --no-error-on-unmatched-pattern'],
+        '*': ['oxfmt -c oxfmt.config.mts --no-error-on-unmatched-pattern'],
+      });
+    }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
+  });
+
   it.effect('does not touch hooks when .husky is absent', () => {
     const fs = makeTestFs();
     const prompter = makeTestPrompter();
