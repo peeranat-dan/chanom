@@ -17,16 +17,20 @@ export const apply = Effect.fn('add-oxlint.apply')(function* (cwd: string, esm: 
 
   const existing = yield* detectSetupFile('oxlint', cwd);
 
+  // Scripts have to name whichever config ends up on disk, so an existing one
+  // that we skip still decides how oxlint gets invoked.
+  let configFileName: string;
+
   if (Option.isSome(existing)) {
-    yield* prompter.warn(
-      `\`${path.basename(existing.value)}\` already exists - skipping oxlint config`,
-    );
+    configFileName = path.basename(existing.value);
+    yield* prompter.warn(`\`${configFileName}\` already exists - skipping oxlint config`);
   } else {
     const config = configFile(esm);
+    configFileName = config.fileName;
     yield* fs.writeFileString(path.join(cwd, config.fileName), config.contents);
   }
 
-  const plan = getScriptPlan(pkg.scripts);
+  const plan = getScriptPlan(pkg.scripts, configFileName);
   for (const key of plan.skipped) {
     yield* prompter.warn(`\`${key}\` script already exists in package.json - skipping`);
   }

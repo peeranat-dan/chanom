@@ -2,6 +2,7 @@ import type { ToolVersions } from '../../domain/versions.ts';
 
 import { isPackageInstalled, type Pkg } from '../../domain/pkg.ts';
 import { planScripts, type ScriptPlan } from '../../domain/scripts.ts';
+import { configFileName } from '../../domain/setup.ts';
 
 export interface ConfigFile {
   readonly fileName: string;
@@ -19,7 +20,7 @@ export function getPackages(
 
 export function configFile(esm: boolean): ConfigFile {
   return {
-    fileName: `knip.config.${esm ? 'ts' : 'mts'}`,
+    fileName: configFileName('knip', esm),
     contents: `export { default } from '@chanom/dev-config/knip/config';\n`,
   };
 }

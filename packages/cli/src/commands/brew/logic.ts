@@ -2,6 +2,7 @@ import type { Pkg } from '../../domain/pkg.ts';
 import type { ToolVersions } from '../../domain/versions.ts';
 import type { Formatter, Linter } from '../add-lint-staged/logic.ts';
 
+import { configFileName } from '../../domain/setup.ts';
 import * as addCommitlint from '../add-commitlint/logic.ts';
 import * as addHusky from '../add-husky/logic.ts';
 import * as addKnip from '../add-knip/logic.ts';
@@ -49,7 +50,7 @@ export function planPackages(
  * value for a config the user may add later.
  */
 export function oxfmtConfigPath(esm: boolean): string {
-  return `oxfmt.config.${esm ? 'ts' : 'mts'}`;
+  return configFileName('oxfmt', esm);
 }
 
 /** True when at least one topping gives lint-staged something to run. */
