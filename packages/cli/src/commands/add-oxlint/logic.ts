@@ -2,6 +2,7 @@ import type { ToolVersions } from '../../domain/versions.ts';
 
 import { getMismatchedPackage, type Pkg } from '../../domain/pkg.ts';
 import { planScripts, type ScriptPlan } from '../../domain/scripts.ts';
+import { configFileName, configFlag } from '../../domain/setup.ts';
 
 export interface ConfigFile {
   readonly fileName: string;
@@ -21,11 +22,18 @@ export function getPackages(
 
 export function configFile(esm: boolean): ConfigFile {
   return {
-    fileName: `oxlint.config.${esm ? 'ts' : 'mts'}`,
+    fileName: configFileName('oxlint', esm),
     contents: `export { default } from '@chanom/dev-config/oxlint/config';\n`,
   };
 }
 
-export function getScriptPlan(scripts: Readonly<Record<string, string>> | undefined): ScriptPlan {
-  return planScripts(scripts, { lint: 'oxlint', 'lint:fix': 'oxlint --fix' });
+export function getScriptPlan(
+  scripts: Readonly<Record<string, string>> | undefined,
+  configFile: string,
+): ScriptPlan {
+  const config = configFlag(configFile);
+  return planScripts(scripts, {
+    lint: `oxlint${config}`,
+    'lint:fix': `oxlint --fix${config}`,
+  });
 }

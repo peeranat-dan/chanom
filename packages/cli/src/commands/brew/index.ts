@@ -187,6 +187,7 @@ const ensureRepoRootForHooks = Effect.fn('brew.ensureRepoRootForHooks')(function
 const setupCommitGate = Effect.fn('brew.setupCommitGate')(function* (
   cwd: string,
   pm: PackageManager,
+  esm: boolean,
   toppings: readonly Topping[],
   sweetness: Sweetness,
 ) {
@@ -202,6 +203,7 @@ const setupCommitGate = Effect.fn('brew.setupCommitGate')(function* (
   if (wantsLintStaged(toppings)) {
     yield* addLintStaged.apply(
       cwd,
+      esm,
       selectedLinters(toppings),
       selectedFormatters(toppings),
       !huskyExisted,
@@ -279,7 +281,7 @@ export const brew = (cwd: string = process.cwd()) =>
     const { pkg: installedPkg } = yield* readPkg(cwd);
     const updated = yield* applyToppings(cwd, isEsm(installedPkg), installedPkg, toppings);
     yield* persistScripts(pkgPath, installedPkg, updated);
-    yield* setupCommitGate(cwd, pm, toppings, sweetness);
+    yield* setupCommitGate(cwd, pm, isEsm(installedPkg), toppings, sweetness);
     yield* commitChanges(cwd);
 
     yield* prompter.outro(

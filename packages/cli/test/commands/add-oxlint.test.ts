@@ -35,8 +35,22 @@ describe('logic', () => {
   });
 
   it('plans lint scripts without overwriting existing ones', () => {
-    expect(getScriptPlan(undefined).added).toEqual(['lint', 'lint:fix']);
-    expect(getScriptPlan({ lint: 'eslint' }).skipped).toEqual(['lint']);
+    expect(getScriptPlan(undefined, 'oxlint.config.ts').added).toEqual(['lint', 'lint:fix']);
+    expect(getScriptPlan({ lint: 'eslint' }, 'oxlint.config.ts').skipped).toEqual(['lint']);
+  });
+
+  it('leaves the config implicit when the extension is auto-discovered', () => {
+    expect(getScriptPlan(undefined, 'oxlint.config.ts').scripts).toEqual({
+      lint: 'oxlint',
+      'lint:fix': 'oxlint --fix',
+    });
+  });
+
+  it('names the config when the extension is not auto-discovered', () => {
+    expect(getScriptPlan(undefined, 'oxlint.config.mts').scripts).toEqual({
+      lint: 'oxlint -c oxlint.config.mts',
+      'lint:fix': 'oxlint --fix -c oxlint.config.mts',
+    });
   });
 });
 
@@ -51,6 +65,27 @@ describe('apply', () => {
       );
       expect(updated.scripts).toEqual({ lint: 'oxlint', 'lint:fix': 'oxlint --fix' });
       expect(prompter.log.warnings).toEqual([]);
+    }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
+  });
+
+  it.effect('points scripts at an existing config the tools cannot auto-discover', () => {
+    const fs = makeTestFs({ '/project/oxlint.config.cts': 'export default {};\n' });
+    const prompter = makeTestPrompter();
+    return Effect.gen(function* () {
+      const updated = yield* apply('/project', false, {});
+      expect(updated.scripts).toEqual({
+        lint: 'oxlint -c oxlint.config.cts',
+        'lint:fix': 'oxlint --fix -c oxlint.config.cts',
+      });
+    }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
+  });
+
+  it.effect('leaves scripts bare for an existing config the tools do auto-discover', () => {
+    const fs = makeTestFs({ '/project/.oxlintrc.json': '{}' });
+    const prompter = makeTestPrompter();
+    return Effect.gen(function* () {
+      const updated = yield* apply('/project', false, {});
+      expect(updated.scripts).toEqual({ lint: 'oxlint', 'lint:fix': 'oxlint --fix' });
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
   });
 

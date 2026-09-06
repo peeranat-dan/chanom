@@ -20,9 +20,16 @@ describe('logic', () => {
   });
 
   it('plans format scripts', () => {
-    expect(getScriptPlan(undefined).scripts).toEqual({
+    expect(getScriptPlan(undefined, 'oxfmt.config.ts').scripts).toEqual({
       format: 'oxfmt',
       'format:check': 'oxfmt --check',
+    });
+  });
+
+  it('names the config when the extension is not auto-discovered', () => {
+    expect(getScriptPlan(undefined, 'oxfmt.config.mts').scripts).toEqual({
+      format: 'oxfmt -c oxfmt.config.mts',
+      'format:check': 'oxfmt --check -c oxfmt.config.mts',
     });
   });
 
@@ -40,7 +47,10 @@ describe('apply', () => {
       expect(fs.files.get('/project/oxfmt.config.mts')).toBe(
         `export { default } from '@chanom/dev-config/oxfmt/config';\n`,
       );
-      expect(updated.scripts).toEqual({ format: 'oxfmt', 'format:check': 'oxfmt --check' });
+      expect(updated.scripts).toEqual({
+        format: 'oxfmt -c oxfmt.config.mts',
+        'format:check': 'oxfmt --check -c oxfmt.config.mts',
+      });
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
   });
 

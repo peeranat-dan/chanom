@@ -2,6 +2,7 @@ import type { ToolVersions } from '../../domain/versions.ts';
 
 import { getMismatchedPackage, type Pkg } from '../../domain/pkg.ts';
 import { planScripts, type ScriptPlan } from '../../domain/scripts.ts';
+import { configFileName, configFlag } from '../../domain/setup.ts';
 
 export interface ConfigFile {
   readonly fileName: string;
@@ -20,11 +21,18 @@ export function getPackages(
 
 export function configFile(esm: boolean): ConfigFile {
   return {
-    fileName: `oxfmt.config.${esm ? 'ts' : 'mts'}`,
+    fileName: configFileName('oxfmt', esm),
     contents: `export { default } from '@chanom/dev-config/oxfmt/config';\n`,
   };
 }
 
-export function getScriptPlan(scripts: Readonly<Record<string, string>> | undefined): ScriptPlan {
-  return planScripts(scripts, { format: 'oxfmt', 'format:check': 'oxfmt --check' });
+export function getScriptPlan(
+  scripts: Readonly<Record<string, string>> | undefined,
+  configFile: string,
+): ScriptPlan {
+  const config = configFlag(configFile);
+  return planScripts(scripts, {
+    format: `oxfmt${config}`,
+    'format:check': `oxfmt --check${config}`,
+  });
 }

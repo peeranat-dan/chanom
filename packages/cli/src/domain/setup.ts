@@ -32,3 +32,28 @@ export const SETUP_FILE_CANDIDATES: Record<SetupFile, string[]> = {
   commitlint: ['.commitlintrc.json', '.commitlintrc.js', 'commitlint.config.js'],
   vite: ['vite.config.ts', 'vite.config.js', 'vite.config.mjs'],
 };
+
+/** Config file name a tool gets scaffolded with, matching the project's module system. */
+export function configFileName(tool: 'oxlint' | 'oxfmt' | 'knip', esm: boolean): string {
+  return `${tool}.config.${esm ? 'ts' : 'mts'}`;
+}
+
+/**
+ * Extensions oxlint/oxfmt resolve on their own. `.mts`/`.cts` are absent
+ * deliberately: the tools only auto-discover the plain `.ts` variant, so a
+ * config using one of those has to be named explicitly on the command line.
+ */
+const AUTO_DISCOVERED = new Set(['js', 'cjs', 'mjs', 'ts', 'json']);
+
+/**
+ * `-c <config>` argument naming the config file, or an empty string when the
+ * tool finds the file by itself. `configFile` is the config that will actually
+ * be on disk - the one chanom is about to write, or an existing one it detected
+ * and skipped - so the generated scripts never point at a path that isn't there.
+ */
+export function configFlag(configFile: string): string {
+  // Compared as a whole segment, not a suffix: `.mts` ends with `ts` but is
+  // not auto-discovered.
+  const extension = configFile.slice(configFile.lastIndexOf('.') + 1);
+  return AUTO_DISCOVERED.has(extension) ? '' : ` -c ${configFile}`;
+}

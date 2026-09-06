@@ -7,6 +7,7 @@ import { makeTestFs } from '../support/fs.ts';
 import { makeTestPrompter } from '../support/prompter.ts';
 
 const jsGlob = '**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}';
+const esmConfigs = { oxlint: 'oxlint.config.ts', oxfmt: 'oxfmt.config.ts' };
 
 describe('logic', () => {
   it('installs lint-staged only when missing', () => {
@@ -15,11 +16,23 @@ describe('logic', () => {
   });
 
   it('builds a config for the selected linters and formatters', () => {
-    expect(buildConfig(['oxlint'], ['oxfmt'])).toEqual({
+    expect(buildConfig(['oxlint'], ['oxfmt'], esmConfigs)).toEqual({
       [jsGlob]: ['oxlint --fix --no-error-on-unmatched-pattern'],
       '*': ['oxfmt --no-error-on-unmatched-pattern'],
     });
-    expect(buildConfig([], [])).toEqual({});
+    expect(buildConfig([], [], esmConfigs)).toEqual({});
+  });
+
+  it('names configs the tools do not auto-discover', () => {
+    expect(
+      buildConfig(['oxlint'], ['oxfmt'], {
+        oxlint: 'oxlint.config.mts',
+        oxfmt: 'oxfmt.config.mts',
+      }),
+    ).toEqual({
+      [jsGlob]: ['oxlint --fix -c oxlint.config.mts --no-error-on-unmatched-pattern'],
+      '*': ['oxfmt -c oxfmt.config.mts --no-error-on-unmatched-pattern'],
+    });
   });
 });
 
@@ -28,7 +41,7 @@ describe('apply', () => {
     const fs = makeTestFs({}, ['/project/.husky']);
     const prompter = makeTestPrompter();
     return Effect.gen(function* () {
-      yield* apply('/project', [], []);
+      yield* apply('/project', true, [], []);
       expect(fs.files.has('/project/.lintstagedrc.json')).toBe(false);
       expect(fs.files.has('/project/.husky/pre-commit')).toBe(false);
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
@@ -38,9 +51,9 @@ describe('apply', () => {
     const fs = makeTestFs({}, ['/project/.husky']);
     const prompter = makeTestPrompter();
     return Effect.gen(function* () {
-      yield* apply('/project', ['oxlint'], ['oxfmt']);
+      yield* apply('/project', true, ['oxlint'], ['oxfmt']);
       expect(JSON.parse(fs.files.get('/project/.lintstagedrc.json') ?? '')).toEqual(
-        buildConfig(['oxlint'], ['oxfmt']),
+        buildConfig(['oxlint'], ['oxfmt'], esmConfigs),
       );
       expect(fs.files.get('/project/.husky/pre-commit')).toBe('lint-staged\n');
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
@@ -50,7 +63,7 @@ describe('apply', () => {
     const fs = makeTestFs();
     const prompter = makeTestPrompter();
     return Effect.gen(function* () {
-      yield* apply('/project', ['oxlint'], []);
+      yield* apply('/project', true, ['oxlint'], []);
       expect(fs.files.has('/project/.husky/pre-commit')).toBe(false);
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
   });
@@ -59,7 +72,7 @@ describe('apply', () => {
     const fs = makeTestFs({ '/project/.husky/pre-commit': 'echo custom\n' });
     const prompter = makeTestPrompter();
     return Effect.gen(function* () {
-      yield* apply('/project', ['oxlint'], []);
+      yield* apply('/project', true, ['oxlint'], []);
       expect(fs.files.get('/project/.husky/pre-commit')).toBe('echo custom\n');
       expect(prompter.log.warnings).toContain('`.husky/pre-commit` already exists - skipping');
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
@@ -69,7 +82,7 @@ describe('apply', () => {
     const fs = makeTestFs({ '/project/.husky/pre-commit': 'echo custom\n' });
     const prompter = makeTestPrompter();
     return Effect.gen(function* () {
-      yield* apply('/project', ['oxlint'], [], true);
+      yield* apply('/project', true, ['oxlint'], [], true);
       expect(fs.files.get('/project/.husky/pre-commit')).toBe('lint-staged\n');
     }).pipe(Effect.provide(Layer.mergeAll(fs.layer, prompter.layer)));
   });
@@ -78,7 +91,7 @@ describe('apply', () => {
     const fs = makeTestFs({ '/project/.lintstagedrc.json': '{}' });
     const prompter = makeTestPrompter();
     return Effect.gen(function* () {
-      yield* apply('/project', ['oxlint'], []);
+      yield* apply('/project', true, ['oxlint'], []);
       expect(fs.files.get('/project/.lintstagedrc.json')).toBe('{}');
       expect(prompter.log.warnings).toContain(
         '`.lintstagedrc.json` already exists - skipping lint-staged config',

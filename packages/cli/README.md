@@ -72,6 +72,12 @@ installing anything. `light` sweetness works anywhere in the repo.
 
 \* `.mts` instead of `.ts` when your project is CommonJS (no `"type": "module"` in `package.json`).
 
+oxlint and oxfmt auto-discover `.js`, `.cjs`, `.mjs`, `.ts`, and the JSON rc files, but not
+`.mts` or `.cts`. When the config in play is one of those two, the generated `oxlint`/`oxfmt`
+scripts - and the lint-staged commands - name it with `-c`. This tracks the file that actually
+ends up on disk, so it applies to a config `brew` detected and skipped just as much as one it
+wrote itself.
+
 Config files re-export presets from [`@chanom/dev-config`](../dev-config).
 
 The `vscode` topping installs no packages and adds no scripts. It writes editor
