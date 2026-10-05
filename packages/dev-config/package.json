@@ -32,6 +32,16 @@
       "types": "./dist/oxlint/base-config.d.ts",
       "default": "./dist/oxlint/base-config.js"
     },
+    "./oxlint/react": {
+      "development": "./src/oxlint/react-config.ts",
+      "types": "./dist/oxlint/react-config.d.ts",
+      "default": "./dist/oxlint/react-config.js"
+    },
+    "./oxlint/plugin": {
+      "development": "./src/oxlint/plugin/index.ts",
+      "types": "./dist/oxlint/plugin/index.d.ts",
+      "default": "./dist/oxlint/plugin/index.js"
+    },
     "./knip/config": {
       "development": "./src/knip/index.ts",
       "types": "./dist/knip/index.d.ts",
@@ -61,6 +71,14 @@
         "types": "./dist/oxlint/base-config.d.ts",
         "default": "./dist/oxlint/base-config.js"
       },
+      "./oxlint/react": {
+        "types": "./dist/oxlint/react-config.d.ts",
+        "default": "./dist/oxlint/react-config.js"
+      },
+      "./oxlint/plugin": {
+        "types": "./dist/oxlint/plugin/index.d.ts",
+        "default": "./dist/oxlint/plugin/index.js"
+      },
       "./knip/config": {
         "types": "./dist/knip/index.d.ts",
         "default": "./dist/knip/index.js"
@@ -76,7 +94,12 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "prepublishOnly": "tsdown",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@oxlint/plugins": "catalog:"
   },
   "devDependencies": {
     "@tsconfig/node-lts": "catalog:",
@@ -87,7 +110,8 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "knip": "catalog:",

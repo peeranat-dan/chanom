@@ -6,6 +6,8 @@ export default defineConfig({
     'src/oxfmt/base-config.ts',
     'src/oxlint/index.ts',
     'src/oxlint/base-config.ts',
+    'src/oxlint/react-config.ts',
+    'src/oxlint/plugin/index.ts',
     'src/knip/index.ts',
     'src/knip/base-config.ts',
   ],

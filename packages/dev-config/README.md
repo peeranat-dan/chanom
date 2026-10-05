@@ -17,12 +17,14 @@ pnpm add -D @chanom/dev-config oxlint oxfmt
 
 ## Exports
 
-| Specifier                          | Contents                |
-| ---------------------------------- | ----------------------- |
-| `@chanom/dev-config/oxlint/base`   | TypeScript lint rules   |
-| `@chanom/dev-config/oxlint/config` | base + React + jsx-a11y |
-| `@chanom/dev-config/oxfmt/base`    | oxfmt rules             |
-| `@chanom/dev-config/oxfmt/config`  | alias of `oxfmt/base`   |
+| Specifier                          | Contents                                 |
+| ---------------------------------- | ---------------------------------------- |
+| `@chanom/dev-config/oxlint/base`   | TypeScript lint rules                    |
+| `@chanom/dev-config/oxlint/config` | alias of `oxlint/react`                  |
+| `@chanom/dev-config/oxlint/react`  | base + React + jsx-a11y + chanom rules   |
+| `@chanom/dev-config/oxlint/plugin` | `chanom` oxlint JS plugin (custom rules) |
+| `@chanom/dev-config/oxfmt/base`    | oxfmt rules                              |
+| `@chanom/dev-config/oxfmt/config`  | alias of `oxfmt/base`                    |
 
 ## Usage
 
@@ -102,3 +104,29 @@ Everything in **base**, plus:
 - `react/rules-of-hooks` as error
 - `react-hooks/exhaustive-deps` as warning
 - `no-restricted-imports` blocks default imports of `react` and `zod`
+- `chanom/hook-filename` and `chanom/hook-name` as errors
+
+### chanom plugin
+
+Custom rules shipped as an [oxlint JS plugin](https://oxc.rs/docs/guide/usage/linter/js-plugins). Both rules only apply to files inside a `hooks` folder (at any depth).
+
+| Rule                   | Checks                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| `chanom/hook-filename` | File name starts with `use` (`use-auth.ts`, `useAuth.ts`). `index.*` is exempt |
+| `chanom/hook-name`     | Exported functions are named `useXxx`                                          |
+
+The React config enables both. To use them with another config:
+
+```ts
+import baseConfig from '@chanom/dev-config/oxlint/base';
+import { defineConfig } from 'oxlint';
+
+export default defineConfig({
+  extends: [baseConfig],
+  jsPlugins: [{ name: 'chanom', specifier: '@chanom/dev-config/oxlint/plugin' }],
+  rules: {
+    'chanom/hook-filename': 'error',
+    'chanom/hook-name': 'error',
+  },
+});
+```
