@@ -20,6 +20,8 @@ import { selectContributions } from './toppings.ts';
 
 export class InstallFailed extends Data.TaggedError('InstallFailed')<{
   readonly pm: PackageManager;
+  /** Captured package manager output, since it is not streamed to the terminal. */
+  readonly output: string;
 }> {}
 
 export interface ScaffoldPlan {
@@ -147,13 +149,18 @@ const installDependencies = Effect.fn('scaffold.installDependencies')(function* 
   const runner = yield* CommandRunner;
   const s = yield* prompter.spinner(`Installing dependencies with ${plan.pm}...`);
 
-  const exitCode = yield* runner
-    .execInherit(plan.pm, ['install'], plan.targetDir)
+  // Captured, not inherited: the package manager's own progress output would
+  // fight the spinner for the terminal and make it flicker.
+  const result = yield* runner
+    .capture(plan.pm, ['install'], plan.targetDir)
     .pipe(Effect.tapError(() => s.stop(pc.red('Dependency installation failed'))));
 
-  if (exitCode !== 0) {
+  if (result.exitCode !== 0) {
     yield* s.stop(pc.red('Dependency installation failed'));
-    return yield* new InstallFailed({ pm: plan.pm });
+    return yield* new InstallFailed({
+      pm: plan.pm,
+      output: [result.stdout, result.stderr].filter(Boolean).join('\n'),
+    });
   }
   yield* s.stop('Dependencies installed');
 });
