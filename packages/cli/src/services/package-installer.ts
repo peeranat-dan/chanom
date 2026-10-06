@@ -8,12 +8,15 @@ import { workspaceRootFlags } from '../domain/package-manager.ts';
 
 export class InstallFailed extends Data.TaggedError('InstallFailed')<{
   readonly pm: PackageManager;
+  /** Captured package manager output, since it is not streamed to the terminal. */
+  readonly output: string;
 }> {}
 
 /**
  * Installs npm packages with the detected package manager, adding the
  * workspace-root flag (pnpm `-w`, yarn classic `-W`) when the target
- * directory is a workspace root.
+ * directory is a workspace root. Output is captured rather than inherited so
+ * the caller's spinner is not redrawn over the package manager's own progress.
  */
 export class PackageInstaller extends Effect.Service<PackageInstaller>()('cli/PackageInstaller', {
   effect: Effect.gen(function* () {
@@ -48,15 +51,15 @@ export class PackageInstaller extends Effect.Service<PackageInstaller>()('cli/Pa
       installDev: (pm: PackageManager, cwd: string, packages: readonly string[]) =>
         workspaceHints(cwd).pipe(
           Effect.flatMap((hints) =>
-            runner.execInherit(
-              pm,
-              ['add', '-D', ...workspaceRootFlags(pm, hints), ...packages],
-              cwd,
-            ),
+            runner.capture(pm, ['add', '-D', ...workspaceRootFlags(pm, hints), ...packages], cwd),
           ),
           Effect.filterOrFail(
-            (code) => code === 0,
-            () => new InstallFailed({ pm }),
+            (result) => result.exitCode === 0,
+            (result) =>
+              new InstallFailed({
+                pm,
+                output: [result.stdout, result.stderr].filter(Boolean).join('\n'),
+              }),
           ),
           Effect.asVoid,
         ),

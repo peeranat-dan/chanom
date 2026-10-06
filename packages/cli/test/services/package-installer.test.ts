@@ -107,4 +107,15 @@ describe('PackageInstaller', () => {
       expect(error).toMatchObject({ pm: 'npm' });
     }).pipe(Effect.provide(layer));
   });
+
+  it.effect('keeps the captured output on InstallFailed', () => {
+    const { layer } = makeLayer({
+      handler: () => ({ exitCode: 1, stdout: 'resolving', stderr: 'ERR_PNPM_NO_MATCHING_VERSION' }),
+    });
+    return Effect.gen(function* () {
+      const installer = yield* PackageInstaller;
+      const error = yield* Effect.flip(installer.installDev('pnpm', '/project', ['oxlint']));
+      expect(error).toMatchObject({ output: 'resolving\nERR_PNPM_NO_MATCHING_VERSION' });
+    }).pipe(Effect.provide(layer));
+  });
 });

@@ -213,7 +213,10 @@ export const run = (argv: readonly string[], cwd: string, options: RunOptions) =
       // clack prints its own cancellation notice; exit cleanly.
       Cancelled: () => Effect.succeed(0),
       TargetNotEmpty: (e) => reportError(`${e.directory} is not empty. Aborting.`),
-      InstallFailed: (e) => reportError(`Dependency installation with ${e.pm} failed.`),
+      InstallFailed: (e) =>
+        reportError(
+          [`Dependency installation with ${e.pm} failed.`, e.output].filter(Boolean).join('\n'),
+        ),
     }),
     Effect.catchAll((e) => reportError(`Unexpected error: ${e.message}`)),
     Logger.withMinimumLogLevel(debug ? LogLevel.Debug : LogLevel.Info),
