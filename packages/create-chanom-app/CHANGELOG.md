@@ -1,5 +1,11 @@
 # create-chanom-app
 
+## 0.4.1
+
+### Patch Changes
+
+- b1bf6cd: Fix spinner flickering during dependency installation by capturing package manager output instead of streaming it. Output is shown when the install fails.
+
 ## 0.4.0
 
 ### Minor Changes
