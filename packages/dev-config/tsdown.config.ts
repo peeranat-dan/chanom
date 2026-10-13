@@ -8,8 +8,12 @@ export default defineConfig({
     'src/oxlint/base-config.ts',
     'src/knip/index.ts',
     'src/knip/base-config.ts',
+    'src/bin.ts',
   ],
   format: ['esm'],
+  // Mirror src/ file for file so consumers reading node_modules see each config
+  // in its own module instead of hashed shared chunks.
+  unbundle: true,
   dts: true,
   clean: true,
   // Emit .js / .d.ts (package is type:module) to match the package.json exports map.

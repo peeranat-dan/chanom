@@ -7,6 +7,9 @@
     "url": "git+https://github.com/peeranat-dan/chanom.git",
     "directory": "packages/dev-config"
   },
+  "bin": {
+    "chanom-dev-config": "./dist/bin.js"
+  },
   "files": [
     "dist"
   ],
@@ -76,6 +79,7 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "prepublishOnly": "tsdown",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
@@ -87,7 +91,8 @@
     "oxlint": "catalog:",
     "oxlint-tsgolint": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "knip": "catalog:",

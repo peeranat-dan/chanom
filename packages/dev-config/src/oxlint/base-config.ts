@@ -1,6 +1,6 @@
-import { defineConfig } from 'oxlint';
+import { defineOxlintConfig } from '../define-config.js';
 
-export default defineConfig({
+export default defineOxlintConfig({
   plugins: ['typescript'],
   categories: {
     correctness: 'error',
