@@ -1,5 +1,11 @@
 # @chanom/utils
 
+## 0.0.2
+
+### Patch Changes
+
+- 59d6320: Add `withTimeout`, `dedupe`, `tryCatch`, `isDeepEqual`, `storage`, and `downloadFile`.
+
 ## 0.0.1
 
 ### Patch Changes
