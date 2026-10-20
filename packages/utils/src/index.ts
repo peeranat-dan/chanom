@@ -7,8 +7,6 @@ export { default as debounce } from './debounce/index.ts';
 export type { DebouncedFunction } from './debounce/index.ts';
 export { default as formatBytes } from './format-bytes/index.ts';
 export type { FormatBytesOptions } from './format-bytes/index.ts';
-export { default as groupBy } from './group-by/index.ts';
-export { default as isDefined } from './is-defined/index.ts';
 export { default as omit } from './omit/index.ts';
 export { default as pick } from './pick/index.ts';
 export { default as retry } from './retry/index.ts';

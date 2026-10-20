@@ -19,9 +19,7 @@ import debounce from '@chanom/utils/debounce';
 | `throttle(fn, wait)`           | At most one call per `wait` ms, with a trailing call using the latest args                             |
 | `sleep(ms, signal?)`           | Promise-based delay, abortable with an `AbortSignal`                                                   |
 | `retry(fn, options?)`          | Retry an async function with exponential backoff, `shouldRetry`, and abort                             |
-| `isDefined(value)`             | Type guard for non-`null`/`undefined`; `items.filter(isDefined)` narrows to `T[]`                      |
 | `chunk(items, size)`           | Split an array into chunks of `size`                                                                   |
-| `groupBy(items, getKey)`       | Group an array into an object keyed by `getKey`                                                        |
 | `pick(source, keys)`           | Copy only the given keys                                                                               |
 | `omit(source, keys)`           | Copy everything except the given keys                                                                  |
 | `clamp(value, min, max)`       | Limit a number to a range                                                                              |
@@ -40,6 +38,13 @@ const user = await retry(() => fetchUser(id), {
 ```
 
 The [`cn`](https://github.com/shadcn-ui/cn) dependency is only bundled when you import `cn`.
+
+## Not included
+
+Helpers the platform already covers are left out on purpose:
+
+- **Grouping:** use `Object.groupBy(items, getKey)` (or `Map.groupBy` for non-string keys). It accepts any iterable and returns a null-prototype object, so keys like `constructor` are safe.
+- **Filtering out `null`/`undefined`:** `items.filter((item) => item != null)` narrows to `T[]` on its own since TypeScript 5.5.
 
 ## Adding a util
 
