@@ -241,6 +241,9 @@ catalogs:
     '@vitest/coverage-v8':
       specifier: 3.2.6
       version: 3.2.6
+    cn:
+      specifier: 0.5.0
+      version: 0.5.0
     effect:
       specifier: 3.21.4
       version: 3.21.4
@@ -536,6 +539,37 @@ importers:
         version: 3.2.6(@types/node@26.0.1)(jiti@2.7.0)(jsdom@30.0.0)(lightningcss@1.32.0)(yaml@2.9.0)
 
   packages/logger:
+    devDependencies:
+      '@chanom/dev-config':
+        specifier: workspace:*
+        version: link:../dev-config
+      '@tsconfig/node-lts':
+        specifier: 'catalog:'
+        version: 24.0.0
+      '@tsconfig/node-ts':
+        specifier: 'catalog:'
+        version: 23.6.4
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.58.0
+      oxlint:
+        specifier: 'catalog:'
+        version: 1.73.0(oxlint-tsgolint@0.24.0)
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.22.3(oxc-resolver@11.21.3)(typescript@6.0.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.6(@types/node@26.0.1)(jiti@2.7.0)(jsdom@30.0.0)(lightningcss@1.32.0)(yaml@2.9.0)
+
+  packages/utils:
+    dependencies:
+      cn:
+        specifier: 'catalog:'
+        version: 0.5.0
     devDependencies:
       '@chanom/dev-config':
         specifier: workspace:*
@@ -2254,6 +2288,11 @@ packages:
   cliui@9.0.1:
     resolution: {integrity: sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w==}
     engines: {node: '>=20'}
+
+  cn@0.5.0:
+    resolution: {integrity: sha512-JGEixZEpfFXm1P5uXwvEobOFLlHwIWi5v4tjd1ZwfiYmcEilkuD2l+054rvJcYCR1B+uVThHeUbgmNz1FwuxuA==}
+    engines: {node: '>=22'}
+    hasBin: true
 
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
@@ -4922,6 +4961,8 @@ snapshots:
       string-width: 7.2.0
       strip-ansi: 7.2.0
       wrap-ansi: 9.0.2
+
+  cn@0.5.0: {}
 
   color-convert@2.0.1:
     dependencies:

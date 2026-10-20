@@ -37,6 +37,10 @@ Match the existing layout of the package you touch:
   tool also needs `./<tool>/config` and `./<tool>/base` entries in package.json
   `exports`, mirroring the `development`/`types`/`default` conditions of
   existing entries.
+- **@chanom/utils** (`packages/utils`) — one folder per util `src/<util>/`
+  whose `index.ts` holds a single `export default function`. Helpers go in
+  `src/<util>/utils/<helper>.ts` (also default-exported), and every file gets a
+  mirrored test under `test/<util>/`. Re-export new utils from `src/index.ts`.
 - **@chanom/vite-config** (`packages/vite-config`) — single entry point;
   everything exports from `src/index.ts`.
 

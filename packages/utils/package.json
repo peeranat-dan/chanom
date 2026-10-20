@@ -1,0 +1,73 @@
+{
+  "name": "@chanom/utils",
+  "version": "0.0.0",
+  "description": "Tree-shakable TypeScript utilities for frontend apps.",
+  "keywords": [
+    "frontend",
+    "typescript",
+    "utilities",
+    "utils"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peeranat-dan/chanom.git",
+    "directory": "packages/utils"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "development": "./src/*/index.ts",
+      "types": "./dist/*/index.d.ts",
+      "default": "./dist/*/index.js"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./*": {
+        "types": "./dist/*/index.d.ts",
+        "default": "./dist/*/index.js"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "tsdown",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cn": "catalog:"
+  },
+  "devDependencies": {
+    "@chanom/dev-config": "workspace:*",
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,72 @@
+# @chanom/utils
+
+Tree-shakable TypeScript utilities for frontend apps. Every util is a single default-exported function in its own folder, so bundlers only ship what you import, whether you import from the package root or from a util's subpath.
+
+## Usage
+
+```ts
+import { cn, debounce, retry } from '@chanom/utils';
+// or one util at a time
+import debounce from '@chanom/utils/debounce';
+```
+
+## Utils
+
+| Util                           | What it does                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `cn(...classes)`               | Conditional class names with Tailwind conflict resolution, via [`cn`](https://github.com/shadcn-ui/cn)             |
+| `debounce(fn, wait)`           | Call after `wait` ms of silence; has `.cancel()` and `.flush()`                                                    |
+| `throttle(fn, wait)`           | At most one call per `wait` ms, with a trailing call using the latest args                                         |
+| `sleep(ms, signal?)`           | Promise-based delay, abortable with an `AbortSignal`                                                               |
+| `retry(fn, options?)`          | Retry an async function with exponential backoff, `shouldRetry`, and abort                                         |
+| `chunk(items, size)`           | Split an array into chunks of `size`                                                                               |
+| `pick(source, keys)`           | Copy only the given keys                                                                                           |
+| `omit(source, keys)`           | Copy everything except the given keys                                                                              |
+| `clamp(value, min, max)`       | Limit a number to a range                                                                                          |
+| `formatBytes(bytes, options?)` | Human-readable sizes: `1536 -> '1.5 KB'`, or `'1.5 KiB'` with `binary: true`; throws on `NaN`/`Infinity`           |
+| `copyToClipboard(text)`        | Clipboard API with an `execCommand` fallback that restores focus and selection; resolves `false` on failure or SSR |
+
+```ts
+const save = debounce((value: string) => api.save(value), 300);
+
+const user = await retry(() => fetchUser(id), {
+  retries: 3,
+  shouldRetry: (error) => !(error instanceof NotFoundError),
+});
+
+<button className={cn('px-2 py-1', isActive && 'bg-blue-500 px-4')} />;
+```
+
+The [`cn`](https://github.com/shadcn-ui/cn) dependency is only bundled when you import `cn`.
+
+`debounce` and `throttle` call `fn` with the arguments **and `this`** of the latest call (like lodash), so they work as object methods:
+
+```ts
+const form = {
+  value: '',
+  save: debounce(function (this: { value: string }) {
+    void api.save(this.value);
+  }, 300),
+};
+form.save(); // `this` is `form`
+```
+
+As with any function, passing a method on its own (`button.onclick = form.save`) changes `this`; wrap it in an arrow function or use `.bind(form)` instead.
+
+## Not included
+
+Helpers the platform already covers are left out on purpose:
+
+- **Grouping:** use `Object.groupBy(items, getKey)` (or `Map.groupBy` for non-string keys). It accepts any iterable and returns a null-prototype object, so keys like `constructor` are safe.
+- **Filtering out `null`/`undefined`:** `items.filter((item) => item != null)` narrows to `T[]` on its own since TypeScript 5.5.
+
+## Adding a util
+
+```text
+src/<util-name>/index.ts          # one default-exported function
+src/<util-name>/utils/<helper>.ts # helpers, also default-exported
+test/<util-name>/index.test.ts
+test/<util-name>/utils/<helper>.test.ts
+```
+
+Then re-export it from `src/index.ts`. The `./*` subpath export and tsdown's `src/*/index.ts` entry pick it up automatically.
