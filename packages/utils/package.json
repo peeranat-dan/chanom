@@ -1,6 +1,6 @@
 {
   "name": "@chanom/utils",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Tree-shakable TypeScript utilities for frontend apps.",
   "keywords": [
     "frontend",
