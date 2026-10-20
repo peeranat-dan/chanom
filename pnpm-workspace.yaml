@@ -38,6 +38,7 @@ catalog:
   picocolors: 1.1.1
   react: 19.2.8
   react-dom: 19.2.8
+  react-router: 8.4.0
   rollup-plugin-visualizer: 7.0.1
   tsdown: 0.22.3
   turbo: 2.10.0

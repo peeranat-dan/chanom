@@ -37,6 +37,10 @@ Match the existing layout of the package you touch:
   tool also needs `./<tool>/config` and `./<tool>/base` entries in package.json
   `exports`, mirroring the `development`/`types`/`default` conditions of
   existing entries.
+- **@chanom/router** (`packages/router`) — React runtime in `src/` (components,
+  hooks, `core/` pure route-tree logic shared with the Vite plugin) plus the
+  Node-only plugin under `src/vite/` exported from `./vite`. Component tests opt
+  into jsdom per file and paths are registered in `test/support/register.ts`.
 - **@chanom/utils** (`packages/utils`) — one folder per util `src/<util>/`
   whose `index.ts` holds a single `export default function`. Helpers go in
   `src/<util>/utils/<helper>.ts` (also default-exported), and every file gets a
