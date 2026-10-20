@@ -12,19 +12,25 @@ import debounce from '@chanom/utils/debounce';
 
 ## Utils
 
-| Util                           | What it does                                                                                                       |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `cn(...classes)`               | Conditional class names with Tailwind conflict resolution, via [`cn`](https://github.com/shadcn-ui/cn)             |
-| `debounce(fn, wait)`           | Call after `wait` ms of silence; has `.cancel()` and `.flush()`                                                    |
-| `throttle(fn, wait)`           | At most one call per `wait` ms, with a trailing call using the latest args                                         |
-| `sleep(ms, signal?)`           | Promise-based delay, abortable with an `AbortSignal`                                                               |
-| `retry(fn, options?)`          | Retry an async function with exponential backoff, `shouldRetry`, and abort                                         |
-| `chunk(items, size)`           | Split an array into chunks of `size`                                                                               |
-| `pick(source, keys)`           | Copy only the given keys                                                                                           |
-| `omit(source, keys)`           | Copy everything except the given keys                                                                              |
-| `clamp(value, min, max)`       | Limit a number to a range                                                                                          |
-| `formatBytes(bytes, options?)` | Human-readable sizes: `1536 -> '1.5 KB'`, or `'1.5 KiB'` with `binary: true`; throws on `NaN`/`Infinity`           |
-| `copyToClipboard(text)`        | Clipboard API with an `execCommand` fallback that restores focus and selection; resolves `false` on failure or SSR |
+| Util                                     | What it does                                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `cn(...classes)`                         | Conditional class names with Tailwind conflict resolution, via [`cn`](https://github.com/shadcn-ui/cn)             |
+| `debounce(fn, wait)`                     | Call after `wait` ms of silence; has `.cancel()` and `.flush()`                                                    |
+| `throttle(fn, wait)`                     | At most one call per `wait` ms, with a trailing call using the latest args                                         |
+| `sleep(ms, signal?)`                     | Promise-based delay, abortable with an `AbortSignal`                                                               |
+| `retry(fn, options?)`                    | Retry an async function with exponential backoff, `shouldRetry`, and abort                                         |
+| `chunk(items, size)`                     | Split an array into chunks of `size`                                                                               |
+| `pick(source, keys)`                     | Copy only the given keys                                                                                           |
+| `omit(source, keys)`                     | Copy everything except the given keys                                                                              |
+| `clamp(value, min, max)`                 | Limit a number to a range                                                                                          |
+| `formatBytes(bytes, options?)`           | Human-readable sizes: `1536 -> '1.5 KB'`, or `'1.5 KiB'` with `binary: true`; throws on `NaN`/`Infinity`           |
+| `copyToClipboard(text)`                  | Clipboard API with an `execCommand` fallback that restores focus and selection; resolves `false` on failure or SSR |
+| `withTimeout(task, ms, signal?)`         | Reject with a `TimeoutError` after `ms`; a task function gets an `AbortSignal` so the work stops too               |
+| `dedupe(fn, getKey?)`                    | Share one in-flight promise between calls with the same key                                                        |
+| `tryCatch(task)`                         | `{ ok: true, data }` or `{ ok: false, error }` instead of try/catch; catches sync throws from functions            |
+| `isDeepEqual(a, b)`                      | Structural equality for plain objects, arrays, `Date`, `RegExp`, `Map`, `Set`; cycle-safe                          |
+| `storage(key, options?)`                 | Typed JSON handle on `localStorage`/`sessionStorage` with optional `validate`; never throws                        |
+| `downloadFile(data, filename, options?)` | Save a `Blob` or string through `<a download>`; returns `false` on SSR                                             |
 
 ```ts
 const save = debounce((value: string) => api.save(value), 300);
@@ -36,6 +42,25 @@ const user = await retry(() => fetchUser(id), {
 
 <button className={cn('px-2 py-1', isActive && 'bg-blue-500 px-4')} />;
 ```
+
+```ts
+const response = await withTimeout((signal) => fetch(url, { signal }), 5000);
+
+const getUser = dedupe((id: string) => api.getUser(id));
+
+const result = await tryCatch(() => JSON.parse(raw));
+if (!result.ok) return;
+
+const isTheme = (value: unknown): value is 'light' | 'dark' =>
+  value === 'light' || value === 'dark';
+const theme = storage('theme', { validate: isTheme });
+theme.set('dark');
+theme.get(); // 'dark' | undefined
+
+downloadFile(csv, 'report.csv', { type: 'text/csv' });
+```
+
+`isDeepEqual` compares instances of other classes (`URL`, `Error`, typed arrays) by reference, since their own keys do not reflect their state.
 
 The [`cn`](https://github.com/shadcn-ui/cn) dependency is only bundled when you import `cn`.
 
