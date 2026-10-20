@@ -39,6 +39,20 @@ const user = await retry(() => fetchUser(id), {
 
 The [`cn`](https://github.com/shadcn-ui/cn) dependency is only bundled when you import `cn`.
 
+`debounce` and `throttle` call `fn` with the arguments **and `this`** of the latest call (like lodash), so they work as object methods:
+
+```ts
+const form = {
+  value: '',
+  save: debounce(function (this: { value: string }) {
+    void api.save(this.value);
+  }, 300),
+};
+form.save(); // `this` is `form`
+```
+
+As with any function, passing a method on its own (`button.onclick = form.save`) changes `this`; wrap it in an arrow function or use `.bind(form)` instead.
+
 ## Not included
 
 Helpers the platform already covers are left out on purpose:

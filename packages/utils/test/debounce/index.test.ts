@@ -25,6 +25,36 @@ describe('debounce', () => {
     expect(fn).toHaveBeenCalledExactlyOnceWith('b');
   });
 
+  it('calls fn with the this of the latest call', () => {
+    const seen: string[] = [];
+    function record(this: { readonly name: string }): void {
+      seen.push(this.name);
+    }
+    const first = { name: 'first', record: debounce(record, 100) };
+    const second = { name: 'second', record: first.record };
+
+    first.record();
+    second.record();
+    vi.advanceTimersByTime(100);
+
+    expect(seen).toEqual(['second']);
+  });
+
+  it('keeps this when flushed', () => {
+    const seen: string[] = [];
+    const form = {
+      name: 'form',
+      save: debounce(function (this: { readonly name: string }) {
+        seen.push(this.name);
+      }, 100),
+    };
+
+    form.save();
+    form.save.flush();
+
+    expect(seen).toEqual(['form']);
+  });
+
   it('drops the pending call on cancel', () => {
     const fn = vi.fn();
     const debounced = debounce(fn, 100);
