@@ -1,34 +1,51 @@
 import { vi } from 'vitest';
 
-export interface FakeBrowser {
-  readonly location: { href: string };
-  /** Simulate the OS switching to another app. */
-  readonly hidePage: () => void;
-  /** Simulate the page being unloaded (e.g. bfcache). */
-  readonly firePageHide: () => void;
+export interface FakeTextarea {
+  value: string;
+  readonly style: Record<string, string>;
+  readonly setAttribute: (name: string, value: string) => void;
+  readonly select: () => void;
+}
+
+export interface FakeDocument {
+  readonly appended: FakeTextarea[];
+  readonly removed: FakeTextarea[];
+  readonly execCommand: ReturnType<typeof vi.fn<(command: string) => boolean>>;
 }
 
 /**
- * Stub `window`/`document` with just enough surface for the deeplink utils:
- * event targets for visibilitychange/pagehide plus a writable location.
+ * Stub `document` with just enough surface for the execCommand copy fallback.
  * Undone automatically after each test via `unstubGlobals` in vitest.config.ts.
  */
-export const stubBrowser = (): FakeBrowser => {
-  const location = { href: '' };
-  const fakeWindow = Object.assign(new EventTarget(), { location });
-  const fakeDocument = Object.assign(new EventTarget(), {
-    visibilityState: 'visible' as DocumentVisibilityState,
+export const stubDocument = (): FakeDocument => {
+  const appended: FakeTextarea[] = [];
+  const removed: FakeTextarea[] = [];
+  const execCommand = vi.fn<(command: string) => boolean>().mockReturnValue(true);
+  vi.stubGlobal('document', {
+    createElement: (): FakeTextarea => ({
+      value: '',
+      style: {},
+      setAttribute: () => {},
+      select: () => {},
+    }),
+    body: {
+      appendChild: (element: FakeTextarea) => appended.push(element),
+      removeChild: (element: FakeTextarea) => removed.push(element),
+    },
+    execCommand,
   });
-  vi.stubGlobal('window', fakeWindow);
-  vi.stubGlobal('document', fakeDocument);
-  return {
-    location,
-    hidePage: () => {
-      fakeDocument.visibilityState = 'hidden';
-      fakeDocument.dispatchEvent(new Event('visibilitychange'));
-    },
-    firePageHide: () => {
-      fakeWindow.dispatchEvent(new Event('pagehide'));
-    },
-  };
+  return { appended, removed, execCommand };
+};
+
+/** Stub `navigator.clipboard.writeText`, or remove the Clipboard API entirely. */
+export const stubClipboard = (
+  writeText?: (text: string) => Promise<void>,
+): ReturnType<typeof vi.fn<(text: string) => Promise<void>>> | undefined => {
+  if (writeText === undefined) {
+    vi.stubGlobal('navigator', {});
+    return undefined;
+  }
+  const spy = vi.fn(writeText);
+  vi.stubGlobal('navigator', { clipboard: { writeText: spy } });
+  return spy;
 };

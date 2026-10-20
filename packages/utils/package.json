@@ -1,12 +1,11 @@
 {
   "name": "@chanom/utils",
   "version": "0.0.0",
-  "description": "Zero-dependency, tree-shakable TypeScript utilities for frontend apps: precise decimal math, URL parsing, and app deep links.",
+  "description": "Tree-shakable TypeScript utilities for frontend apps.",
   "keywords": [
-    "decimal",
-    "deeplink",
     "frontend",
-    "url",
+    "typescript",
+    "utilities",
     "utils"
   ],
   "repository": {
@@ -57,6 +56,10 @@
     "test:watch": "vitest",
     "prepublishOnly": "tsdown",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "clsx": "catalog:",
+    "tailwind-merge": "catalog:"
   },
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",

@@ -1,52 +1,45 @@
 # @chanom/utils
 
-Zero-dependency TypeScript utilities for frontend apps. Every util is a single default-exported function in its own folder, so you can import from the package root or straight from a util's subpath.
+Tree-shakable TypeScript utilities for frontend apps. Every util is a single default-exported function in its own folder, so bundlers only ship what you import, whether you import from the package root or from a util's subpath.
 
 ## Usage
 
 ```ts
-import { createDeeplink, getQueryParams, openDeeplink, sumDecimals } from '@chanom/utils';
+import { cn, debounce, retry } from '@chanom/utils';
 // or one util at a time
-import sumDecimals from '@chanom/utils/sum-decimals';
+import debounce from '@chanom/utils/debounce';
 ```
 
-### `sumDecimals(values, precision?)`
+## Utils
 
-Sum numbers or numeric strings without floating point drift. With `precision`, the exact total is rounded half away from zero.
-
-```ts
-sumDecimals([0.1, 0.2]); // 0.3 (not 0.30000000000000004)
-sumDecimals(['19.99', 0.01, '-5']); // 15
-sumDecimals([1.005], 2); // 1.01
-```
-
-### `getQueryParams(url)`
-
-Resolve a URL's query into a plain object. Accepts absolute URLs, relative paths, bare `?a=1` strings, hash-router URLs, or a `URL` instance. Repeated keys become arrays.
-
-```ts
-getQueryParams('https://example.com/p?tag=a&tag=b&page=2'); // { tag: ['a', 'b'], page: '2' }
-getQueryParams('/#/page?tab=info'); // { tab: 'info' }
-```
-
-### `createDeeplink({ scheme, path?, params? })`
-
-Build a custom-scheme link into a native app. Path segments are percent-encoded, `undefined` params are skipped, and arrays repeat the key.
+| Util                           | What it does                                                                      |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| `cn(...classes)`               | `clsx` + `tailwind-merge`: conditional class names, last Tailwind conflict wins   |
+| `debounce(fn, wait)`           | Call after `wait` ms of silence; has `.cancel()` and `.flush()`                   |
+| `throttle(fn, wait)`           | At most one call per `wait` ms, with a trailing call using the latest args        |
+| `sleep(ms, signal?)`           | Promise-based delay, abortable with an `AbortSignal`                              |
+| `retry(fn, options?)`          | Retry an async function with exponential backoff, `shouldRetry`, and abort        |
+| `isDefined(value)`             | Type guard for non-`null`/`undefined`; `items.filter(isDefined)` narrows to `T[]` |
+| `chunk(items, size)`           | Split an array into chunks of `size`                                              |
+| `groupBy(items, getKey)`       | Group an array into an object keyed by `getKey`                                   |
+| `pick(source, keys)`           | Copy only the given keys                                                          |
+| `omit(source, keys)`           | Copy everything except the given keys                                             |
+| `clamp(value, min, max)`       | Limit a number to a range                                                         |
+| `formatBytes(bytes, options?)` | Human-readable sizes: `1536 -> '1.5 KB'`, or `'1.5 KiB'` with `binary: true`      |
+| `copyToClipboard(text)`        | Clipboard API with an `execCommand` fallback; resolves `false` on failure or SSR  |
 
 ```ts
-createDeeplink({ scheme: 'myapp', path: 'product/42', params: { ref: 'web' } });
-// 'myapp://product/42?ref=web'
-```
+const save = debounce((value: string) => api.save(value), 300);
 
-### `openDeeplink(url, { fallbackUrl?, timeout? })`
-
-Try to open the app. Resolves `true` when the page gets hidden (the app took over); otherwise navigates to `fallbackUrl` (e.g. the store page) after `timeout` ms (default `2000`) and resolves `false`. No-ops with `false` outside the browser.
-
-```ts
-const opened = await openDeeplink(createDeeplink({ scheme: 'myapp', path: 'home' }), {
-  fallbackUrl: 'https://apps.apple.com/app/id000000000',
+const user = await retry(() => fetchUser(id), {
+  retries: 3,
+  shouldRetry: (error) => !(error instanceof NotFoundError),
 });
+
+<button className={cn('px-2 py-1', isActive && 'bg-blue-500 px-4')} />;
 ```
+
+`clsx` and `tailwind-merge` are dependencies of `cn` only; they are not bundled unless you use it.
 
 ## Adding a util
 
