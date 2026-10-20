@@ -47,6 +47,18 @@ describe('isDeepEqual', () => {
     expect(isDeepEqual(new Set([1]), new Set([1, 2]))).toBe(false);
   });
 
+  it('matches set members one-to-one', () => {
+    expect(isDeepEqual(new Set([{ x: 1 }, { x: 1 }]), new Set([{ x: 1 }, { y: 2 }]))).toBe(false);
+    expect(isDeepEqual(new Set([{ x: 1 }, { x: 1 }]), new Set([{ x: 1 }, { x: 1 }]))).toBe(true);
+  });
+
+  it('pairs identical set members before deep matches', () => {
+    const shared = { x: 1 };
+
+    expect(isDeepEqual(new Set([{ x: 1 }, shared]), new Set([shared, { x: 1 }]))).toBe(true);
+    expect(isDeepEqual(new Set([{ x: 1 }, shared]), new Set([shared, { y: 2 }]))).toBe(false);
+  });
+
   it('compares class instances by reference', () => {
     const url = new URL('https://a.test');
 

@@ -75,11 +75,21 @@ function equalSets(
   b: ReadonlySet<unknown>,
   seen: Map<object, Set<object>>,
 ): boolean {
-  const others = [...b];
-  return (
-    a.size === b.size &&
-    [...a].every((value) => b.has(value) || others.some((other) => equal(value, other, seen)))
-  );
+  if (a.size !== b.size) {
+    return false;
+  }
+  // Each element of `b` may match only one element of `a`. Identical members
+  // pair up first so a deep match cannot claim an element that `a` also holds.
+  const unmatched = [...a].filter((value) => !b.has(value));
+  const others = [...b].filter((value) => !a.has(value));
+  return unmatched.every((value) => {
+    const index = others.findIndex((other) => equal(value, other, seen));
+    if (index === -1) {
+      return false;
+    }
+    others.splice(index, 1);
+    return true;
+  });
 }
 
 function isPlainObject(value: object): boolean {
