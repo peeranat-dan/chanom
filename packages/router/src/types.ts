@@ -1,6 +1,3 @@
-import type { ComponentType } from 'react';
-import type { ActionFunction, LoaderFunction, ShouldRevalidateFunction } from 'react-router';
-
 /**
  * Augment this interface with your app's paths to type every API in this package.
  * The Vite plugin (`@chanom/router/vite`) generates it from your pages folder:
@@ -45,6 +42,11 @@ export type SearchInit =
   | URLSearchParams
   | Readonly<Record<string, SearchValue | readonly SearchValue[]>>;
 
+/** Search params to change, keyed like `T`. `null` or `undefined` removes a key; arrays repeat it. */
+export type SearchUpdate<T = Readonly<Record<string, unknown>>> = {
+  readonly [K in keyof T]?: SearchValue | readonly SearchValue[];
+};
+
 /** `params` is required exactly when the path has a required param. */
 export type ParamsOption<P extends string> =
   {} extends Params<P> ? { readonly params?: Params<P> } : { readonly params: Params<P> };
@@ -54,19 +56,6 @@ export type HrefOptions<P extends string> = ParamsOption<P> & {
   readonly hash?: string;
 };
 
-/** Rest-args form of {@link HrefOptions}: optional unless the path has required params. */
+/** Rest-args form of {@link HrefOptions}: optional unless the path has a required param. */
 export type HrefArgs<P extends string, Extra = unknown> =
   {} extends Params<P> ? [options?: HrefOptions<P> & Extra] : [options: HrefOptions<P> & Extra];
-
-/** What a page, layout, `_app`, or `404` module may export. All exports are optional. */
-export interface RouteModule {
-  readonly default?: ComponentType;
-  readonly loader?: LoaderFunction;
-  readonly action?: ActionFunction;
-  readonly ErrorBoundary?: ComponentType;
-  readonly handle?: unknown;
-  readonly shouldRevalidate?: ShouldRevalidateFunction;
-}
-
-/** Output of `import.meta.glob`: lazy importers, eager modules (`{ eager: true }`), or both. */
-export type PageModules = Readonly<Record<string, unknown>>;

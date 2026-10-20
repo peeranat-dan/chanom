@@ -2,7 +2,7 @@ import type { Mock } from 'vitest';
 
 import { vi } from 'vitest';
 
-import { registerRoutes } from '../../src/core/preload-registry.ts';
+import registerRoutes from '../../src/react-router/utils/register-routes.ts';
 
 /** Registers an `/about` route whose lazy loader is the returned spy, so tests can observe preloads. */
 export function trackPreloads(): Mock<() => Promise<object>> {

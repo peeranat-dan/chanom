@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { generateTypes } from '../../src/vite/generate-types.ts';
+import generateTypes from '../../src/vite/generate-types.ts';
 
 describe('generateTypes', () => {
   it('registers the paths as a union', () => {

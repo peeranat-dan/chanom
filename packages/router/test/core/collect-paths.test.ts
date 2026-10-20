@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { collectPaths } from '../../src/core/collect-paths.ts';
-import { scanPages } from '../../src/core/scan-pages.ts';
+import collectPaths from '../../src/core/collect-paths.ts';
+import scanPages from '../../src/core/scan-pages.ts';
 
 describe('collectPaths', () => {
   it('lists every navigable pattern, sorted', () => {

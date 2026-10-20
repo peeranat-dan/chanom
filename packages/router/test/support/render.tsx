@@ -5,12 +5,19 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
-// React only enables act() warnings-free updates when this flag is set.
+// Tells React that tests wrap updates in act(), so it flushes them without warnings.
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
 export interface Rendered {
   readonly container: HTMLElement;
   readonly router: ReturnType<typeof createMemoryRouter>;
+}
+
+/** Flushes pending lazy imports, loaders, and the resulting renders. */
+export async function settle(): Promise<void> {
+  for (let i = 0; i < 5; i += 1) {
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
+  }
 }
 
 /** Renders `routes` in a memory router at `path` and waits for lazy routes to settle. */
@@ -25,18 +32,7 @@ export async function renderRoutes(routes: RouteObject[], path = '/'): Promise<R
   return { container, router };
 }
 
-/** Renders `element` as the only route at `path`. */
-export function renderAt(
-  element: ReactNode,
-  path = '/',
-  extra: RouteObject[] = [],
-): Promise<Rendered> {
-  return renderRoutes([{ path: '*', element }, ...extra], path);
-}
-
-/** Flushes pending lazy imports, loaders, and the resulting renders. */
-export async function settle(): Promise<void> {
-  for (let i = 0; i < 5; i += 1) {
-    await act(() => new Promise((resolve) => setTimeout(resolve, 0)));
-  }
+/** Renders `element` for every path, starting at `path`. */
+export function renderAt(element: ReactNode, path = '/'): Promise<Rendered> {
+  return renderRoutes([{ path: '*', element }], path);
 }

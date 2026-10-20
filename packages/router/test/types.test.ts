@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
-import type { HrefArgs, Params, Path } from '../src/types.ts';
+import type { HrefArgs, Params, Path, SearchUpdate } from '../src/types.ts';
 import type {} from './support/register.ts';
 
 describe('Path', () => {
@@ -34,5 +34,14 @@ describe('HrefArgs', () => {
     expectTypeOf<[{ params: { id: '1' } }]>().toExtend<HrefArgs<'/posts/:id'>>();
     expectTypeOf<[]>().toExtend<HrefArgs<'/:lang?/docs'>>();
     expectTypeOf<[]>().not.toExtend<HrefArgs<'/posts/:id'>>();
+  });
+});
+
+describe('SearchUpdate', () => {
+  it('only accepts the keys of its shape', () => {
+    expectTypeOf<{ page: 2; tags: ['a'] }>().toExtend<
+      SearchUpdate<{ page: number; tags: string[] }>
+    >();
+    expectTypeOf<{ other: 1 }>().not.toExtend<SearchUpdate<{ page: number }>>();
   });
 });

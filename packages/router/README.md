@@ -6,7 +6,7 @@ Type-safe, file-based routing for [React Router](https://reactrouter.com/), insp
 
 - **Only React Router.** The runtime is a thin layer over `react-router` (data mode): no other runtime dependencies, and every React Router feature (loaders, actions, error boundaries, `useLoaderData`, `<Outlet />`, ...) works as usual.
 - **Fast by default.** Every page is its own lazy chunk, matched routes load in parallel (no waterfalls), and `<Link>` preloads the target page's code on hover or focus, so most navigations start with the code already downloaded.
-- **Type-safe without ceremony.** A Vite plugin writes a tiny `router.gen.ts` that lists your paths. `Link`, `NavLink`, `Navigate`, `useNavigate`, `useParams`, `redirect`, and `href` then reject unknown paths and missing or misspelled params.
+- **Type-safe without ceremony.** A Vite plugin writes a tiny `router.gen.ts` that lists your paths. `Link`, `NavLink`, `Navigate`, `useNavigate`, `useParams`, `useSearchParams`, `redirect`, and `href` then reject unknown paths and missing or misspelled params.
 - **Familiar conventions.** generouted-style file names, and React Router's own export names (`loader`, `action`, `ErrorBoundary`, ...).
 
 ## Setup
@@ -91,7 +91,16 @@ Supported exports: `default` (the component), `loader`, `action`, `ErrorBoundary
 ## Navigation
 
 ```tsx
-import { href, Link, Navigate, NavLink, redirect, useNavigate, useParams } from '@chanom/router';
+import {
+  href,
+  Link,
+  Navigate,
+  NavLink,
+  redirect,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from '@chanom/router';
 
 <Link to="/posts/:id" params={{ id: '1' }} search={{ tab: 'comments' }} hash="top">
   Post
@@ -115,7 +124,38 @@ throw redirect('/login', { search: { next: '/settings' }, init: 303 });
 
 `params` is required exactly when the path has a required param, and TypeScript flags unknown paths, missing params, and misspelled param names. `search` takes a string, `URLSearchParams`, or a record (`null`/`undefined` values are skipped, arrays repeat the key).
 
-Everything else (`Outlet`, `useLoaderData`, `useSearchParams`, `Form`, ...) comes straight from `react-router`.
+## Search params
+
+`useSearchParams` reads the query string into a typed value and gives you a setter that merges changes into the URL:
+
+```tsx
+// Define the parser outside the component so the parsed value stays memoized.
+const parseFilters = (params: URLSearchParams) => ({
+  page: Number(params.get('page') ?? 1),
+  tag: params.getAll('tag'),
+});
+
+function Posts() {
+  const [filters, setFilters] = useSearchParams(parseFilters); // { page: number; tag: string[] }
+
+  setFilters({ page: filters.page + 1 }); // other keys (e.g. ?q=) are kept
+  setFilters((current) => ({ tag: [...current.tag, 'react'] })); // arrays repeat the key
+  setFilters({ page: null }, { replace: true }); // null removes a key; React Router navigate options
+}
+```
+
+- The setter only accepts the keys your parser returns, so name them after the query keys.
+- Without a parser you get a plain record (`{ [key]: string | undefined }`, first value wins for repeated keys).
+
+Everything else (`Outlet`, `useLoaderData`, `Form`, ...) comes straight from `react-router`.
+
+## Project layout
+
+- `src/core/`: router-agnostic logic (page scanning, path types, `href`, search helpers), shared with the Vite plugin.
+- `src/react-router/`: the React Router adapter (route building, components, hooks, `preload`, `redirect`).
+- `src/vite/`: the Node-only Vite plugin.
+
+Each file holds one default-exported function, with private helpers under a sibling `utils/` folder.
 
 ## Performance
 
