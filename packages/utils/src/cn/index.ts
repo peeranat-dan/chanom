@@ -1,14 +1,13 @@
-import type { ClassValue } from 'clsx';
+import type { ClassValue } from 'cn';
 
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { cn as mergeClasses } from 'cn';
 
-export type { ClassValue } from 'clsx';
+export type { ClassValue } from 'cn';
 
 /**
  * Join conditional class names and resolve conflicting Tailwind classes so the
  * last one wins: `cn('px-2', isActive && 'px-4')` returns `'px-4'` when active.
  */
 export default function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs));
+  return mergeClasses(...inputs);
 }

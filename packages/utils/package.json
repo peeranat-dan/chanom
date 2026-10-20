@@ -58,8 +58,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "clsx": "catalog:",
-    "tailwind-merge": "catalog:"
+    "cn": "catalog:"
   },
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
