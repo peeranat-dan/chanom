@@ -11,6 +11,7 @@ export default {
         'dc', // packages/dev-config
         'internal', // packages/internal
         'logger', // packages/logger
+        'utils', // packages/utils
         'vc', // packages/vite-config
         'vscode', // .vscode
       ],

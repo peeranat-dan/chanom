@@ -27,6 +27,7 @@ pnpm exec turbo run build lint format:check
 | [`create-chanom-app`](./packages/create-chanom-app) | Scaffold a Vite + React + TS app wired to the chanom shared configs | [`README`](./packages/create-chanom-app/README.md) |
 | [`@chanom/dev-config`](./packages/dev-config)       | Shared [oxlint](https://oxc.rs/) + [oxfmt](https://oxc.rs/) presets | [`README`](./packages/dev-config/README.md)        |
 | [`@chanom/logger`](./packages/logger)               | Console logger with environment gating and level filtering          | [`README`](./packages/logger/README.md)            |
+| [`@chanom/utils`](./packages/utils)                 | Frontend TS utils: decimal math, URL params, and app deep links     | [`README`](./packages/utils/README.md)             |
 | [`@chanom/vite-config`](./packages/vite-config)     | Vite config factory for libraries and React apps                    | [`README`](./packages/vite-config/README.md)       |
 
 ## Tech stack
