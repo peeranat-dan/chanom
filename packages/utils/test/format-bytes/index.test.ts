@@ -28,6 +28,22 @@ describe('formatBytes', () => {
     expect(formatBytes(1e18)).toBe('1000 PB');
   });
 
+  it('moves to the next unit when rounding reaches the base', () => {
+    expect(formatBytes(999_950)).toBe('1 MB');
+    expect(formatBytes(-999_950)).toBe('-1 MB');
+    expect(formatBytes(999_500, { decimals: 0 })).toBe('1 MB');
+    expect(formatBytes(1_048_575, { binary: true, decimals: 0 })).toBe('1 MiB');
+  });
+
+  it('keeps a value just below the rounding threshold in the smaller unit', () => {
+    expect(formatBytes(999_949)).toBe('999.9 KB');
+  });
+
+  it('throws on NaN and infinite values', () => {
+    expect(() => formatBytes(Number.NaN)).toThrow(RangeError);
+    expect(() => formatBytes(Number.POSITIVE_INFINITY)).toThrow(RangeError);
+  });
+
   it('keeps fractional bytes in B', () => {
     expect(formatBytes(0.5)).toBe('0.5 B');
   });

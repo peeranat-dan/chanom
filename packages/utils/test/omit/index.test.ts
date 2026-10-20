@@ -7,6 +7,15 @@ describe('omit', () => {
     expect(omit({ a: 1, b: 2, c: 3 }, ['b'])).toStrictEqual({ a: 1, c: 3 });
   });
 
+  it('keeps symbol keys that are not omitted and drops those that are', () => {
+    const kept = Symbol('kept');
+    const dropped = Symbol('dropped');
+    const result = omit({ a: 1, [kept]: 2, [dropped]: 3 }, ['a', dropped]);
+
+    expect(Reflect.ownKeys(result)).toEqual([kept]);
+    expect(result[kept]).toBe(2);
+  });
+
   it('returns a shallow copy when no keys are given', () => {
     const source = { a: 1 };
     const result = omit(source, []);

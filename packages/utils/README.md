@@ -12,19 +12,19 @@ import debounce from '@chanom/utils/debounce';
 
 ## Utils
 
-| Util                           | What it does                                                                                           |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `cn(...classes)`               | Conditional class names with Tailwind conflict resolution, via [`cn`](https://github.com/shadcn-ui/cn) |
-| `debounce(fn, wait)`           | Call after `wait` ms of silence; has `.cancel()` and `.flush()`                                        |
-| `throttle(fn, wait)`           | At most one call per `wait` ms, with a trailing call using the latest args                             |
-| `sleep(ms, signal?)`           | Promise-based delay, abortable with an `AbortSignal`                                                   |
-| `retry(fn, options?)`          | Retry an async function with exponential backoff, `shouldRetry`, and abort                             |
-| `chunk(items, size)`           | Split an array into chunks of `size`                                                                   |
-| `pick(source, keys)`           | Copy only the given keys                                                                               |
-| `omit(source, keys)`           | Copy everything except the given keys                                                                  |
-| `clamp(value, min, max)`       | Limit a number to a range                                                                              |
-| `formatBytes(bytes, options?)` | Human-readable sizes: `1536 -> '1.5 KB'`, or `'1.5 KiB'` with `binary: true`                           |
-| `copyToClipboard(text)`        | Clipboard API with an `execCommand` fallback; resolves `false` on failure or SSR                       |
+| Util                           | What it does                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `cn(...classes)`               | Conditional class names with Tailwind conflict resolution, via [`cn`](https://github.com/shadcn-ui/cn)             |
+| `debounce(fn, wait)`           | Call after `wait` ms of silence; has `.cancel()` and `.flush()`                                                    |
+| `throttle(fn, wait)`           | At most one call per `wait` ms, with a trailing call using the latest args                                         |
+| `sleep(ms, signal?)`           | Promise-based delay, abortable with an `AbortSignal`                                                               |
+| `retry(fn, options?)`          | Retry an async function with exponential backoff, `shouldRetry`, and abort                                         |
+| `chunk(items, size)`           | Split an array into chunks of `size`                                                                               |
+| `pick(source, keys)`           | Copy only the given keys                                                                                           |
+| `omit(source, keys)`           | Copy everything except the given keys                                                                              |
+| `clamp(value, min, max)`       | Limit a number to a range                                                                                          |
+| `formatBytes(bytes, options?)` | Human-readable sizes: `1536 -> '1.5 KB'`, or `'1.5 KiB'` with `binary: true`; throws on `NaN`/`Infinity`           |
+| `copyToClipboard(text)`        | Clipboard API with an `execCommand` fallback that restores focus and selection; resolves `false` on failure or SSR |
 
 ```ts
 const save = debounce((value: string) => api.save(value), 300);
