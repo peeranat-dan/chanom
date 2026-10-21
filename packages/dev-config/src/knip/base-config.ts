@@ -1,7 +1,7 @@
-import type { KnipConfig } from 'knip';
+import { defineKnipConfig } from '../define-config.js';
 
-export default {
+export default defineKnipConfig({
   ignore: ['**/dist/**', '**/build/**', '**/.turbo/**', '**/CHANGELOG.md'],
   ignoreDependencies: ['@chanom/dev-config'],
   ignoreExportsUsedInFile: true,
-} satisfies KnipConfig;
+});

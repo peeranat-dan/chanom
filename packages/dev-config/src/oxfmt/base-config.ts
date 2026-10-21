@@ -1,6 +1,6 @@
-import { defineConfig } from 'oxfmt';
+import { defineOxfmtConfig } from '../define-config.js';
 
-export default defineConfig({
+export default defineOxfmtConfig({
   useTabs: false,
   tabWidth: 2,
   printWidth: 100,

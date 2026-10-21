@@ -1,16 +1,11 @@
-import type { KnipConfig } from 'knip';
-
+import { defineKnipConfig } from '../define-config.js';
 import baseConfig from './base-config.js';
 
-export default {
+export default defineKnipConfig({
   ...baseConfig,
   entry: ['index.html', 'src/main.tsx'],
   project: ['src/**/*.{ts,tsx}'],
-  ignore: [...(baseConfig.ignore ?? []), '**/*.stories.tsx', 'src/vite-env.d.ts'],
-  ignoreDependencies: [
-    ...(baseConfig.ignoreDependencies ?? []),
-    '@types/react',
-    '@types/react-dom',
-  ],
+  ignore: [...baseConfig.ignore, '**/*.stories.tsx', 'src/vite-env.d.ts'],
+  ignoreDependencies: [...baseConfig.ignoreDependencies, '@types/react', '@types/react-dom'],
   vite: true,
-} satisfies KnipConfig;
+});

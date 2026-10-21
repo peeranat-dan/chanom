@@ -69,6 +69,48 @@ export default defineConfig({
 });
 ```
 
+## Inspecting the config
+
+There are three ways to see exactly what a shared config sets, without reading
+this package's source.
+
+### Print it
+
+The package ships a `chanom-dev-config` bin that prints any export as JSON:
+
+```sh
+pnpm exec chanom-dev-config print oxlint/config
+pnpm exec chanom-dev-config print oxfmt/base
+pnpm exec chanom-dev-config list   # every config name
+```
+
+The name matches the export specifier without the `@chanom/dev-config/` prefix.
+Redirect the output to a file to diff configs between versions:
+
+```sh
+pnpm exec chanom-dev-config print oxlint/config > oxlint.resolved.json
+```
+
+For oxlint you can also ask oxlint for the fully merged result of your own
+`oxlint.config.ts`, including anything you added on top:
+
+```sh
+pnpm exec oxlint --print-config
+```
+
+### Hover it
+
+Every export is typed with its literal values, so hovering the import (or
+"Go to Definition") in your editor shows the actual settings, for example
+`tabWidth: 2` and the full `ignorePatterns` list, rather than just `number` or
+`string[]`.
+
+### Read it
+
+`dist/` mirrors `src/` file for file, so
+`node_modules/@chanom/dev-config/dist/oxlint/base-config.js` holds the base lint
+config as plain JavaScript.
+
 ## Ignored paths
 
 The lint configs ignore the usual build artifacts by default:

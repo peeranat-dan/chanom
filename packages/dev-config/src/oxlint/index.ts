@@ -1,8 +1,7 @@
-import { defineConfig } from 'oxlint';
-
+import { defineOxlintConfig } from '../define-config.js';
 import baseConfig from './base-config.js';
 
-export default defineConfig({
+export default defineOxlintConfig({
   extends: [baseConfig],
   plugins: ['react', 'jsx-a11y'],
   categories: {
