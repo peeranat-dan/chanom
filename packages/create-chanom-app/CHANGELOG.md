@@ -1,5 +1,12 @@
 # create-chanom-app
 
+## 0.4.2
+
+### Patch Changes
+
+- bed45ec: Generated apps now pin `typescript` to 7.0.2.
+- bed45ec: Bump `oxlint` to 1.89.0, `oxfmt` to 0.74.0, and `oxlint-tsgolint` to 7.0.2005.
+
 ## 0.4.1
 
 ### Patch Changes
