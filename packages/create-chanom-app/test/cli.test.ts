@@ -48,6 +48,7 @@ describe('run', () => {
         'Project name?': 'my-app',
         'Initialize a git repository?': false,
         'Add agent coding standards (.agents/skills)?': false,
+        'Add a GitHub Actions CI workflow?': false,
         'Install dependencies now?': false,
       },
     });
@@ -65,6 +66,7 @@ describe('run', () => {
         'Initialize a git repository?': true,
         'Add commit hooks (husky + lint-staged + commitlint)?': true,
         'Add agent coding standards (.agents/skills)?': false,
+        'Add a GitHub Actions CI workflow?': false,
         'Install dependencies now?': false,
       },
     });
@@ -80,6 +82,7 @@ describe('run', () => {
         'Project name?': 'my-app',
         'Initialize a git repository?': false,
         'Add agent coding standards (.agents/skills)?': false,
+        'Add a GitHub Actions CI workflow?': false,
         'Install dependencies now?': false,
       },
     });
@@ -105,6 +108,56 @@ describe('run', () => {
       yield* run(['demo', '--yes', '--no-install', '--no-git', '--no-agent-skills'], '/work', opts);
       expect([...fs.files.keys()].some((path) => path.includes('.agents'))).toBe(false);
       expect(fs.symlinks.size).toBe(0);
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('writes every CI job with --yes', () => {
+    const { fs, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* run(['demo', '--yes', '--no-install'], '/work', opts);
+      const workflow = fs.files.get('/work/demo/.github/workflows/ci.yml') ?? '';
+      for (const job of ['lint', 'build', 'typecheck', 'test']) {
+        expect(workflow).toContain(`run: pnpm run ${job}`);
+      }
+      // The launcher recorded `packageManager`, so the pnpm action reads it.
+      expect(workflow).not.toContain('version: latest');
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('writes only the jobs named by --ci-jobs, skipping the prompts', () => {
+    const { fs, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* run(['demo', '--yes', '--no-install', '--ci-jobs', 'test'], '/work', opts);
+      const workflow = fs.files.get('/work/demo/.github/workflows/ci.yml') ?? '';
+      expect(workflow).toContain('run: pnpm run test');
+      expect(workflow).not.toContain('run: pnpm run lint');
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('writes no workflow with --no-github-actions', () => {
+    const { fs, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* run(['demo', '--yes', '--no-install', '--no-github-actions'], '/work', opts);
+      expect(fs.files.has('/work/demo/.github/workflows/ci.yml')).toBe(false);
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('asks which CI jobs to write when the workflow is accepted', () => {
+    const { fs, layer } = makeEnv({
+      answers: {
+        'Project name?': 'my-app',
+        'Initialize a git repository?': false,
+        'Add agent coding standards (.agents/skills)?': false,
+        'Add a GitHub Actions CI workflow?': true,
+        'Which GitHub Actions jobs would you like?': ['build'],
+        'Install dependencies now?': false,
+      },
+    });
+    return Effect.gen(function* () {
+      yield* run([], '/work', opts);
+      const workflow = fs.files.get('/work/my-app/.github/workflows/ci.yml') ?? '';
+      expect(workflow).toContain('run: pnpm run build');
+      expect(workflow).not.toContain('run: pnpm run test');
     }).pipe(Effect.provide(layer));
   });
 

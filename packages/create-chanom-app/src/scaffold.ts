@@ -1,4 +1,4 @@
-import { CommandRunner, Git, type PackageManager, Prompter } from '@chanom/internal';
+import { type CiJob, CommandRunner, Git, type PackageManager, Prompter } from '@chanom/internal';
 import { FileSystem, Path } from '@effect/platform';
 import { Data, Effect } from 'effect';
 import pc from 'picocolors';
@@ -33,6 +33,8 @@ export interface ScaffoldPlan {
   readonly git: boolean;
   readonly commitHooks: boolean;
   readonly agentSkills: boolean;
+  /** CI jobs for the github-actions topping; empty skips the topping. */
+  readonly ciJobs: readonly CiJob[];
   readonly install: boolean;
   /** Absolute path of the shipped `templates/` directory. */
   readonly templatesRoot: string;
@@ -123,8 +125,15 @@ const initGit = Effect.fn('scaffold.initGit')(function* (plan: ScaffoldPlan) {
   const git = yield* Git;
   const prompter = yield* Prompter;
   const s = yield* prompter.spinner('Initializing git repository...');
-
   yield* git.init(plan.targetDir);
+  yield* s.stop('Git repository initialized');
+});
+
+const commitScaffold = Effect.fn('scaffold.commitScaffold')(function* (plan: ScaffoldPlan) {
+  const git = yield* Git;
+  const prompter = yield* Prompter;
+  const s = yield* prompter.spinner('Creating the initial commit...');
+
   // A missing identity would abort the initial commit (common in CI); set a
   // local placeholder so scaffolding always lands a first commit.
   if (!(yield* git.hasIdentity(plan.targetDir))) {
@@ -138,7 +147,7 @@ const initGit = Effect.fn('scaffold.initGit')(function* (plan: ScaffoldPlan) {
 
   const result = yield* git.commit(plan.targetDir, 'chore: scaffold with create-chanom-app');
   yield* s.stop(
-    result.ok ? 'Git repository initialized' : pc.yellow('Could not create the initial commit'),
+    result.ok ? 'Initial commit created' : pc.yellow('Could not create the initial commit'),
   );
 });
 
@@ -165,7 +174,7 @@ const installDependencies = Effect.fn('scaffold.installDependencies')(function* 
   yield* s.stop('Dependencies installed');
 });
 
-/** Writes the generated app, then optionally initializes git and installs deps. */
+/** Writes the generated app, then optionally initializes git, installs deps, and commits. */
 export const scaffold = Effect.fn('scaffold')(function* (plan: ScaffoldPlan) {
   const fs = yield* FileSystem.FileSystem;
 
@@ -174,6 +183,8 @@ export const scaffold = Effect.fn('scaffold')(function* (plan: ScaffoldPlan) {
       pm: plan.pm,
       commitHooks: plan.commitHooks,
       agentSkills: plan.agentSkills,
+      ciJobs: plan.ciJobs,
+      hasPackageManagerField: plan.packageManagerField !== undefined,
     }),
   );
 
@@ -181,6 +192,15 @@ export const scaffold = Effect.fn('scaffold')(function* (plan: ScaffoldPlan) {
   yield* copyTemplates(plan);
   yield* writeGeneratedFiles(plan, folded);
 
+  // Ordered init -> install -> commit: husky's `prepare` script needs the repo
+  // to exist when it runs, and committing after the install puts the lockfile
+  // in the initial commit (the generated CI installs with a frozen lockfile).
   if (plan.git) yield* initGit(plan);
-  if (plan.install) yield* installDependencies(plan);
+  if (plan.install) {
+    yield* installDependencies(plan).pipe(
+      // A failed install still leaves a committed scaffold behind.
+      Effect.tapError(() => (plan.git ? commitScaffold(plan) : Effect.void)),
+    );
+  }
+  if (plan.git) yield* commitScaffold(plan);
 });

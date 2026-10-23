@@ -65,6 +65,26 @@ describe('parseArgs', () => {
     });
   });
 
+  it('reads the github-actions flags and a --ci-jobs list', () => {
+    expect(ok(['--github-actions']).githubActions).toBe(true);
+    expect(ok(['--no-github-actions']).githubActions).toBe(false);
+    expect(ok(['--ci-jobs', 'test, lint']).ciJobs).toEqual(['test', 'lint']);
+  });
+
+  it('rejects a missing or unknown --ci-jobs value', () => {
+    expect(parseArgs(['--ci-jobs'])).toEqual({ ok: false, message: '--ci-jobs requires a value.' });
+    expect(parseArgs(['--ci-jobs', 'lint,deploy'])).toEqual({
+      ok: false,
+      message: 'Unknown CI job "deploy". Use any of: lint, build, typecheck, test.',
+    });
+  });
+
+  it('rejects the contradictory --no-github-actions --ci-jobs pair', () => {
+    const result = parseArgs(['--no-github-actions', '--ci-jobs', 'lint']);
+    expect(result.ok).toBe(false);
+    expect(result.ok === false && result.message).toMatch(/--ci-jobs needs the github-actions/);
+  });
+
   it('rejects the contradictory --no-git --commit-hooks pair', () => {
     const result = parseArgs(['--no-git', '--commit-hooks']);
     expect(result.ok).toBe(false);
