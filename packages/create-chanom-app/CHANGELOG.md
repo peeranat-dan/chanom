@@ -1,5 +1,11 @@
 # create-chanom-app
 
+## 0.5.0
+
+### Minor Changes
+
+- e92aa3c: Add a `github-actions` topping that writes `.github/workflows/ci.yml` with your choice of `lint`, `build`, `typecheck`, and `test` jobs. In `chanom brew` it is a topping option; in `create-chanom-app` it is a prompt plus the `--github-actions` / `--no-github-actions` / `--ci-jobs` flags.
+
 ## 0.4.3
 
 ### Patch Changes
