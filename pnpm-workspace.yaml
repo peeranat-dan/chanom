@@ -32,21 +32,26 @@ catalog:
   jsdom: 30.0.0
   knip: 6.26.0
   lint-staged: 17.0.8
-  oxfmt: 0.58.0
-  oxlint: 1.73.0
-  oxlint-tsgolint: 0.24.0
+  oxfmt: 0.74.0
+  oxlint: 1.89.0
+  oxlint-tsgolint: 7.0.2005
   picocolors: 1.1.1
   react: 19.2.8
   react-dom: 19.2.8
   rollup-plugin-visualizer: 7.0.1
-  tsdown: 0.22.3
+  tsdown: 0.23.1
   turbo: 2.10.0
-  typescript: 6.0.3
+  typescript: 7.0.2
   vite: 8.1.0
   vitest: 3.2.6
 
 catalogMode: strict
 
 minimumReleaseAgeExclude:
-  - knip@6.26.0
-  - jsdom@30.0.0
+  - '@oxlint-tsgolint/darwin-arm64@7.0.2005'
+  - '@oxlint-tsgolint/darwin-x64@7.0.2005'
+  - '@oxlint-tsgolint/linux-arm64@7.0.2005'
+  - '@oxlint-tsgolint/linux-x64@7.0.2005'
+  - '@oxlint-tsgolint/win32-arm64@7.0.2005'
+  - '@oxlint-tsgolint/win32-x64@7.0.2005'
+  - oxlint-tsgolint@7.0.2005
