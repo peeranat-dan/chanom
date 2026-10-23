@@ -1,5 +1,11 @@
 # @chanom/cli
 
+## 0.4.4
+
+### Patch Changes
+
+- ceca10f: Bump `vitest` and `@vitest/coverage-v8` to 5.0.5, `@effect/vitest` to 0.30.1, and `effect` to 3.22.4.
+
 ## 0.4.3
 
 ### Patch Changes
