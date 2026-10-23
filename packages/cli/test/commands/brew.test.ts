@@ -99,6 +99,10 @@ describe('logic', () => {
     expect(planPackages({}, ['skills'], 'light', versions)).toEqual([]);
   });
 
+  it('installs nothing for the github-actions topping', () => {
+    expect(planPackages({}, ['github-actions'], 'light', versions)).toEqual([]);
+  });
+
   it('names the oxfmt config after the module system, matching add-oxfmt', () => {
     expect(oxfmtConfigPath(true)).toBe('oxfmt.config.ts');
     expect(oxfmtConfigPath(false)).toBe('oxfmt.config.mts');
@@ -501,6 +505,49 @@ describe('brew', () => {
       expect(settings['oxc.fmt.configPath']).toBe('oxfmt.config.ts');
       expect(settings['editor.defaultFormatter']).toBe('oxc.oxc-vscode');
       expect(env.fs.files.get('/project/.vscode/extensions.json')).toContain('oxc.oxc-vscode');
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('writes a CI workflow for the chosen jobs when github-actions is selected', () => {
+    const env = makeTestEnv({
+      files: {
+        '/project/package.json': JSON.stringify({ type: 'module', packageManager: 'npm@11.0.0' }),
+      },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': ['oxlint', 'github-actions'],
+        'Which GitHub Actions jobs would you like?': ['test', 'lint'],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+
+      const workflow = env.fs.files.get('/project/.github/workflows/ci.yml') ?? '';
+      expect(workflow).toContain('run: npm run lint');
+      expect(workflow).toContain('run: npm run test');
+      expect(workflow).not.toContain('run: npm run build');
+      // oxlint added `lint` first, so only `test` is reported missing.
+      expect(env.prompter.log.warnings).toEqual([
+        'No `test` script in package.json - the `test` CI job will fail until you add one',
+      ]);
+    }).pipe(Effect.provide(env.layer));
+  });
+
+  it.effect('skips the jobs prompt when github-actions is not selected', () => {
+    const env = makeTestEnv({
+      files: { '/project/package.json': JSON.stringify({ type: 'module' }) },
+      dirs: ['/project/.git'],
+      answers: {
+        'Which toppings would you like?': [],
+        'How sweet would you like it?': 'light',
+      },
+    });
+
+    return Effect.gen(function* () {
+      yield* brew('/project');
+      expect(env.fs.files.has('/project/.github/workflows/ci.yml')).toBe(false);
     }).pipe(Effect.provide(env.layer));
   });
 
