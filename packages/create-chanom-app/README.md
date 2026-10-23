@@ -29,10 +29,11 @@ pnpm create chanom-app .
 Run with no flags, the CLI walks you through:
 
 1. **Project name** - the target directory (kebab-cased). Defaults to `my-chanom-app`.
-2. **Initialize a git repository?** - `git init` plus an initial commit.
+2. **Initialize a git repository?** - `git init` plus an initial commit (made after the install, so it includes the lockfile).
 3. **Add commit hooks?** - husky + lint-staged + commitlint (only asked when git is enabled).
 4. **Add agent coding standards?** - the `coding-standards` skill in `.agents/skills`, linked into `.claude/skills`.
-5. **Install dependencies now?** - runs `<pm> install` after scaffolding.
+5. **Add a GitHub Actions CI workflow?** - `.github/workflows/ci.yml`; if yes, pick its jobs from `lint`, `build`, `typecheck`, `test` (all checked by default).
+6. **Install dependencies now?** - runs `<pm> install` after scaffolding.
 
 Every prompt has a matching flag so you can pre-answer any of them (or all, with `--yes`).
 
@@ -46,13 +47,16 @@ Every prompt has a matching flag so you can pre-answer any of them (or all, with
 | `--no-commit-hooks`           | Skip the commit-hooks topping                             |
 | `--agent-skills`              | Add the coding-standards skill (default: yes)             |
 | `--no-agent-skills`           | Skip the agent-skills topping                             |
+| `--github-actions`            | Add a GitHub Actions CI workflow (default: yes)           |
+| `--no-github-actions`         | Skip the github-actions topping                           |
+| `--ci-jobs <jobs>`            | Comma-separated CI jobs, e.g. `lint,test` (default: all)  |
 | `--install` / `--no-install`  | Install dependencies after scaffolding (default: install) |
 | `--pm <pnpm\|npm\|yarn\|bun>` | Package manager to record (default: detected)             |
 | `-y`, `--yes`                 | Accept all defaults, no prompts (CI-friendly)             |
 | `--help`                      | Show help                                                 |
 | `--version`                   | Show the version                                          |
 
-`--no-git --commit-hooks` is rejected: husky needs a repo to install into.
+`--no-git --commit-hooks` is rejected: husky needs a repo to install into. `--no-github-actions --ci-jobs` is rejected too. `--ci-jobs` on its own turns the topping on.
 
 The package manager is detected from the invoking user agent (falling back to `pnpm`); `--pm` overrides it and is recorded in the generated `package.json` `packageManager` field.
 
@@ -80,6 +84,8 @@ A minimal Vite + React + TS app wired to the chanom shared configs:
 With the **commit-hooks** topping, it also adds husky, lint-staged, and commitlint as dev dependencies plus their config files (`.husky/pre-commit`, `.husky/commit-msg`, `.lintstagedrc.json`, `.commitlintrc.json`). The hooks materialize on the first install via the generated `prepare: "husky"` script.
 
 With the **agent-skills** topping, it adds the `coding-standards` agent skill - a router `SKILL.md` plus TypeScript, React, and Vitest references written for exactly the stack scaffolded here. The real files land in `.agents/skills/coding-standards/` so any agent tool can read them, and `.claude/skills/coding-standards` is a relative symlink pointing at that directory rather than a second copy. It contributes no packages and no scripts, so skipping it leaves both directories out entirely.
+
+With the **github-actions** topping, it adds `.github/workflows/ci.yml` - the same workflow `chanom brew` writes. It runs on every pull request with one independent job per check you picked. Each job sets up your package manager and the latest LTS Node, runs `<pm> install` with a frozen lockfile, then `<pm> run <job>`. The generated app ships all four scripts, so every job works as generated. When dependencies are installed during scaffolding, the lockfile lands in the initial commit; with `--no-install`, commit it after your first install - the frozen install fails without it.
 
 ## Development
 

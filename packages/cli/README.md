@@ -1,6 +1,6 @@
 # @chanom/cli
 
-Interactive CLI that brews dev tooling config into your project - oxlint, oxfmt, knip, VS Code settings, agent coding standards, and commit hooks, picked with a couple of prompts.
+Interactive CLI that brews dev tooling config into your project - oxlint, oxfmt, knip, VS Code settings, agent coding standards, a GitHub Actions CI workflow, and commit hooks, picked with a couple of prompts.
 
 ## Install
 
@@ -32,7 +32,7 @@ chanom brew --debug
 
 Debug mode logs each step (detected package manager, planned packages, every command it spawns and its exit code) to stderr, and on failure prints the full error trace including which step failed.
 
-`brew` walks you through two prompts:
+`brew` walks you through two prompts (plus a third when you pick `github-actions`):
 
 1. **Toppings** - which tools to add, any combination (or none):
    - `oxlint` - fast Rust-based linter
@@ -40,6 +40,7 @@ Debug mode logs each step (detected package manager, planned packages, every com
    - `knip` - dead code remover
    - `vscode` - editor settings + extension recommendations
    - `skills` - coding standards for AI agents (`.claude/skills`)
+   - `github-actions` - CI workflow (`.github/workflows/ci.yml`), then pick its jobs: any of `lint`, `build`, `typecheck`, `test`
 2. **Sweetness** - how strict to be:
    - `light` - warn only, no blocking
    - `medium` - block on commit via husky + lint-staged + commitlint
@@ -62,13 +63,14 @@ installing anything. `light` sweetness works anywhere in the repo.
 
 ## What gets added
 
-| Topping  | Config file                                                                     | Scripts added            |
-| -------- | ------------------------------------------------------------------------------- | ------------------------ |
-| `oxlint` | `oxlint.config.ts`\*                                                            | `lint`, `lint:fix`       |
-| `oxfmt`  | `oxfmt.config.ts`\*                                                             | `format`, `format:check` |
-| `knip`   | `knip.config.ts`\*                                                              | `knip`                   |
-| `vscode` | `.vscode/settings.json`, `.vscode/extensions.json`                              | none                     |
-| `skills` | `.agents/skills/coding-standards/`, `.claude/skills/coding-standards` (symlink) | none                     |
+| Topping          | Config file                                                                     | Scripts added            |
+| ---------------- | ------------------------------------------------------------------------------- | ------------------------ |
+| `oxlint`         | `oxlint.config.ts`\*                                                            | `lint`, `lint:fix`       |
+| `oxfmt`          | `oxfmt.config.ts`\*                                                             | `format`, `format:check` |
+| `knip`           | `knip.config.ts`\*                                                              | `knip`                   |
+| `vscode`         | `.vscode/settings.json`, `.vscode/extensions.json`                              | none                     |
+| `skills`         | `.agents/skills/coding-standards/`, `.claude/skills/coding-standards` (symlink) | none                     |
+| `github-actions` | `.github/workflows/ci.yml`                                                      | none                     |
 
 \* `.mts` instead of `.ts` when your project is CommonJS (no `"type": "module"` in `package.json`).
 
@@ -95,6 +97,15 @@ tool can read it, and links `.claude/skills/coding-standards` at that directory
 with a relative symlink rather than keeping a second copy. The standards target
 the stack chanom scaffolds (Vite + React + TypeScript, oxlint, oxfmt, vitest).
 
+The `github-actions` topping installs no packages and adds no scripts. It
+writes a CI workflow that runs on every pull request, with one independent job
+per check you picked. Each job checks out the repo, sets up your package
+manager and Node (from `.nvmrc` when present, otherwise the latest LTS),
+installs dependencies from the lockfile, and runs `<pm> run <job>`. The job
+calls the matching `package.json` script, so `brew` warns about each selected
+job that has no script yet (the `lint` script from the `oxlint` topping
+counts).
+
 `medium` sweetness additionally adds:
 
 - `husky` - installed via `husky init`
@@ -120,6 +131,7 @@ Existing setup is never overwritten:
   setting you already have wins (and is warned about), and existing extension
   recommendations are kept. A `.vscode` file that can't be parsed as JSON (e.g. it
   has comments) is left untouched with a warning.
+- An existing `.github/workflows/ci.yml` is left untouched with a warning.
 - Skill files already on disk are warned about and skipped, and an existing
   `.claude/skills/coding-standards` (a link of your own, or a real directory you
   maintain by hand) is left alone - so re-running never overwrites standards you

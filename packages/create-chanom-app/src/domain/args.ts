@@ -1,9 +1,13 @@
-import type { PackageManager } from '@chanom/internal';
+import type { CiJob, PackageManager } from '@chanom/internal';
+
+import { CI_JOBS } from '@chanom/internal';
 
 const PACKAGE_MANAGERS = ['pnpm', 'npm', 'yarn', 'bun'] as const;
 
 const isPackageManager = (value: string): value is PackageManager =>
   (PACKAGE_MANAGERS as readonly string[]).includes(value);
+
+const isCiJob = (value: string): value is CiJob => (CI_JOBS as readonly string[]).includes(value);
 
 /** Flags parsed from `argv`. Undefined booleans mean "not set" (fall to prompt/default). */
 export interface ParsedArgs {
@@ -11,6 +15,9 @@ export interface ParsedArgs {
   readonly git?: boolean;
   readonly commitHooks?: boolean;
   readonly agentSkills?: boolean;
+  readonly githubActions?: boolean;
+  /** Jobs named by `--ci-jobs`, in the order given. */
+  readonly ciJobs?: readonly CiJob[];
   readonly install?: boolean;
   readonly pm?: PackageManager;
   readonly yes: boolean;
@@ -27,6 +34,8 @@ interface MutableArgs {
   git?: boolean;
   commitHooks?: boolean;
   agentSkills?: boolean;
+  githubActions?: boolean;
+  ciJobs?: CiJob[];
   install?: boolean;
   pm?: PackageManager;
   yes: boolean;
@@ -37,8 +46,8 @@ interface MutableArgs {
 /**
  * Parses the CLI arguments, returning either the resolved flags or a
  * user-facing error message. Every flag mirrors an interactive prompt; the
- * contradictory `--no-git --commit-hooks` pair is rejected here rather than
- * silently reconciled (husky needs a repo to install into).
+ * contradictory `--no-git --commit-hooks` and `--no-github-actions --ci-jobs`
+ * pairs are rejected here rather than silently reconciled.
  */
 export function parseArgs(argv: readonly string[]): ParseResult {
   const args: MutableArgs = { yes: false, help: false, version: false };
@@ -75,6 +84,26 @@ export function parseArgs(argv: readonly string[]): ParseResult {
       case '--no-agent-skills':
         args.agentSkills = false;
         break;
+      case '--github-actions':
+        args.githubActions = true;
+        break;
+      case '--no-github-actions':
+        args.githubActions = false;
+        break;
+      case '--ci-jobs': {
+        const value = argv[++i];
+        if (value === undefined) return { ok: false, message: '--ci-jobs requires a value.' };
+        const jobs = value.split(',').map((job) => job.trim());
+        const unknown = jobs.find((job) => !isCiJob(job));
+        if (unknown !== undefined) {
+          return {
+            ok: false,
+            message: `Unknown CI job "${unknown}". Use any of: ${CI_JOBS.join(', ')}.`,
+          };
+        }
+        args.ciJobs = jobs.filter(isCiJob);
+        break;
+      }
       case '--install':
         args.install = true;
         break;
@@ -106,6 +135,14 @@ export function parseArgs(argv: readonly string[]): ParseResult {
     return {
       ok: false,
       message: '--commit-hooks requires a git repo. Remove --no-git or --commit-hooks.',
+    };
+  }
+
+  if (args.githubActions === false && args.ciJobs !== undefined) {
+    return {
+      ok: false,
+      message:
+        '--ci-jobs needs the github-actions topping. Remove --no-github-actions or --ci-jobs.',
     };
   }
 

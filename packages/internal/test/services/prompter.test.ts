@@ -166,6 +166,23 @@ describe('Prompter (live)', () => {
     ),
   );
 
+  it.effect('multiselect pre-checks the initial values', () =>
+    withLive(
+      Effect.gen(function* () {
+        clack.multiselect.mockResolvedValueOnce(['lint']);
+        const prompter = yield* Prompter;
+        yield* prompter.multiselect({
+          message: 'Jobs?',
+          options: [{ value: 'lint', label: 'lint' }],
+          initialValues: ['lint'],
+        });
+        expect(clack.multiselect).toHaveBeenCalledWith(
+          expect.objectContaining({ initialValues: ['lint'] }),
+        );
+      }),
+    ),
+  );
+
   it.effect('multiselect passes required through and fails with Cancelled on abort', () =>
     withLive(
       Effect.gen(function* () {

@@ -1,6 +1,13 @@
+import { workflowFile } from '@chanom/internal';
 import { describe, expect, it } from 'vitest';
 
-import { agentSkills, baseline, commitHooks, selectContributions } from '../src/toppings.ts';
+import {
+  agentSkills,
+  baseline,
+  commitHooks,
+  githubActions,
+  selectContributions,
+} from '../src/toppings.ts';
 
 describe('baseline', () => {
   it('puts only react + react-dom in runtime dependencies (no chanom footprint)', () => {
@@ -94,36 +101,70 @@ describe('agentSkills', () => {
   });
 });
 
-describe('selectContributions', () => {
-  it('is baseline-only when every topping is off', () => {
-    expect(selectContributions({ pm: 'pnpm', commitHooks: false, agentSkills: false })).toEqual([
-      baseline,
+describe('githubActions', () => {
+  it('contributes only the shared CI workflow file', () => {
+    const contribution = githubActions('npm', ['build'], true);
+    expect(contribution.devDependencies).toEqual([]);
+    expect(contribution.scripts).toEqual({});
+    expect(contribution.files).toEqual([
+      {
+        path: '.github/workflows/ci.yml',
+        contents: workflowFile({
+          pm: 'npm',
+          jobs: ['build'],
+          hasNvmrc: false,
+          hasPackageManagerField: true,
+        }),
+      },
     ]);
   });
 
+  it('only runs scripts the baseline ships', () => {
+    for (const job of ['lint', 'build', 'typecheck', 'test']) {
+      expect(baseline.scripts[job]).toBeDefined();
+    }
+  });
+});
+
+const noToppings = {
+  pm: 'pnpm',
+  commitHooks: false,
+  agentSkills: false,
+  ciJobs: [],
+  hasPackageManagerField: true,
+} as const;
+
+describe('selectContributions', () => {
+  it('is baseline-only when every topping is off', () => {
+    expect(selectContributions(noToppings)).toEqual([baseline]);
+  });
+
   it('appends the commit-hooks topping when on', () => {
-    const contributions = selectContributions({
-      pm: 'pnpm',
-      commitHooks: true,
-      agentSkills: false,
-    });
+    const contributions = selectContributions({ ...noToppings, commitHooks: true });
     expect(contributions).toHaveLength(2);
     expect(contributions[0]).toBe(baseline);
   });
 
   it('appends the agent-skills topping when on', () => {
-    const contributions = selectContributions({
-      pm: 'pnpm',
-      commitHooks: false,
-      agentSkills: true,
-    });
+    const contributions = selectContributions({ ...noToppings, agentSkills: true });
     expect(contributions).toEqual([baseline, agentSkills]);
   });
 
   it('appends both toppings in fold order', () => {
-    const contributions = selectContributions({ pm: 'pnpm', commitHooks: true, agentSkills: true });
+    const contributions = selectContributions({
+      ...noToppings,
+      commitHooks: true,
+      agentSkills: true,
+    });
     expect(contributions).toHaveLength(3);
     expect(contributions[0]).toBe(baseline);
     expect(contributions[2]).toBe(agentSkills);
+  });
+});
+
+describe('selectContributions with CI jobs', () => {
+  it('appends the github-actions topping last when jobs are chosen', () => {
+    const contributions = selectContributions({ ...noToppings, ciJobs: ['lint'] });
+    expect(contributions).toEqual([baseline, githubActions('pnpm', ['lint'], true)]);
   });
 });

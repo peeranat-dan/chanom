@@ -1,11 +1,14 @@
 import {
   chanomSettings,
+  type CiJob,
   codingStandardsSkill,
   type PackageManager,
   PM_EXEC,
   RECOMMENDED_EXTENSIONS,
   skillFiles,
   skillLink,
+  WORKFLOW_PATH,
+  workflowFile,
 } from '@chanom/internal';
 
 import type { Contribution } from './domain/contribution.ts';
@@ -109,10 +112,36 @@ export const agentSkills: Contribution = {
   links: [skillLink(codingStandardsSkill)],
 };
 
+/**
+ * The `github-actions` topping: a CI workflow with one job per chosen check,
+ * identical to what `chanom brew` writes. The baseline ships every script the
+ * jobs run, so each job works out of the box. The generated app has no
+ * `.nvmrc`, so setup-node uses the latest LTS.
+ */
+export function githubActions(
+  pm: PackageManager,
+  jobs: readonly CiJob[],
+  hasPackageManagerField: boolean,
+): Contribution {
+  return {
+    ...emptyContribution,
+    files: [
+      {
+        path: WORKFLOW_PATH,
+        contents: workflowFile({ pm, jobs, hasNvmrc: false, hasPackageManagerField }),
+      },
+    ],
+  };
+}
+
 export interface ToppingSelection {
   readonly pm: PackageManager;
   readonly commitHooks: boolean;
   readonly agentSkills: boolean;
+  /** CI jobs for the github-actions topping; empty skips the topping. */
+  readonly ciJobs: readonly CiJob[];
+  /** The generated `package.json` records a `packageManager` field. */
+  readonly hasPackageManagerField: boolean;
 }
 
 /** The baseline plus whichever toppings the resolved options select, in fold order. */
@@ -120,5 +149,10 @@ export function selectContributions(selection: ToppingSelection): Contribution[]
   const contributions: Contribution[] = [baseline];
   if (selection.commitHooks) contributions.push(commitHooks(selection.pm));
   if (selection.agentSkills) contributions.push(agentSkills);
+  if (selection.ciJobs.length > 0) {
+    contributions.push(
+      githubActions(selection.pm, selection.ciJobs, selection.hasPackageManagerField),
+    );
+  }
   return contributions;
 }

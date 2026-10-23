@@ -1,6 +1,6 @@
-import type { Cancelled, PackageManager } from '@chanom/internal';
+import type { Cancelled, CiJob, PackageManager } from '@chanom/internal';
 
-import { Prompter, resolvePm } from '@chanom/internal';
+import { CI_JOBS, Prompter, resolvePm } from '@chanom/internal';
 import { FileSystem, Path } from '@effect/platform';
 import { Data, Effect, Logger, LogLevel } from 'effect';
 import pc from 'picocolors';
@@ -25,6 +25,9 @@ ${pc.bold('Options')}
   ${pc.cyan('--no-commit-hooks')}           Skip the commit-hooks topping
   ${pc.cyan('--agent-skills')}              Add the coding-standards skill to .claude/skills
   ${pc.cyan('--no-agent-skills')}           Skip the agent-skills topping
+  ${pc.cyan('--github-actions')}            Add a GitHub Actions CI workflow
+  ${pc.cyan('--no-github-actions')}         Skip the github-actions topping
+  ${pc.cyan('--ci-jobs <jobs>')}            Comma-separated CI jobs: ${CI_JOBS.join(', ')} (default: all)
   ${pc.cyan('--install / --no-install')}    Install dependencies after scaffolding (default: install)
   ${pc.cyan('--pm <pnpm|npm|yarn|bun>')}    Package manager to record (default: detected)
   ${pc.cyan('-y, --yes')}                   Accept all defaults, no prompts (CI-friendly)
@@ -65,6 +68,32 @@ function resolveConfirm(
   if (flag !== undefined) return Effect.succeed(flag);
   return yes ? Effect.succeed(true) : ask;
 }
+
+/**
+ * `--ci-jobs` implies the topping and wins over the jobs prompt; `--yes` takes
+ * every job. Returns no jobs when the topping is declined.
+ */
+const resolveCiJobs = Effect.fn('cli.resolveCiJobs')(function* (
+  flag: boolean | undefined,
+  jobs: readonly CiJob[] | undefined,
+  yes: boolean,
+) {
+  const prompter = yield* Prompter;
+  const wanted = yield* resolveConfirm(
+    jobs === undefined ? flag : true,
+    yes,
+    prompter.confirm({ message: 'Add a GitHub Actions CI workflow?', initialValue: true }),
+  );
+  if (!wanted) return [];
+  if (jobs !== undefined) return jobs;
+  if (yes) return CI_JOBS;
+  return yield* prompter.multiselect<CiJob>({
+    message: 'Which GitHub Actions jobs would you like?',
+    options: CI_JOBS.map((job) => ({ value: job, label: job })),
+    initialValues: CI_JOBS,
+    required: true,
+  });
+});
 
 const isEmptyDir = Effect.fn('cli.isEmptyDir')(function* (dir: string) {
   const fs = yield* FileSystem.FileSystem;
@@ -156,6 +185,7 @@ const program = (argv: readonly string[], cwd: string, options: RunOptions) =>
         initialValue: true,
       }),
     );
+    const ciJobs = yield* resolveCiJobs(args.githubActions, args.ciJobs, args.yes);
     const install = yield* resolveConfirm(
       args.install,
       args.yes,
@@ -171,6 +201,7 @@ const program = (argv: readonly string[], cwd: string, options: RunOptions) =>
         `${pc.dim('git')}           ${git ? 'yes' : 'no'}`,
         `${pc.dim('commit hooks')}  ${git ? (commitHooks ? 'yes' : 'no') : pc.dim('n/a')}`,
         `${pc.dim('agent skills')}  ${agentSkills ? 'yes' : 'no'}`,
+        `${pc.dim('ci jobs')}       ${ciJobs.length > 0 ? ciJobs.join(', ') : 'no'}`,
         `${pc.dim('install')}       ${install ? 'yes' : 'no'}`,
       ].join('\n'),
     );
@@ -183,6 +214,7 @@ const program = (argv: readonly string[], cwd: string, options: RunOptions) =>
       git,
       commitHooks,
       agentSkills,
+      ciJobs,
       install,
       templatesRoot: options.templatesRoot,
     });

@@ -11,6 +11,7 @@ import { PackageInstaller } from '../../services/package-installer.ts';
 import { detectPm } from '../../utils/detect-pm.ts';
 import { readPkg, writePkg } from '../../utils/pkg-file.ts';
 import * as addCommitlint from '../add-commitlint/index.ts';
+import * as addGithubActions from '../add-github-actions/index.ts';
 import * as addHusky from '../add-husky/index.ts';
 import * as addKnip from '../add-knip/index.ts';
 import * as addLintStaged from '../add-lint-staged/index.ts';
@@ -85,9 +86,19 @@ const askRecipe = Effect.fn('brew.askRecipe')(function* () {
       { value: 'knip', label: 'knip', hint: 'dead code remover' },
       { value: 'vscode', label: 'vscode', hint: 'editor settings + extension recommendations' },
       { value: 'skills', label: 'skills', hint: 'coding standards for AI agents (.claude/skills)' },
+      { value: 'github-actions', label: 'github-actions', hint: 'CI workflow (.github/workflows)' },
     ],
     required: false,
   });
+
+  const ciJobs = toppings.includes('github-actions')
+    ? yield* prompter.multiselect<addGithubActions.CiJob>({
+        message: 'Which GitHub Actions jobs would you like?',
+        options: addGithubActions.CI_JOBS.map((job) => ({ value: job, label: job })),
+        initialValues: addGithubActions.CI_JOBS,
+        required: true,
+      })
+    : [];
 
   const sweetness = yield* prompter.select<Sweetness>({
     message: 'How sweet would you like it?',
@@ -101,7 +112,7 @@ const askRecipe = Effect.fn('brew.askRecipe')(function* () {
     ],
   });
 
-  return { toppings, sweetness };
+  return { toppings, ciJobs, sweetness };
 });
 
 const installPackages = Effect.fn('brew.installPackages')(function* (
@@ -125,9 +136,11 @@ const installPackages = Effect.fn('brew.installPackages')(function* (
 
 const applyToppings = Effect.fn('brew.applyToppings')(function* (
   cwd: string,
+  pm: PackageManager,
   esm: boolean,
   pkg: Pkg,
   toppings: readonly Topping[],
+  ciJobs: readonly addGithubActions.CiJob[],
 ) {
   let updated = pkg;
 
@@ -140,13 +153,18 @@ const applyToppings = Effect.fn('brew.applyToppings')(function* (
   if (toppings.includes('knip')) {
     updated = yield* addKnip.apply(cwd, esm, updated);
   }
-  // vscode and skills contribute files only - no packages, no scripts - so they
+  // vscode, skills, and github-actions contribute files only - no packages, no scripts - so they
   // do not thread through `updated`.
   if (toppings.includes('vscode')) {
     yield* addVscode.apply(cwd, oxfmtConfigPath(esm));
   }
   if (toppings.includes('skills')) {
     yield* addSkills.apply(cwd);
+  }
+  // Last, so `updated` carries every script the other toppings added and the
+  // missing-script warnings only name what the user still has to write.
+  if (toppings.includes('github-actions')) {
+    yield* addGithubActions.apply(cwd, pm, updated, ciJobs);
   }
 
   return updated;
@@ -263,9 +281,9 @@ export const brew = (cwd: string = process.cwd()) =>
     yield* Effect.logDebug(`detected package manager: ${pm}`);
 
     const { pkg, pkgPath } = yield* readPkg(cwd);
-    const { toppings, sweetness } = yield* askRecipe();
+    const { toppings, ciJobs, sweetness } = yield* askRecipe();
     yield* Effect.logDebug(
-      `recipe: toppings=[${toppings.join(', ')}] sweetness=${sweetness} esm=${isEsm(pkg)}`,
+      `recipe: toppings=[${toppings.join(', ')}] ciJobs=[${ciJobs.join(', ')}] sweetness=${sweetness} esm=${isEsm(pkg)}`,
     );
     yield* ensureRepoRootForHooks(cwd, sweetness);
 
@@ -279,7 +297,14 @@ export const brew = (cwd: string = process.cwd()) =>
     // persistScripts doesn't restore the pre-install manifest and drop the
     // freshly added devDependencies.
     const { pkg: installedPkg } = yield* readPkg(cwd);
-    const updated = yield* applyToppings(cwd, isEsm(installedPkg), installedPkg, toppings);
+    const updated = yield* applyToppings(
+      cwd,
+      pm,
+      isEsm(installedPkg),
+      installedPkg,
+      toppings,
+      ciJobs,
+    );
     yield* persistScripts(pkgPath, installedPkg, updated);
     yield* setupCommitGate(cwd, pm, isEsm(installedPkg), toppings, sweetness);
     yield* commitChanges(cwd);

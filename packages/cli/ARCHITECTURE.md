@@ -103,6 +103,7 @@ commands/
 ├── add-oxfmt/       oxfmt.config.* + format scripts
 ├── add-knip/        knip.config.* + knip script
 ├── add-vscode/      .vscode/settings.json + extensions.json (merged, never overwritten)
+├── add-github-actions/ .github/workflows/ci.yml with the chosen jobs
 ├── add-husky/       husky init
 ├── add-lint-staged/ .lintstagedrc.json + pre-commit hook
 └── add-commitlint/  .commitlintrc.json + commit-msg hook
@@ -144,7 +145,7 @@ sequenceDiagram
     Brew->>Svc: Git.isRepo? if not, init + .gitignore
     Brew->>Svc: detectPm (package.json + user agent)
     Brew->>Svc: readPkg
-    Brew->>User: prompts: toppings + sweetness
+    Brew->>User: prompts: toppings (+ CI jobs) + sweetness
     alt sweetness is medium, cwd not at the work-tree root
         Brew->>User: fail with NotAtRepoRoot (hooks only install at the root)
     end

@@ -13,6 +13,7 @@ const basePlan: ScaffoldPlan = {
   git: false,
   commitHooks: false,
   agentSkills: false,
+  ciJobs: [],
   install: false,
   templatesRoot: TEMPLATE_ROOT,
 };
@@ -134,6 +135,31 @@ describe('scaffold', () => {
     }).pipe(Effect.provide(layer));
   });
 
+  it.effect('installs before the initial commit so the lockfile is committed', () => {
+    const { runner, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* scaffold({ ...basePlan, git: true, install: true });
+      const steps = runner.calls
+        .filter((c) => c.cmd === 'pnpm' || ['init', 'commit'].includes(c.args[0] ?? ''))
+        .map((c) => `${c.cmd} ${c.args[0]}`);
+      expect(steps).toEqual(['git init', 'pnpm install', 'git commit']);
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('still commits the scaffold when the install fails', () => {
+    const { runner, layer } = makeEnv({
+      commands: ({ cmd }) =>
+        cmd === 'pnpm'
+          ? { exitCode: 1, stdout: '', stderr: '' }
+          : { exitCode: 0, stdout: '', stderr: '' },
+    });
+    return Effect.gen(function* () {
+      const error = yield* Effect.flip(scaffold({ ...basePlan, git: true, install: true }));
+      expect(error._tag).toBe('InstallFailed');
+      expect(runner.calls.some((c) => c.cmd === 'git' && c.args[0] === 'commit')).toBe(true);
+    }).pipe(Effect.provide(layer));
+  });
+
   it.effect('fails with InstallFailed on a non-zero install', () => {
     const { layer } = makeEnv({
       commands: ({ cmd }) =>
@@ -174,6 +200,29 @@ describe('scaffold', () => {
       expect(prompter.log.warnings).toContain(
         '`.claude/skills/coding-standards` already exists - skipping link',
       );
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('writes the CI workflow for the chosen jobs', () => {
+    const { fs, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* scaffold({ ...basePlan, ciJobs: ['lint', 'test'] });
+
+      const workflow = fs.files.get('/out/.github/workflows/ci.yml') ?? '';
+      expect(workflow).toContain('run: pnpm run lint');
+      expect(workflow).toContain('run: pnpm run test');
+      expect(workflow).not.toContain('run: pnpm run build');
+      // No packageManager field was recorded, so the action needs a version.
+      expect(workflow).toContain('version: latest');
+      expect(workflow).toContain('node-version: lts/*');
+    }).pipe(Effect.provide(layer));
+  });
+
+  it.effect('writes no workflow without CI jobs', () => {
+    const { fs, layer } = makeEnv();
+    return Effect.gen(function* () {
+      yield* scaffold(basePlan);
+      expect(fs.files.has('/out/.github/workflows/ci.yml')).toBe(false);
     }).pipe(Effect.provide(layer));
   });
 });
