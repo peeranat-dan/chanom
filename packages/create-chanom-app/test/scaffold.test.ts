@@ -214,7 +214,7 @@ describe('scaffold', () => {
       expect(workflow).not.toContain('run: pnpm run build');
       // No packageManager field was recorded, so the action needs a version.
       expect(workflow).toContain('version: latest');
-      expect(workflow).toContain("node-version: 'lts/*'");
+      expect(workflow).toContain('node-version: lts/*');
     }).pipe(Effect.provide(layer));
   });
 

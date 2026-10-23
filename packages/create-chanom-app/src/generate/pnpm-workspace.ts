@@ -1,3 +1,6 @@
+import { YAML_OPTIONS } from '@chanom/internal';
+import { stringify } from 'yaml';
+
 /**
  * Build scripts pnpm must be told to run for the generated app. pnpm v10 blocks
  * every dependency lifecycle script unless it is allow-listed; esbuild (pulled
@@ -14,11 +17,11 @@ const allowBuilds = ['esbuild'] as const;
 
 /** Renders the generated `pnpm-workspace.yaml` as a string. */
 export function buildPnpmWorkspace(): string {
-  const lines = [
-    'onlyBuiltDependencies:',
-    ...onlyBuiltDependencies.map((name) => `  - ${name}`),
-    'allowBuilds:',
-    ...allowBuilds.map((name) => `  ${name}: true`),
-  ];
-  return lines.join('\n') + '\n';
+  return stringify(
+    {
+      onlyBuiltDependencies,
+      allowBuilds: Object.fromEntries(allowBuilds.map((name) => [name, true])),
+    },
+    YAML_OPTIONS,
+  );
 }
