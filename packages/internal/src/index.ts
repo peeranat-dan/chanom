@@ -1,3 +1,4 @@
+export * from './domain/github-actions.ts';
 export * from './domain/package-manager.ts';
 export * from './domain/vscode.ts';
 export * from './services/command-runner.ts';

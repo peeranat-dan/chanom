@@ -17,6 +17,8 @@ export interface SelectParams<T> {
 
 export interface MultiselectParams<T> extends SelectParams<T> {
   readonly required?: boolean;
+  /** Values checked when the prompt opens. */
+  readonly initialValues?: readonly T[];
 }
 
 export interface TextParams {
@@ -93,6 +95,7 @@ export class Prompter extends Effect.Service<Prompter>()('internal/Prompter', {
           message: params.message,
           options: [...params.options] as clack.Option<T>[],
           required: params.required ?? false,
+          initialValues: params.initialValues && [...params.initialValues],
         }),
       ),
     spinner: (message: string): Effect.Effect<SpinnerHandle> =>
