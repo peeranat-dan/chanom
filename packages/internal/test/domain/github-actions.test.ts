@@ -37,7 +37,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
@@ -55,7 +55,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
@@ -68,7 +68,7 @@ jobs:
 
   it('falls back to the LTS Node version without .nvmrc', () => {
     const file = workflowFile({ ...pnpmOptions, hasNvmrc: false });
-    expect(file).toContain("node-version: 'lts/*'");
+    expect(file).toContain('node-version: lts/*');
     expect(file).not.toContain('node-version-file');
   });
 

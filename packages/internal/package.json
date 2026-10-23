@@ -29,7 +29,8 @@
     "@clack/prompts": "catalog:",
     "@effect/platform": "catalog:",
     "effect": "catalog:",
-    "picocolors": "catalog:"
+    "picocolors": "catalog:",
+    "yaml": "catalog:"
   },
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
