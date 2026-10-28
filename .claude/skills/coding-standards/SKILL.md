@@ -13,14 +13,14 @@ already exists.
 
 | You are writing…                                           | Load                              |
 | ---------------------------------------------------------- | --------------------------------- |
-| Any `.ts` file — general TypeScript style                  | `references/typescript.md`        |
+| Any `.ts` file - general TypeScript style                  | `references/typescript.md`        |
 | TypeScript that uses Effect (imports, types, spans)        | `references/typescript-effect.md` |
 | An `Effect.Service`, command, domain/util, error, or layer | `references/effect-ts.md`         |
-| A test — general vitest style                              | `references/vitest.md`            |
+| A test - general vitest style                              | `references/vitest.md`            |
 | A test for Effect code (`@effect/vitest`, layers, stubs)   | `references/vitest-effect.md`     |
 
 The `-effect` files are add-ons: read the general file first, then layer the
-Effect one on top. Most non-trivial changes touch several — a new command needs
+Effect one on top. Most non-trivial changes touch several - a new command needs
 `typescript` + `typescript-effect` + `effect-ts` for the code and `vitest` +
 `vitest-effect` for its test. Load all that apply.
 
@@ -28,24 +28,24 @@ Effect one on top. Most non-trivial changes touch several — a new command need
 
 Match the existing layout of the package you touch:
 
-- **@chanom/cli** (`packages/cli`) — layered Effect architecture; see
+- **@chanom/cli** (`packages/cli`) - layered Effect architecture; see
   `references/effect-ts.md` for the `domain`/`services`/`commands`/`utils` split
   and where side effects, pure logic, and tests belong. Service tags use the
   `cli/` namespace (e.g. `cli/Git`); test stubs live in `test/support/`.
-- **@chanom/dev-config** (`packages/dev-config`) — one folder per tool
+- **@chanom/dev-config** (`packages/dev-config`) - one folder per tool
   `src/<tool>/` with `index.ts` (config factory) and `base-config.ts`. A new
   tool also needs `./<tool>/config` and `./<tool>/base` entries in package.json
   `exports`, mirroring the `development`/`types`/`default` conditions of
   existing entries.
-- **@chanom/utils** (`packages/utils`) — one folder per util `src/<util>/`
+- **@chanom/utils** (`packages/utils`) - one folder per util `src/<util>/`
   whose `index.ts` holds a single `export default function`. Helpers go in
   `src/<util>/utils/<helper>.ts` (also default-exported), and every file gets a
   mirrored test under `test/<util>/`. Re-export new utils from `src/index.ts`.
-- **@chanom/vite-config** (`packages/vite-config`) — single entry point;
+- **@chanom/vite-config** (`packages/vite-config`) - single entry point;
   everything exports from `src/index.ts`.
 
 Dependencies: versions come from the pnpm catalog (`pnpm-workspace.yaml`,
-`catalogMode: strict`) — declare as `"catalog:"` and add the pinned version to
+`catalogMode: strict`) - declare as `"catalog:"` and add the pinned version to
 the catalog if missing. Intra-repo deps use `"workspace:*"`.
 
 ## Verify

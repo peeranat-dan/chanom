@@ -5,15 +5,15 @@ Write layered Effect code and push every side effect through a service or
 
 ## Layer boundaries
 
-- **domain** — pure data + functions, **no I/O, no Effect**. Plain values in,
+- **domain** - pure data + functions, **no I/O, no Effect**. Plain values in,
   plain values out.
-- **services** — `Effect.Service` capabilities that wrap side effects
+- **services** - `Effect.Service` capabilities that wrap side effects
   (terminal I/O, process spawning, network, `FileSystem`).
-- **command / logic** — pure, synchronous decision logic returning plain data,
+- **command / logic** - pure, synchronous decision logic returning plain data,
   kept in its own module.
-- **command / orchestration** — effectful entry point that composes services
+- **command / orchestration** - effectful entry point that composes services
   with the pure logic.
-- **utils** — shared Effect helpers over `FileSystem`/`Path`.
+- **utils** - shared Effect helpers over `FileSystem`/`Path`.
 
 Never call a terminal-prompt library, `child_process`, or `node:fs` directly
 from orchestration code. Go through a service, or `FileSystem.FileSystem` /

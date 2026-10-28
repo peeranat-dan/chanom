@@ -6,7 +6,7 @@
   the type system use `unknown` and narrow explicitly.
 - Type-only imports use `import type { ... }`. A mixed import splits its type
   part into a separate `import type` line.
-- Derive types from their source rather than restating them — `z.infer` for a
+- Derive types from their source rather than restating them - `z.infer` for a
   schema, `ReturnType`/`Parameters` for a function, `typeof` for a const object.
   A hand-written duplicate drifts.
 - Props and params objects are declared as `interface`, named after their owner:
@@ -18,7 +18,7 @@
   exported functions.
 - Export inline (`export function formatDate(...)`) rather than a trailing
   `export { ... }` block.
-- Import order is enforced by oxlint — run `pnpm lint --fix` rather than
+- Import order is enforced by oxlint - run `pnpm lint --fix` rather than
   hand-sorting.
 
 ## Errors

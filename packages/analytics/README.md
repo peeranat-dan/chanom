@@ -1,6 +1,6 @@
 # @chanom/analytics
 
-Provider-agnostic web analytics facade. Create one analytics instance, plug in Google Analytics, Google Tag Manager, PostHog — or your own provider — and every `trackEvent` / `trackPageView` / `identify` / `reset` call fans out to all of them.
+Provider-agnostic web analytics facade. Create one analytics instance, plug in Google Analytics, Google Tag Manager, PostHog - or your own provider - and every `trackEvent` / `trackPageView` / `identify` / `reset` call fans out to all of them.
 
 ## Why
 
@@ -13,8 +13,8 @@ Provider-agnostic web analytics facade. Create one analytics instance, plug in G
 ## Usage
 
 ```ts
-import posthog from 'posthog-js';
 import { createAnalytics, googleAnalytics, googleTagManager, postHog } from '@chanom/analytics';
+import posthog from 'posthog-js';
 
 posthog.init('phc_xxx', { capture_pageview: false });
 

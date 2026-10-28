@@ -26,7 +26,7 @@ export default defineConfig({
       // catalog-packages.ts is a build-time data list consumed by tsdown.config.
       exclude: ['src/index.ts', 'src/env.d.ts', 'src/domain/catalog-packages.ts'],
       reporter: ['text', 'html', 'lcov'],
-      // 100% aim, 90% enforced floor (see spec §8.1).
+      // 100% aim, 90% enforced floor.
       thresholds: {
         statements: 90,
         branches: 90,

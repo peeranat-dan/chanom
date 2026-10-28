@@ -17,7 +17,7 @@ share it.
 - Props are wrapped in `Readonly<>`:
   `export function UserCard({ name }: Readonly<UserCardProps>)`.
 - Conditional rendering uses a ternary (`isOpen ? <Panel /> : null`), never
-  `&&` — a falsy number renders as `0`.
+  `&&` - a falsy number renders as `0`.
 - Every component exports inline. `default` export is reserved for route-level
   page components.
 - Shared state lives in a context provider under `providers/`. Reach for

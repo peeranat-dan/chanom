@@ -26,9 +26,7 @@ export default defineConfig({
         ],
       },
     ],
-    /**
-     * React Rules
-     */
+    // React rules
     'react-hooks/exhaustive-deps': 'warn',
     'react/rules-of-hooks': 'error',
   },

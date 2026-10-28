@@ -18,9 +18,7 @@ export default defineConfig({
         caughtErrorsIgnorePattern: '^_',
       },
     ],
-    /**
-     * TypeScript Rules
-     */
+    // TypeScript rules
     'typescript/no-deprecated': 'warn',
     'typescript/consistent-type-definitions': 'error',
     'typescript/consistent-type-imports': 'error',
