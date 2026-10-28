@@ -15,7 +15,7 @@ already exists.
 | ---------------------------------------------------------- | --------------------------------- |
 | Any `.ts` file - general TypeScript style                  | `references/typescript.md`        |
 | TypeScript that uses Effect (imports, types, spans)        | `references/typescript-effect.md` |
-| An `Effect.Service`, command, domain/util, error, or layer | `references/effect-ts.md`         |
+| A `Context.Service`, command, domain/util, error, or layer | `references/effect-ts.md`         |
 | A test - general vitest style                              | `references/vitest.md`            |
 | A test for Effect code (`@effect/vitest`, layers, stubs)   | `references/vitest-effect.md`     |
 

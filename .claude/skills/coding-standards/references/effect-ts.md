@@ -1,13 +1,13 @@
 # Effect-TS conventions
 
 Write layered Effect code and push every side effect through a service or
-`@effect/platform`. Keep the layers separate.
+Effect's platform modules (`FileSystem`, `Path`, `ChildProcess`). Keep the layers separate.
 
 ## Layer boundaries
 
 - **domain** - pure data + functions, **no I/O, no Effect**. Plain values in,
   plain values out.
-- **services** - `Effect.Service` capabilities that wrap side effects
+- **services** - `Context.Service` capabilities that wrap side effects
   (terminal I/O, process spawning, network, `FileSystem`).
 - **command / logic** - pure, synchronous decision logic returning plain data,
   kept in its own module.
@@ -21,15 +21,17 @@ from orchestration code. Go through a service, or `FileSystem.FileSystem` /
 
 ## Services
 
-Define with `Effect.Service<Self>()('<namespace>/<Name>', …)`. Namespace the
-tag (`'<namespace>/<Name>'`) so it is unique across the app. Return the
-capability record `as const`.
+Define with `Context.Service<Self>()('<namespace>/<Name>', { make })`. Namespace
+the tag (`'<namespace>/<Name>'`) so it is unique across the app. Return the
+capability record `as const`. v4 generates no layer, so every service declares
+`static readonly layer = Layer.effect(this, this.make)` and leaves its
+dependencies for the caller to provide.
 
-Use `effect:` when the service needs to acquire dependencies:
+Acquire dependencies inside `make`:
 
 ```ts
-export class Store extends Effect.Service<Store>()('<namespace>/Store', {
-  effect: Effect.gen(function* () {
+export class Store extends Context.Service<Store>()('<namespace>/Store', {
+  make: Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
     return {
@@ -37,17 +39,21 @@ export class Store extends Effect.Service<Store>()('<namespace>/Store', {
       write: (key: string, value: string) => fs.writeFileString(path.join('/data', key), value),
     } as const;
   }),
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}
 ```
 
-Use `succeed:` for a pure, dependency-free capability record:
+Wrap a dependency-free capability record in `Effect.succeed`:
 
 ```ts
-export class Log extends Effect.Service<Log>()('<namespace>/Log', {
-  succeed: {
+export class Log extends Context.Service<Log>()('<namespace>/Log', {
+  make: Effect.succeed({
     info: (message: string): Effect.Effect<void> => Effect.sync(() => print(message)),
-  },
-}) {}
+  } as const),
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}
 ```
 
 Wrap a synchronous side effect in `Effect.sync`; wrap a promise in
@@ -75,13 +81,13 @@ runner.run(cmd, args, cwd).pipe(
 
 Handle errors by tag, never by string matching:
 
-- `Effect.catchTag('SystemError', (e) => …)` for one tag.
+- `Effect.catchTag('PlatformError', (e) => …)` for one tag.
 - `Effect.catchTags({ … })` for several.
-- Recover one specific case (e.g. a missing file: `SystemError` with
-  `reason === 'NotFound'`) and re-`Effect.fail` the rest.
+- Recover one specific case (e.g. a missing file: `PlatformError` with
+  `reason._tag === 'NotFound'`) and re-`Effect.fail` the rest.
 
 Map tagged errors to exit codes and user-facing messages at a **single
-top-level boundary** (`Effect.catchTags` + a final `Effect.catchAll`), not
+top-level boundary** (`Effect.catchTags` + a final `Effect.catch`), not
 scattered through the orchestration.
 
 ## Effectful functions
@@ -105,16 +111,16 @@ const ensureReady = Effect.fn('ensureReady')(function* (cwd: string) {
 
 ## Wiring layers
 
-Wire live layers once at the entry point (via `NodeContext` on Node). Compose
-with `.Default`, `Layer.provide`, and `Layer.mergeAll`:
+Wire live layers once at the entry point (via `NodeServices.layer` on Node). Compose
+with each service's `.layer`, `Layer.provide`, and `Layer.mergeAll`:
 
 ```ts
-Store.Default.pipe(Layer.provide(Layer.mergeAll(runnerLayer, fsLayer)));
+Store.layer.pipe(Layer.provide(Layer.mergeAll(runnerLayer, fsLayer)));
 ```
 
 ## Values and imports
 
 - Import from the barrels: `import { Effect, Data, Option, Layer } from 'effect'`,
-  `import { FileSystem, Path } from '@effect/platform'`.
+  `import { FileSystem, Path } from 'effect'`, `import { ChildProcess } from 'effect/process'`.
 - Use `Option` for "maybe present" (`Option.isSome(x)`, `x.value`), not `null`.
 - Keep concurrency explicit: `Effect.all([...], { concurrency: 3 })`.
