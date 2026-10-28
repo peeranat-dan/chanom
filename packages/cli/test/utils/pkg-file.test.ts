@@ -24,11 +24,24 @@ describe('readPkg', () => {
     }).pipe(Effect.provide(fs.layer));
   });
 
-  it.effect('fails with PkgInvalid when a known field has the wrong shape', () => {
-    const fs = makeTestFs({ '/project/package.json': '{"scripts":["lint"]}' });
+  it.effect("keeps the file's key order", () => {
+    const fs = makeTestFs({
+      '/project/package.json':
+        '{"name":"app","scripts":{"z":"1","a":"2"},"version":"1.0.0","type":"module"}',
+    });
+    return Effect.gen(function* () {
+      const { pkg } = yield* readPkg('/project');
+      expect(Object.keys(pkg)).toEqual(['name', 'scripts', 'version', 'type']);
+      expect(Object.keys(pkg.scripts ?? {})).toEqual(['z', 'a']);
+    }).pipe(Effect.provide(fs.layer));
+  });
+
+  it.effect('fails with PkgInvalid naming the field when a known field has the wrong shape', () => {
+    const fs = makeTestFs({ '/project/package.json': '{"type":"esm"}' });
     return Effect.gen(function* () {
       const error = yield* Effect.flip(readPkg('/project'));
       expect(error._tag).toBe('PkgInvalid');
+      expect(error.message).toContain('["type"]');
     }).pipe(Effect.provide(fs.layer));
   });
 

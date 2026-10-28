@@ -70,7 +70,7 @@ export const run = (
           ),
         PkgNotFound: (e) =>
           reportError(`No package.json found in ${e.cwd}. Run this inside a project.`),
-        PkgInvalid: (e) => reportError(`Could not parse ${e.pkgPath}. Is it valid JSON?`),
+        PkgInvalid: (e) => reportError(`Could not read ${e.pkgPath}:\n${e.message}`),
         InstallFailed: (e) =>
           reportError(
             [`Package installation with ${e.pm} failed.`, e.output].filter(Boolean).join('\n'),

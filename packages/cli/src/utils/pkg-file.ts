@@ -2,7 +2,10 @@ import { Effect, FileSystem, Path, Schema } from 'effect';
 
 import { Pkg, PkgInvalid, PkgNotFound } from '../domain/pkg.ts';
 
-const decodePkg = Schema.decodeUnknownEffect(Schema.fromJsonString(Pkg));
+const decodeJsonObject = Schema.decodeUnknownEffect(
+  Schema.fromJsonString(Schema.Record(Schema.String, Schema.Unknown)),
+);
+const decodePkg = Schema.decodeUnknownEffect(Pkg);
 
 export const readPkg = Effect.fn('pkg-file.readPkg')(function* (cwd: string) {
   const fs = yield* FileSystem.FileSystem;
@@ -14,7 +17,13 @@ export const readPkg = Effect.fn('pkg-file.readPkg')(function* (cwd: string) {
   }
 
   const contents = yield* fs.readFileString(pkgPath);
-  const pkg = yield* decodePkg(contents).pipe(Effect.mapError(() => new PkgInvalid({ pkgPath })));
+  const pkg = yield* decodeJsonObject(contents).pipe(
+    // Decoding rebuilds the object with the schema's known keys first. Spreading
+    // it over the raw object keeps the file's key order, so writing it back
+    // does not reorder the user's package.json.
+    Effect.flatMap((raw) => decodePkg(raw).pipe(Effect.map((decoded) => ({ ...raw, ...decoded })))),
+    Effect.mapError((error) => new PkgInvalid({ pkgPath, message: error.message })),
+  );
 
   return { pkg, pkgPath };
 });

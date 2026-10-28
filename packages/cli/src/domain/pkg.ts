@@ -24,6 +24,8 @@ export class PkgNotFound extends Schema.TaggedError<PkgNotFound>()('PkgNotFound'
 
 export class PkgInvalid extends Schema.TaggedError<PkgInvalid>()('PkgInvalid', {
   pkgPath: Schema.String,
+  /** The JSON syntax or schema issue that rejected the file. */
+  message: Schema.String,
 }) {}
 
 export function isEsm(pkg: Pkg): boolean {

@@ -57,7 +57,7 @@ describe('run', () => {
       const exitCode = yield* run('brew', '/project');
       expect(exitCode).toBe(1);
       expect(env.prompter.log.errors).toEqual([
-        'Could not parse /project/package.json. Is it valid JSON?',
+        'Could not read /project/package.json:\nExpected a valid JSON string',
       ]);
     }).pipe(Effect.provide(env.layer));
   });
