@@ -1,5 +1,13 @@
 # @chanom/cli
 
+## 0.5.1
+
+### Patch Changes
+
+- 2e34b7a: Upgrade to Effect v4 (`effect@4.0.6`). `@effect/platform` is now part of `effect`, so it is no longer a dependency.
+- 9c8e01e: Replace em dashes with hyphens in the bundled `coding-standards` agent skill.
+- 529d898: Validate `package.json` with Effect `Schema`. A `package.json` whose known fields have the wrong shape (for example `"type": "esm"` or `"scripts": []`) now fails with an error naming the field, instead of passing through. Key order and fields chanom does not read are preserved when it writes the file back.
+
 ## 0.5.0
 
 ### Minor Changes
