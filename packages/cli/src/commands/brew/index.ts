@@ -1,5 +1,5 @@
 import { Git, Prompter } from '@chanom/internal';
-import { Data, Effect, FileSystem, Option, Path } from 'effect';
+import { Effect, FileSystem, Option, Path, Schema } from 'effect';
 import pc from 'picocolors';
 
 import type { PackageManager } from '../../domain/package-manager.ts';
@@ -30,10 +30,10 @@ import {
   wantsLintStaged,
 } from './logic.ts';
 
-export class NotAtRepoRoot extends Data.TaggedError('NotAtRepoRoot')<{
-  readonly cwd: string;
-  readonly root: string;
-}> {}
+export class NotAtRepoRoot extends Schema.TaggedError<NotAtRepoRoot>()('NotAtRepoRoot', {
+  cwd: Schema.String,
+  root: Schema.String,
+}) {}
 
 const ensureGitRepo = Effect.fn('brew.ensureGitRepo')(function* (cwd: string) {
   const git = yield* Git;
@@ -267,50 +267,49 @@ const commitChanges = Effect.fn('brew.commitChanges')(function* (cwd: string) {
   );
 });
 
-export const brew = (cwd: string = process.cwd()) =>
-  Effect.gen(function* () {
-    const prompter = yield* Prompter;
+export const brew = Effect.fn('brew')(function* (cwd: string = process.cwd()) {
+  const prompter = yield* Prompter;
 
-    yield* prompter.intro(pc.magenta("🧋 Chanom - Let's brew your project!"));
+  yield* prompter.intro(pc.magenta("🧋 Chanom - Let's brew your project!"));
 
-    yield* ensureGitRepo(cwd);
-    yield* ensureGitIgnore(cwd);
+  yield* ensureGitRepo(cwd);
+  yield* ensureGitIgnore(cwd);
 
-    const pm = yield* detectPm(cwd);
-    yield* Effect.logDebug(`detected package manager: ${pm}`);
+  const pm = yield* detectPm(cwd);
+  yield* Effect.logDebug(`detected package manager: ${pm}`);
 
-    const { pkg, pkgPath } = yield* readPkg(cwd);
-    const { toppings, ciJobs, sweetness } = yield* askRecipe();
-    yield* Effect.logDebug(
-      `recipe: toppings=[${toppings.join(', ')}] ciJobs=[${ciJobs.join(', ')}] sweetness=${sweetness} esm=${isEsm(pkg)}`,
-    );
-    yield* ensureRepoRootForHooks(cwd, sweetness);
+  const { pkg, pkgPath } = yield* readPkg(cwd);
+  const { toppings, ciJobs, sweetness } = yield* askRecipe();
+  yield* Effect.logDebug(
+    `recipe: toppings=[${toppings.join(', ')}] ciJobs=[${ciJobs.join(', ')}] sweetness=${sweetness} esm=${isEsm(pkg)}`,
+  );
+  yield* ensureRepoRootForHooks(cwd, sweetness);
 
-    const packages = planPackages(pkg, toppings, sweetness, bundledVersions);
-    yield* Effect.logDebug(
-      `planned packages: ${packages.length > 0 ? packages.join(', ') : '(none)'}`,
-    );
-    yield* installPackages(pm, cwd, packages);
+  const packages = planPackages(pkg, toppings, sweetness, bundledVersions);
+  yield* Effect.logDebug(
+    `planned packages: ${packages.length > 0 ? packages.join(', ') : '(none)'}`,
+  );
+  yield* installPackages(pm, cwd, packages);
 
-    // The package manager rewrites package.json during install; re-read it so
-    // persistScripts doesn't restore the pre-install manifest and drop the
-    // freshly added devDependencies.
-    const { pkg: installedPkg } = yield* readPkg(cwd);
-    const updated = yield* applyToppings(
-      cwd,
-      pm,
-      isEsm(installedPkg),
-      installedPkg,
-      toppings,
-      ciJobs,
-    );
-    yield* persistScripts(pkgPath, installedPkg, updated);
-    yield* setupCommitGate(cwd, pm, isEsm(installedPkg), toppings, sweetness);
-    yield* commitChanges(cwd);
+  // The package manager rewrites package.json during install; re-read it so
+  // persistScripts doesn't restore the pre-install manifest and drop the
+  // freshly added devDependencies.
+  const { pkg: installedPkg } = yield* readPkg(cwd);
+  const updated = yield* applyToppings(
+    cwd,
+    pm,
+    isEsm(installedPkg),
+    installedPkg,
+    toppings,
+    ciJobs,
+  );
+  yield* persistScripts(pkgPath, installedPkg, updated);
+  yield* setupCommitGate(cwd, pm, isEsm(installedPkg), toppings, sweetness);
+  yield* commitChanges(cwd);
 
-    yield* prompter.outro(
-      pc.green(
-        `Your Chanom with ${toppings.join(', ')} toppings and ${sweetness} sweetness is ready! Enjoy! 🧋`,
-      ),
-    );
-  });
+  yield* prompter.outro(
+    pc.green(
+      `Your Chanom with ${toppings.join(', ')} toppings and ${sweetness} sweetness is ready! Enjoy! 🧋`,
+    ),
+  );
+});

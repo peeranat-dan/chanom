@@ -1,20 +1,32 @@
-import { Data } from 'effect';
+import { Schema } from 'effect';
 
-export interface Pkg {
-  readonly type?: 'module' | 'commonjs';
-  readonly packageManager?: string;
-  readonly dependencies?: Readonly<Record<string, string>>;
-  readonly devDependencies?: Readonly<Record<string, string>>;
-  readonly scripts?: Readonly<Record<string, string>>;
-}
+const StringRecord = Schema.Record(Schema.String, Schema.String);
 
-export class PkgNotFound extends Data.TaggedError('PkgNotFound')<{
-  readonly cwd: string;
-}> {}
+/**
+ * The package.json fields chanom reads. The rest signature keeps every other
+ * field, so writing a decoded `Pkg` back does not drop them.
+ */
+export const Pkg = Schema.StructWithRest(
+  Schema.Struct({
+    type: Schema.optionalKey(Schema.Literals(['module', 'commonjs'])),
+    packageManager: Schema.optionalKey(Schema.String),
+    dependencies: Schema.optionalKey(StringRecord),
+    devDependencies: Schema.optionalKey(StringRecord),
+    scripts: Schema.optionalKey(StringRecord),
+  }),
+  [Schema.Record(Schema.String, Schema.Unknown)],
+);
+export type Pkg = typeof Pkg.Type;
 
-export class PkgInvalid extends Data.TaggedError('PkgInvalid')<{
-  readonly pkgPath: string;
-}> {}
+export class PkgNotFound extends Schema.TaggedError<PkgNotFound>()('PkgNotFound', {
+  cwd: Schema.String,
+}) {}
+
+export class PkgInvalid extends Schema.TaggedError<PkgInvalid>()('PkgInvalid', {
+  pkgPath: Schema.String,
+  /** The JSON syntax or schema issue that rejected the file. */
+  message: Schema.String,
+}) {}
 
 export function isEsm(pkg: Pkg): boolean {
   return pkg.type === 'module';

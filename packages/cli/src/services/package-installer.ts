@@ -1,15 +1,19 @@
-import { CommandRunner } from '@chanom/internal';
-import { Context, Data, Effect, FileSystem, Layer, Path } from 'effect';
+import { CommandRunner, PackageManager } from '@chanom/internal';
+import { Context, Effect, FileSystem, Layer, Path, Schema } from 'effect';
 
-import type { PackageManager, WorkspaceHints } from '../domain/package-manager.ts';
+import type { WorkspaceHints } from '../domain/package-manager.ts';
 
 import { workspaceRootFlags } from '../domain/package-manager.ts';
 
-export class InstallFailed extends Data.TaggedError('InstallFailed')<{
-  readonly pm: PackageManager;
+export class InstallFailed extends Schema.TaggedError<InstallFailed>()('InstallFailed', {
+  pm: PackageManager,
   /** Captured package manager output, since it is not streamed to the terminal. */
-  readonly output: string;
-}> {}
+  output: Schema.String,
+}) {}
+
+const decodeWorkspacesField = Schema.decodeUnknownEffect(
+  Schema.fromJsonString(Schema.Struct({ workspaces: Schema.optionalKey(Schema.Unknown) })),
+);
 
 /**
  * Installs npm packages with the detected package manager, adding the
@@ -28,11 +32,8 @@ export class PackageInstaller extends Context.Service<PackageInstaller>()('cli/P
 
     const hasWorkspacesField = (cwd: string): Effect.Effect<boolean> =>
       fs.readFileString(path.join(cwd, 'package.json')).pipe(
-        Effect.flatMap((contents) =>
-          Effect.try(
-            () => (JSON.parse(contents) as { workspaces?: unknown }).workspaces !== undefined,
-          ),
-        ),
+        Effect.flatMap(decodeWorkspacesField),
+        Effect.map((pkg) => pkg.workspaces !== undefined),
         Effect.orElseSucceed(() => false),
       );
 

@@ -3,10 +3,14 @@
 Write layered Effect code and push every side effect through a service or
 Effect's platform modules (`FileSystem`, `Path`, `ChildProcess`). Keep the layers separate.
 
+Effect's own guide, `node_modules/effect/AGENTS.md`, is the upstream source.
+These conventions follow it; check it for APIs not covered here.
+
 ## Layer boundaries
 
-- **domain** - pure data + functions, **no I/O, no Effect**. Plain values in,
-  plain values out.
+- **domain** - pure data + functions, **no I/O, no effectful code**. Plain
+  values in, plain values out. `Schema` definitions and tagged errors live here
+  too; they describe data and run nothing.
 - **services** - `Context.Service` capabilities that wrap side effects
   (terminal I/O, process spawning, network, `FileSystem`).
 - **command / logic** - pure, synchronous decision logic returning plain data,
@@ -61,13 +65,16 @@ Wrap a synchronous side effect in `Effect.sync`; wrap a promise in
 
 ## Errors
 
-Model expected failures as `Data.TaggedError`, one class per failure, with a
-readonly payload. Keep each error next to the layer that raises it.
+Model expected failures as `Schema.TaggedError`, one class per failure, with
+its payload declared as `Schema` fields. Keep each error next to the layer that
+raises it. Use `{}` for an error with no payload.
 
 ```ts
-export class WriteFailed extends Data.TaggedError('WriteFailed')<{
-  readonly key: string;
-}> {}
+export class WriteFailed extends Schema.TaggedError<WriteFailed>()('WriteFailed', {
+  key: Schema.String,
+}) {}
+
+export class Cancelled extends Schema.TaggedError<Cancelled>()('Cancelled', {}) {}
 ```
 
 Convert a failed condition into a tagged error with `Effect.filterOrFail`:
@@ -90,16 +97,49 @@ Map tagged errors to exit codes and user-facing messages at a **single
 top-level boundary** (`Effect.catchTags` + a final `Effect.catch`), not
 scattered through the orchestration.
 
-## Effectful functions
+## Parsing untrusted data
 
-Name effectful helpers with `Effect.fn('<span>')` so they show up in traces:
+Decode anything read from disk, the network, or the environment with `Schema`.
+Never `JSON.parse(...) as T`, and never hand-roll `typeof` checks. Build the
+decoder once at module level and map its error to a tagged error:
 
 ```ts
+const decodePkg = Schema.decodeUnknownEffect(Schema.fromJsonString(Pkg));
+
+const pkg = yield* decodePkg(contents).pipe(Effect.mapError(() => new PkgInvalid({ pkgPath })));
+```
+
+- `Schema.Struct` drops unknown keys. When the value is written back (e.g.
+  package.json), keep them with
+  `Schema.StructWithRest(Schema.Struct({ … }), [Schema.Record(Schema.String, Schema.Unknown)])`.
+- Use `Schema.optionalKey` for fields that may be absent.
+- `Schema.decodeUnknownOption` when failure just means "ignore it".
+- Use the `Predicate` module for runtime type guards; never write your own
+  `isRecord` / `isString`.
+
+## Effectful functions
+
+Write reusable effectful functions with `Effect.fn('<span>')` so they show up
+in traces. Never write a function that only wraps and returns `Effect.gen`:
+
+```ts
+// Bad
+const ensureReady = (cwd: string) =>
+  Effect.gen(function* () {
+    // …
+  });
+
+// Good
 const ensureReady = Effect.fn('ensureReady')(function* (cwd: string) {
   const store = yield* Store;
   // …
 });
 ```
+
+- Use `Effect.fnUntraced(function* (…) { … })` for helpers that are not a
+  useful tracing boundary (e.g. error reporting at the top-level boundary).
+- Add behavior with extra `Effect.fn` arguments, not `.pipe` on the result.
+- Keep `Effect.gen` for inline effects, e.g. a service's `make` or a test body.
 
 - Acquire dependencies at the top of the generator: `const x = yield* Service`.
 - Functions that transform data return a **new** value; never mutate the input.
@@ -120,7 +160,7 @@ Store.layer.pipe(Layer.provide(Layer.mergeAll(runnerLayer, fsLayer)));
 
 ## Values and imports
 
-- Import from the barrels: `import { Effect, Data, Option, Layer } from 'effect'`,
+- Import from the barrels: `import { Effect, Option, Layer, Schema } from 'effect'`,
   `import { FileSystem, Path } from 'effect'`, `import { ChildProcess } from 'effect/process'`.
 - Use `Option` for "maybe present" (`Option.isSome(x)`, `x.value`), not `null`.
 - Keep concurrency explicit: `Effect.all([...], { concurrency: 3 })`.

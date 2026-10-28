@@ -1,28 +1,34 @@
-import { Effect, FileSystem, Path } from 'effect';
+import { Effect, FileSystem, Path, Schema } from 'effect';
 
-import { type Pkg, PkgInvalid, PkgNotFound } from '../domain/pkg.ts';
+import { Pkg, PkgInvalid, PkgNotFound } from '../domain/pkg.ts';
 
-export const readPkg = (cwd: string) =>
-  Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem;
-    const path = yield* Path.Path;
-    const pkgPath = path.join(cwd, 'package.json');
+const decodeJsonObject = Schema.decodeUnknownEffect(
+  Schema.fromJsonString(Schema.Record(Schema.String, Schema.Unknown)),
+);
+const decodePkg = Schema.decodeUnknownEffect(Pkg);
 
-    if (!(yield* fs.exists(pkgPath))) {
-      return yield* new PkgNotFound({ cwd });
-    }
+export const readPkg = Effect.fn('pkg-file.readPkg')(function* (cwd: string) {
+  const fs = yield* FileSystem.FileSystem;
+  const path = yield* Path.Path;
+  const pkgPath = path.join(cwd, 'package.json');
 
-    const contents = yield* fs.readFileString(pkgPath);
-    const pkg = yield* Effect.try({
-      try: () => JSON.parse(contents) as Pkg,
-      catch: () => new PkgInvalid({ pkgPath }),
-    });
+  if (!(yield* fs.exists(pkgPath))) {
+    return yield* new PkgNotFound({ cwd });
+  }
 
-    return { pkg, pkgPath };
-  });
+  const contents = yield* fs.readFileString(pkgPath);
+  const pkg = yield* decodeJsonObject(contents).pipe(
+    // Decoding rebuilds the object with the schema's known keys first. Spreading
+    // it over the raw object keeps the file's key order, so writing it back
+    // does not reorder the user's package.json.
+    Effect.flatMap((raw) => decodePkg(raw).pipe(Effect.map((decoded) => ({ ...raw, ...decoded })))),
+    Effect.mapError((error) => new PkgInvalid({ pkgPath, message: error.message })),
+  );
 
-export const writePkg = (pkgPath: string, pkg: Pkg) =>
-  Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem;
-    yield* fs.writeFileString(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-  });
+  return { pkg, pkgPath };
+});
+
+export const writePkg = Effect.fn('pkg-file.writePkg')(function* (pkgPath: string, pkg: Pkg) {
+  const fs = yield* FileSystem.FileSystem;
+  yield* fs.writeFileString(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+});

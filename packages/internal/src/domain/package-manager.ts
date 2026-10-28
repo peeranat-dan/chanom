@@ -1,4 +1,7 @@
-export type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun';
+import { Schema } from 'effect';
+
+export const PackageManager = Schema.Literals(['pnpm', 'npm', 'yarn', 'bun']);
+export type PackageManager = typeof PackageManager.Type;
 
 /** How to run a locally installed binary with each package manager. */
 export const PM_EXEC: Record<PackageManager, string[]> = {
