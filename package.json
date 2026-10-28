@@ -25,6 +25,7 @@
     "@commitlint/config-conventional": "catalog:",
     "@tsconfig/node-lts": "catalog:",
     "@tsconfig/node-ts": "catalog:",
+    "effect": "catalog:",
     "husky": "catalog:",
     "lint-staged": "catalog:",
     "oxfmt": "catalog:",
