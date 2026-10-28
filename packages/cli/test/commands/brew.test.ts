@@ -388,8 +388,8 @@ describe('brew', () => {
 
     return Effect.gen(function* () {
       const error = yield* Effect.flip(brew('/project'));
-      expect(error._tag).toBe('SystemError');
-      expect(error._tag === 'SystemError' && error.reason).toBe('PermissionDenied');
+      expect(error._tag).toBe('PlatformError');
+      expect(error._tag === 'PlatformError' && error.reason._tag).toBe('PermissionDenied');
       // The unreadable .gitignore is left untouched.
       expect(env.fs.files.get('/project/.gitignore')).toBe('dist\n');
     }).pipe(Effect.provide(env.layer));

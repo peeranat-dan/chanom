@@ -1,6 +1,5 @@
 import { CommandRunner } from '@chanom/internal';
-import { FileSystem, Path } from '@effect/platform';
-import { Data, Effect } from 'effect';
+import { Context, Data, Effect, FileSystem, Layer, Path } from 'effect';
 
 import type { PackageManager, WorkspaceHints } from '../domain/package-manager.ts';
 
@@ -18,8 +17,8 @@ export class InstallFailed extends Data.TaggedError('InstallFailed')<{
  * directory is a workspace root. Output is captured rather than inherited so
  * the caller's spinner is not redrawn over the package manager's own progress.
  */
-export class PackageInstaller extends Effect.Service<PackageInstaller>()('cli/PackageInstaller', {
-  effect: Effect.gen(function* () {
+export class PackageInstaller extends Context.Service<PackageInstaller>()('cli/PackageInstaller', {
+  make: Effect.gen(function* () {
     const runner = yield* CommandRunner;
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
@@ -65,4 +64,6 @@ export class PackageInstaller extends Effect.Service<PackageInstaller>()('cli/Pa
         ),
     } as const;
   }),
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}

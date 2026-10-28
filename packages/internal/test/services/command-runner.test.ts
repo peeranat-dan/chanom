@@ -1,10 +1,10 @@
-import { NodeContext } from '@effect/platform-node';
+import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it } from '@effect/vitest';
 import { Effect, Layer } from 'effect';
 
 import { CommandRunner } from '../../src/services/command-runner.ts';
 
-const live = CommandRunner.Default.pipe(Layer.provide(NodeContext.layer));
+const live = CommandRunner.layer.pipe(Layer.provide(NodeServices.layer));
 
 describe('CommandRunner (live)', () => {
   it.effect('captures exit code and trimmed output of a real process', () =>

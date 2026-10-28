@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { CommandRunner, Git, Prompter } from '@chanom/internal';
-import { NodeContext, NodeRuntime } from '@effect/platform-node';
+import { NodeServices, NodeRuntime } from '@effect/platform-node';
 import { Effect, Layer, Logger } from 'effect';
 import { join } from 'node:path';
 
@@ -13,13 +13,16 @@ const argv = process.argv.slice(2).filter((arg) => arg !== '--debug');
 // tsdown copies templates/ into dist/, so this resolves next to the bundle.
 const templatesRoot = join(import.meta.dirname, 'templates');
 
-const ServicesLive = Layer.mergeAll(Prompter.Default, Git.Default).pipe(
-  Layer.provideMerge(CommandRunner.Default),
-  Layer.provideMerge(NodeContext.layer),
+const ServicesLive = Layer.mergeAll(Prompter.layer, Git.layer).pipe(
+  Layer.provideMerge(CommandRunner.layer),
+  Layer.provideMerge(NodeServices.layer),
 );
 
 // Debug logs go to stderr so they never interleave with prompt rendering on stdout.
-const DebugLoggerLive = Logger.replace(Logger.defaultLogger, Logger.prettyLogger({ stderr: true }));
+const DebugLoggerLive = Layer.merge(
+  Logger.layer([Logger.consolePretty(), Logger.tracerLogger]),
+  Layer.succeed(Logger.LogToStderr, true),
+);
 
 const MainLive = debug ? Layer.merge(ServicesLive, DebugLoggerLive) : ServicesLive;
 
@@ -38,4 +41,4 @@ const program = run(argv, process.cwd(), {
   Effect.provide(MainLive),
 );
 
-NodeRuntime.runMain(program, { disableErrorReporting: true, disablePrettyLogger: true });
+NodeRuntime.runMain(program, { disableErrorReporting: true });

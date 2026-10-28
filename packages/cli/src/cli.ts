@@ -1,5 +1,5 @@
 import { Cancelled, Prompter } from '@chanom/internal';
-import { Cause, Chunk, Data, Effect, Logger, LogLevel } from 'effect';
+import { Cause, Data, Effect, References } from 'effect';
 
 import { brew } from './commands/brew/index.ts';
 
@@ -32,8 +32,8 @@ const reportError = (message: string) =>
   });
 
 const isCancellation = (cause: Cause.Cause<unknown>) =>
-  Chunk.isEmpty(Cause.defects(cause)) &&
-  Chunk.every(Cause.failures(cause), (failure) => failure instanceof Cancelled);
+  !cause.reasons.some(Cause.isDieReason) &&
+  cause.reasons.filter(Cause.isFailReason).every((reason) => reason.error instanceof Cancelled);
 
 /** Prints the fully rendered cause, including the span trace of the failing step. */
 const traceFailure = (cause: Cause.Cause<unknown>) =>
@@ -61,10 +61,9 @@ export const run = (
   return allErrorsHandled(
     dispatch(name, cwd).pipe(
       Effect.as(0),
-      debug ? Effect.tapErrorCause(traceFailure) : (effect) => effect,
+      debug ? Effect.tapCause(traceFailure) : (effect) => effect,
       Effect.catchTags({
-        BadArgument: (e) => reportError(`Unexpected error: ${e.message}`),
-        SystemError: (e) => reportError(`Unexpected error: ${e.message}`),
+        PlatformError: (e) => reportError(`Unexpected error: ${e.message}`),
       }),
       Effect.catchTags({
         Cancelled: () => Effect.succeed(0),
@@ -86,5 +85,5 @@ export const run = (
           ),
       }),
     ),
-  ).pipe(Logger.withMinimumLogLevel(debug ? LogLevel.Debug : LogLevel.Info));
+  ).pipe(Effect.provideService(References.MinimumLogLevel, debug ? 'Debug' : 'Info'));
 };

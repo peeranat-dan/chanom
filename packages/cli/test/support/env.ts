@@ -1,5 +1,5 @@
 import type { CommandHandler } from '@chanom/internal/testing';
-import type { SystemErrorReason } from '@effect/platform/Error';
+import type { PlatformError } from 'effect';
 
 import { Git } from '@chanom/internal';
 import { makeTestFs, makeTestPrompter, makeTestRunner } from '@chanom/internal/testing';
@@ -10,7 +10,7 @@ import { PackageInstaller } from '../../src/services/package-installer.ts';
 export interface TestEnvOptions {
   readonly files?: Record<string, string>;
   readonly dirs?: readonly string[];
-  readonly readErrors?: Record<string, SystemErrorReason>;
+  readonly readErrors?: Record<string, PlatformError.SystemErrorTag>;
   readonly answers?: Record<string, unknown>;
   readonly commands?: CommandHandler;
 }
@@ -22,9 +22,7 @@ export const makeTestEnv = (options: TestEnvOptions = {}) => {
   const runner = makeTestRunner(options.commands);
 
   const base = Layer.mergeAll(fs.layer, prompter.layer, runner.layer);
-  const layer = Layer.mergeAll(Git.Default, PackageInstaller.Default).pipe(
-    Layer.provideMerge(base),
-  );
+  const layer = Layer.mergeAll(Git.layer, PackageInstaller.layer).pipe(Layer.provideMerge(base));
 
   return { fs, prompter, runner, layer };
 };

@@ -1,6 +1,5 @@
 import { Prompter } from '@chanom/internal';
-import { FileSystem, Path } from '@effect/platform';
-import { Effect } from 'effect';
+import { Effect, FileSystem, Path } from 'effect';
 
 import { planSkillFiles, SKILLS, skillFiles, type SkillLink, skillLink } from './logic.ts';
 

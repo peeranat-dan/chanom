@@ -30,7 +30,7 @@ export const makeTestRunner = (handler: CommandHandler = succeed): TestRunner =>
     return handler(call);
   };
 
-  const runner = new CommandRunner({
+  const runner = CommandRunner.of({
     capture: (cmd, args, cwd) => Effect.sync(() => respond(cmd, args, cwd)),
     exitCode: (cmd, args, cwd) => Effect.sync(() => respond(cmd, args, cwd).exitCode),
     execInherit: (cmd, args, cwd) => Effect.sync(() => respond(cmd, args, cwd).exitCode),

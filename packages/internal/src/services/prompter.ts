@@ -1,5 +1,5 @@
 import * as clack from '@clack/prompts';
-import { Data, Effect } from 'effect';
+import { Context, Data, Effect, Layer } from 'effect';
 import pc from 'picocolors';
 
 export class Cancelled extends Data.TaggedError('Cancelled') {}
@@ -54,8 +54,8 @@ const guardCancel = <T>(make: () => Promise<T | symbol>): Effect.Effect<T, Cance
  * All terminal interaction (prompts, spinners, log messages). Commands never
  * touch @clack/prompts directly, so tests can script answers and capture output.
  */
-export class Prompter extends Effect.Service<Prompter>()('internal/Prompter', {
-  succeed: {
+export class Prompter extends Context.Service<Prompter>()('internal/Prompter', {
+  make: Effect.succeed({
     intro: (message: string): Effect.Effect<void> => Effect.sync(() => clack.intro(message)),
     outro: (message: string): Effect.Effect<void> => Effect.sync(() => clack.outro(message)),
     warn: (message: string): Effect.Effect<void> => Effect.sync(() => clack.log.warn(message)),
@@ -106,5 +106,7 @@ export class Prompter extends Effect.Service<Prompter>()('internal/Prompter', {
           stop: (stopMessage: string) => Effect.sync(() => s.stop(stopMessage)),
         };
       }),
-  },
-}) {}
+  } as const),
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}

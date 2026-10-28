@@ -1,5 +1,5 @@
 import type { CommandHandler } from '@chanom/internal/testing';
-import type { SystemErrorReason } from '@effect/platform/Error';
+import type { PlatformError } from 'effect';
 
 import { Git } from '@chanom/internal';
 import { makeTestFs, makeTestPrompter, makeTestRunner } from '@chanom/internal/testing';
@@ -22,7 +22,7 @@ const templateFixtures = (): Record<string, string> =>
 export interface EnvOptions {
   readonly files?: Record<string, string>;
   readonly dirs?: readonly string[];
-  readonly readErrors?: Record<string, SystemErrorReason>;
+  readonly readErrors?: Record<string, PlatformError.SystemErrorTag>;
   readonly answers?: Record<string, unknown>;
   readonly commands?: CommandHandler;
 }
@@ -38,7 +38,7 @@ export const makeEnv = (options: EnvOptions = {}) => {
   const runner = makeTestRunner(options.commands);
 
   const base = Layer.mergeAll(fs.layer, prompter.layer, runner.layer);
-  const layer = Git.Default.pipe(Layer.provideMerge(base));
+  const layer = Git.layer.pipe(Layer.provideMerge(base));
 
   return { fs, prompter, runner, layer };
 };

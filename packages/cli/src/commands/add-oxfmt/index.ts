@@ -1,6 +1,5 @@
 import { Prompter } from '@chanom/internal';
-import { FileSystem, Path } from '@effect/platform';
-import { Effect, Option } from 'effect';
+import { Effect, FileSystem, Option, Path } from 'effect';
 
 import type { Pkg } from '../../domain/pkg.ts';
 

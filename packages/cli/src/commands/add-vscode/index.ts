@@ -1,8 +1,7 @@
 import type { ExtensionsPlan, SettingsPlan } from '@chanom/internal';
 
 import { Prompter } from '@chanom/internal';
-import { FileSystem, Path } from '@effect/platform';
-import { Effect, Option } from 'effect';
+import { Effect, FileSystem, Option, Path } from 'effect';
 
 import { chanomSettings, planExtensions, planSettings, RECOMMENDED_EXTENSIONS } from './logic.ts';
 

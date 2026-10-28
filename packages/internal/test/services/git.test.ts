@@ -11,7 +11,7 @@ import {
 
 const makeGitLayer = (handler?: CommandHandler, fs: TestFs = makeTestFs()) => {
   const runner = makeTestRunner(handler);
-  const layer = Git.Default.pipe(Layer.provide(Layer.mergeAll(runner.layer, fs.layer)));
+  const layer = Git.layer.pipe(Layer.provide(Layer.mergeAll(runner.layer, fs.layer)));
   return { layer, runner, fs };
 };
 
@@ -181,8 +181,8 @@ describe('Git', () => {
     return Effect.gen(function* () {
       const git = yield* Git;
       const error = yield* Effect.flip(git.readGitignore('/project'));
-      expect(error._tag).toBe('SystemError');
-      expect(error._tag === 'SystemError' && error.reason).toBe('NotFound');
+      expect(error._tag).toBe('PlatformError');
+      expect(error.reason._tag).toBe('NotFound');
     }).pipe(Effect.provide(layer));
   });
 });

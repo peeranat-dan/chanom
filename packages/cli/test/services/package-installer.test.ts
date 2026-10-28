@@ -12,9 +12,7 @@ const makeLayer = (
 ) => {
   const runner = makeTestRunner(options.handler);
   const fs = makeTestFs(options.files);
-  const layer = PackageInstaller.Default.pipe(
-    Layer.provide(Layer.mergeAll(runner.layer, fs.layer)),
-  );
+  const layer = PackageInstaller.layer.pipe(Layer.provide(Layer.mergeAll(runner.layer, fs.layer)));
   return { layer, runner };
 };
 
