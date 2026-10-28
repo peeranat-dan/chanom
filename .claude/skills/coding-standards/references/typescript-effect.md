@@ -1,6 +1,6 @@
 # TypeScript conventions for Effect
 
-Additions on top of `typescript.md` for code that uses Effect — read that file
+Additions on top of `typescript.md` for code that uses Effect - read that file
 first; these do not replace it. For the runtime patterns (services, errors,
 layers) see `effect-ts.md`; this file is only about the type-level and
 import-level conventions.

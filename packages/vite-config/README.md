@@ -2,9 +2,9 @@
 
 Opinionated Vite and Vitest config factories for libraries and React apps.
 
-`createViteConfig` applies build defaults (target, sourcemaps, optional library mode and bundle visualization), then deep-merges your overrides on top via Vite's `mergeConfig`. Use it in Vite project (so you don't have to install Vite yourself).
+`createViteConfig` applies build defaults (target, sourcemaps, optional library mode and bundle visualization), then deep-merges your overrides on top via Vite's `mergeConfig`.
 
-For tests, `createVitestConfig` (and its React presets) applies the same pattern to Vitest — see [Vitest config](#vitest-config).
+For tests, `createVitestConfig` (and its React presets) applies the same pattern to Vitest - see [Vitest config](#vitest-config).
 
 ## Install
 
@@ -107,11 +107,11 @@ A standard Vite `UserConfig` that is deep-merged over the generated config. Use 
 
 Three factories build Vitest configs the same way `createViteConfig` builds Vite configs: opinionated defaults, then your `override` deep-merged on top via `mergeConfig`.
 
-- `createVitestConfig` – base config: Node environment, no test globals.
-- `createReactLibraryVitestConfig` – base + `jsdom` environment and global test APIs, for testing components in isolation.
-- `createReactAppVitestConfig` – like the library preset, but also processes CSS during tests (`css: true`) since app components commonly import stylesheets and CSS modules.
+- `createVitestConfig` - base config: Node environment, no test globals.
+- `createReactLibraryVitestConfig` - base + `jsdom` environment and global test APIs, for testing components in isolation.
+- `createReactAppVitestConfig` - like the library preset, but also processes CSS during tests (`css: true`) since app components commonly import stylesheets and CSS modules.
 
-These live behind the `@chanom/vite-config/vitest` subpath so importing `createViteConfig` never pulls in `vitest/config`. `vitest` is an optional peer dependency — install it in your project when you use this subpath:
+These live behind the `@chanom/vite-config/vitest` subpath so importing `createViteConfig` never pulls in `vitest/config`. `vitest` is an optional peer dependency - install it in your project when you use this subpath:
 
 ```sh
 pnpm add -D vitest
@@ -205,5 +205,5 @@ pnpm dev     # watch mode
 
 ## Troubleshooting
 
-- **`Cannot find module 'rollup-plugin-visualizer'`** when using `visualize` – install it in your consuming project. It is an optional peer dependency.
-- **Overrides not taking effect** – make sure you pass them as the second argument, not inside `options`.
+- **`Cannot find module 'rollup-plugin-visualizer'`** when using `visualize` - install it in your consuming project. It is an optional peer dependency.
+- **Overrides not taking effect** - make sure you pass them as the second argument, not inside `options`.

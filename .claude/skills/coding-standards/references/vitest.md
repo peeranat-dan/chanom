@@ -19,7 +19,7 @@ and write behaviour-focused `it` names ("flags mismatches in both directions",
 
 ## Testing pure functions
 
-Assert directly on return values — no setup, no mocks:
+Assert directly on return values - no setup, no mocks:
 
 ```ts
 describe('isInstalled', () => {

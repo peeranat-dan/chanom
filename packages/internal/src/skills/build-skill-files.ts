@@ -1,7 +1,7 @@
 /**
  * Build-time only: reads the authored markdown under `coding-standards/` and
  * emits it as a `SkillFile[]`. Imported by each consumer's tsdown config and
- * inlined via `define`, so the markdown files themselves never need to ship —
+ * inlined via `define`, so the markdown files themselves never need to ship -
  * the `.md` files stay the single source of truth and remain editable as
  * ordinary markdown rather than as escaped string literals.
  */

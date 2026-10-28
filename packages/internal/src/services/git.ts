@@ -41,7 +41,7 @@ export class Git extends Effect.Service<Git>()('internal/Git', {
       hasStagedChanges: (cwd: string) =>
         exitOk(['diff', '--cached', '--quiet'], cwd).pipe(Effect.map((clean) => !clean)),
       /**
-       * True when `cwd` is anywhere inside a git work tree — a `.git` folder
+       * True when `cwd` is anywhere inside a git work tree - a `.git` folder
        * check would miss subdirectories (e.g. workspace packages) and lead to
        * nested `git init` calls.
        */

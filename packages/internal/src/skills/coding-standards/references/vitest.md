@@ -1,6 +1,6 @@
 # Vitest
 
-Tests run on jsdom with globals enabled — `describe`, `it`, `expect`, and `vi`
+Tests run on jsdom with globals enabled - `describe`, `it`, `expect`, and `vi`
 need no import. `src/test-setup.ts` loads `@testing-library/jest-dom/vitest`, so
 its matchers are available everywhere. Run with `pnpm test`, or `pnpm test:watch`
 while iterating.
@@ -33,7 +33,7 @@ describe('UserCard', () => {
 
 - Interactions go through `userEvent.setup()` and `await user.click(...)`, not
   `fireEvent`.
-- Handlers are `vi.fn()` asserted by call count, including the negative case —
+- Handlers are `vi.fn()` asserted by call count, including the negative case -
   a disabled control asserts `toHaveBeenCalledTimes(0)`.
 - Query by `getByRole` / `getByText`. Reach for `getByTestId` only when no
   accessible query exists, such as a decorative spinner.

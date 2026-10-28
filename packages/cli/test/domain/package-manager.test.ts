@@ -4,9 +4,8 @@ import type { WorkspaceHints } from '../../src/domain/package-manager.ts';
 
 import { workspaceRootFlags } from '../../src/domain/package-manager.ts';
 
-// The pm resolvers (parsePmField/parsePmUserAgent/resolvePm) moved to
-// @chanom/internal and are tested there; only the workspace-root flags remain
-// cli-specific.
+// Only the workspace-root flags are cli-specific; the pm resolvers
+// (parsePmField/parsePmUserAgent/resolvePm) are tested in @chanom/internal.
 describe('workspaceRootFlags', () => {
   const hints = (overrides: Partial<WorkspaceHints> = {}): WorkspaceHints => ({
     hasPnpmWorkspaceFile: false,

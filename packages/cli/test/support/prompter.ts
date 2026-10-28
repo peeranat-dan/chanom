@@ -1,4 +1,4 @@
-// See ./fs.ts - the shared test doubles now live in @chanom/internal.
+// Re-exports the shared test doubles from @chanom/internal.
 export {
   makeTestPrompter,
   type PrompterLog,

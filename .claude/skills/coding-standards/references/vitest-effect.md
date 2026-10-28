@@ -1,19 +1,19 @@
 # Vitest conventions for Effect
 
-Additions on top of `vitest.md` for testing Effect services and orchestration —
+Additions on top of `vitest.md` for testing Effect services and orchestration -
 read that file first. The layout, naming, matcher, and running rules there still
 apply.
 
 ## Import the Effect-aware API
 
-Import the test API from `@effect/vitest` instead of `vitest` — it re-exports
+Import the test API from `@effect/vitest` instead of `vitest` - it re-exports
 the vitest API plus `it.effect`:
 
 ```ts
 import { describe, expect, it } from '@effect/vitest';
 ```
 
-## Effectful tests — `it.effect`
+## Effectful tests - `it.effect`
 
 Return an `Effect` that does the work inside `Effect.gen`, and provide a test
 layer with `.pipe(Effect.provide(layer))`:
@@ -49,7 +49,7 @@ there rather than inlining them, and mirror the existing factories' shape.
 
 ## Asserting on Effect code
 
-- **Side effects:** inspect the stub's mutable state — the in-memory file map,
+- **Side effects:** inspect the stub's mutable state - the in-memory file map,
   the recorded call list. Assert full call arrays with `toEqual` to pin down
   args and cwd.
 - **Failures:** flip the effect and assert on the tagged error rather than

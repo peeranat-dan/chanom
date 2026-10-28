@@ -1,6 +1,6 @@
-// Local tsconfig extending the community @tsconfig/vite-react base (one devDep),
-// generated (per the baseline-contents decision) so a topping could vary it
-// without a substitution engine. Invariant in v1.
+// Local tsconfig extending the community @tsconfig/vite-react base (one devDep).
+// Generated rather than copied so a topping could vary it without a
+// substitution engine; no topping does yet.
 const TSCONFIG = {
   extends: '@tsconfig/vite-react/tsconfig.json',
   compilerOptions: {

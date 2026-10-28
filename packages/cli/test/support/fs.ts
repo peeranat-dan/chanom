@@ -1,4 +1,3 @@
-// The in-memory test doubles moved to @chanom/internal (shared with
-// create-chanom-app); re-export the slice cli tests use so their local import
-// paths keep working.
+// Re-exports the in-memory test doubles cli tests use from @chanom/internal,
+// where they are shared with create-chanom-app.
 export { makeTestFs, type TestFs } from '@chanom/internal/testing';

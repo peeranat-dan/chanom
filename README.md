@@ -1,10 +1,10 @@
 # Chanom
 
-Chanom (ชานม) - Brew your frontend apps and tooling with ease and fun
+Chanom (ชานม) - Brew a Vite + React app, or add lint, format, commit hooks, and CI to the one you have, in a couple of prompts
 
 ## Why I created this?
 
-I created this repository to share my frontend development setup with others. I want to help others have a better and more productive frontend development experience. I chose the name "Chanom" because I love milk tea (Chanom) and it would be fitting to think of it as a base milk tea with additional toppings, similar to how you might add additional settings to a React app when creating it.
+I created this repository to share my frontend development setup, so others can start a project with the same linting, formatting, commit hooks, and CI without wiring it up by hand. I chose the name "Chanom" because I love milk tea (Chanom) and it would be fitting to think of it as a base milk tea with additional toppings, similar to how you might add additional settings to a React app when creating it.
 
 ## Quick start
 
@@ -127,7 +127,7 @@ The repo ships shared VS Code settings in [`.vscode/settings.json`](./.vscode/se
 ## Roadmap
 
 - Roadmap:
-  - [ ] Vitest preset in `@chanom/vite-config`
+  - [x] Vitest preset in `@chanom/vite-config`
   - [x] [`create-chanom-app`](./packages/create-chanom-app) CLI
   - [ ] Shared `tsconfig` preset in `@chanom/dev-config`
   - [x] Analytics package

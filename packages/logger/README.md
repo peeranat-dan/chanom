@@ -2,7 +2,7 @@
 
 Tiny, zero-dependency, provider-agnostic logger for web apps with an **enabled switch** and **log-level filtering**.
 
-Sprinkling `console.log` through an app means either shipping noise to production or deleting the logs you'll want again next week. This logger keeps them: you decide _whether_ logging is on (the `enabled` switch - wire it to `import.meta.env.DEV`, an env var, or a feature flag) and _how much_ gets through (level filtering), so `logger.debug(...)` can stay in the code and simply go quiet in production. Records fan out to providers - the built-in console provider by default, or any destination you implement.
+Sprinkling `console.log` through an app means either shipping noise to production or deleting the logs you'll want again next week. This logger keeps them: you decide _whether_ logging is on (the `enabled` switch - wire it to `import.meta.env.DEV`, an env var, or a feature flag) and _how much_ gets through (level filtering), so `logger.debug(...)` can stay in the code and go quiet in production. Records fan out to providers - the built-in console provider by default, or any destination you implement.
 
 ## Install
 
@@ -126,10 +126,10 @@ if (logger.isEnabled('debug')) {
 
 ### `Logger`
 
-- `debug` / `info` / `warn` / `error` `(...args: unknown[]): void` — fan a record out to every provider.
-- `setLevel(level)` / `level` — change or read the minimum level at runtime.
-- `isEnabled(level?)` — whether a record would be emitted.
-- `child(prefix, { level? })` — derive a namespaced logger (prefixes joined with `:`).
+- `debug` / `info` / `warn` / `error` `(...args: unknown[]): void` - fan a record out to every provider.
+- `setLevel(level)` / `level` - change or read the minimum level at runtime.
+- `isEnabled(level?)` - whether a record would be emitted.
+- `child(prefix, { level? })` - derive a namespaced logger (prefixes joined with `:`).
 
 ### `LogProvider`
 

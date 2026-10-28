@@ -50,7 +50,7 @@ jobs:
             tsdown/Vite/TypeScript, and versioned with Changesets.
 
             Focus on:
-            1. Correctness — logic errors, edge cases, broken workspace/catalog references
+            1. Correctness - logic errors, edge cases, broken workspace/catalog references
             2. Consistency with existing oxlint/oxfmt conventions in the touched packages
             3. Missing or incorrect Changesets entries for user-facing changes under packages/
             4. Type safety and public API/README accuracy for the affected package(s)

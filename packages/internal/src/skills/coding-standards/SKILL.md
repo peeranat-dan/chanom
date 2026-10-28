@@ -24,7 +24,7 @@ applies.
 
 - Filenames are kebab-case: `user-card.tsx`, `use-current-user.ts`, `format-date.ts`.
 - Before adding a file, open two neighbouring files of the same kind and match
-  their shape — import order, export style, test naming.
+  their shape - import order, export style, test naming.
 - Source lives under `src/`. Colocate a test beside the code it covers:
   `src/utils/format-date.ts` → `src/utils/format-date.test.ts`.
 

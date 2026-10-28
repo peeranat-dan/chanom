@@ -46,7 +46,7 @@ const traceFailure = (cause: Cause.Cause<unknown>) =>
 /**
  * Pins the error channel to `never` at this boundary. If `catchTags` above ever
  * stops handling an error tag, that tag leaks into `E` and this call fails to
- * compile — forcing every command error to be handled here.
+ * compile - forcing every command error to be handled here.
  */
 const allErrorsHandled = <A, R>(effect: Effect.Effect<A, never, R>) => effect;
 

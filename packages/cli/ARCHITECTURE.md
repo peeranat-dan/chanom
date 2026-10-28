@@ -4,11 +4,11 @@ This document explains how `@chanom/cli` is structured, aimed at someone seeing 
 
 ## The big picture
 
-The CLI is built on **Effect**, a TypeScript library for writing programs as composable, testable values. The core idea driving the whole structure:
+The CLI is built on **Effect**, a TypeScript library for writing programs as composable, testable values. The structure follows one idea:
 
 > **Code that decides** (pure logic) is separated from **code that does** (I/O), and all I/O goes through swappable services.
 
-That gives us a layered architecture where each layer only talks to the layers below it:
+Each layer only talks to the layers below it:
 
 ```mermaid
 graph TD
@@ -31,7 +31,7 @@ graph TD
     services --> domain
 ```
 
-The golden rule: **`domain/` and every `logic.ts` are pure** - plain functions, no file system, no processes, no prompts. Everything with a side effect lives in a service or goes through `FileSystem`/`Path` from `@effect/platform`.
+**`domain/` and every `logic.ts` are pure**: plain functions, no file system, no processes, no prompts. Everything with a side effect lives in a service or goes through `FileSystem`/`Path` from `@effect/platform`.
 
 ## A 2-minute Effect primer
 
@@ -161,7 +161,7 @@ sequenceDiagram
     Brew->>Svc: git stage all + commit (staged-but-uncommitted fallback on failure)
 ```
 
-Note the rhythm in the middle: **plan (pure) → apply (effectful)**. `planPackages` computes the install list from plain data; each topping's `apply` computes its script plan purely, then performs the writes. This is the pattern to follow for new features.
+The middle of the flow is **plan (pure) → apply (effectful)**. `planPackages` computes the install list from plain data; each topping's `apply` computes its script plan purely, then performs the writes. This is the pattern to follow for new features.
 
 ### Pinned versions
 
@@ -193,4 +193,4 @@ Say you're adding a `biome` topping:
 5. If it needs a pinned version: `src/domain/versions.ts`, `src/bundled-versions.ts`, `tsdown.config.ts`, and `vitest.config.ts`.
 6. Tests: `test/commands/add-biome.test.ts` plus updated `brew` tests.
 
-A whole new command instead? Create `src/commands/<name>/` with the same `logic.ts` / `index.ts` split and register it in the `commands` map in `src/cli.ts` - dispatch and error handling come for free.
+A whole new command instead? Create `src/commands/<name>/` with the same `logic.ts` / `index.ts` split and register it in the `commands` map in `src/cli.ts`, which then dispatches it and maps its tagged errors to exit codes.
