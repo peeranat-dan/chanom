@@ -50,7 +50,7 @@ const program = Effect.gen(function* () {
 
 **3. Services are injected, not imported.** A service like `Git` is a class describing capabilities (`init`, `commit`, ...). Code asks for it with `yield* Git`, and the actual implementation (a **layer**) is provided at the very edge of the app - the real one in `src/index.ts`, stubs in tests. This is why every command is testable without touching a real terminal, file system, or git.
 
-Errors are **tagged errors** (`Data.TaggedError`), e.g. `PkgNotFound`, `InstallFailed`. They travel in the `E` channel of the effect type - no `throw`/`try` - and are handled by tag in one place (`src/cli.ts`).
+Errors are **tagged errors** (`Schema.TaggedError`), e.g. `PkgNotFound`, `InstallFailed`. They travel in the `E` channel of the effect type - no `throw`/`try` - and are handled by tag in one place (`src/cli.ts`).
 
 ## Layer by layer
 

@@ -1,7 +1,7 @@
 import type { Cancelled, CiJob, PackageManager } from '@chanom/internal';
 
 import { CI_JOBS, Prompter, resolvePm } from '@chanom/internal';
-import { Data, Effect, FileSystem, Path, References } from 'effect';
+import { Effect, FileSystem, Path, References, Schema } from 'effect';
 import pc from 'picocolors';
 
 import { pkgVersion } from './bundled-versions.ts';
@@ -33,9 +33,9 @@ ${pc.bold('Options')}
   ${pc.cyan('--help')}                      Show this help
   ${pc.cyan('--version')}                   Show the version`;
 
-export class TargetNotEmpty extends Data.TaggedError('TargetNotEmpty')<{
-  readonly directory: string;
-}> {}
+export class TargetNotEmpty extends Schema.TaggedError<TargetNotEmpty>()('TargetNotEmpty', {
+  directory: Schema.String,
+}) {}
 
 export interface RunOptions {
   /** `npm_config_user_agent`, the only package-manager signal a create-* tool has. */
@@ -102,138 +102,140 @@ const isEmptyDir = Effect.fn('cli.isEmptyDir')(function* (dir: string) {
   return entries.filter((entry) => entry !== '.git').length === 0;
 });
 
-const program = (argv: readonly string[], cwd: string, options: RunOptions) =>
-  Effect.gen(function* () {
-    const prompter = yield* Prompter;
-    const path = yield* Path.Path;
+const program = Effect.fn('cli.program')(function* (
+  argv: readonly string[],
+  cwd: string,
+  options: RunOptions,
+) {
+  const prompter = yield* Prompter;
+  const path = yield* Path.Path;
 
-    const parsed = parseArgs(argv);
-    if (!parsed.ok) {
-      yield* prompter.error(parsed.message);
-      return 1;
-    }
-    const args = parsed.args;
-
-    if (args.help) {
-      yield* prompter.message(HELP);
-      return 0;
-    }
-    if (args.version) {
-      yield* prompter.message(pkgVersion);
-      return 0;
-    }
-
-    // A directory passed as a flag/positional is validated up front (the prompt
-    // path validates interactively via clack).
-    if (args.directory !== undefined) {
-      const invalid = validateProjectName(args.directory);
-      if (invalid !== undefined) {
-        yield* prompter.error(invalid);
-        return 1;
-      }
-    }
-
-    yield* prompter.intro(pc.magenta('🧋 create-chanom-app'));
-
-    let directory: string | undefined;
-
-    if (args.directory !== undefined) {
-      directory = toKebabCase(args.directory);
-    } else if (args.yes) {
-      directory = DEFAULT_NAME;
-    } else {
-      directory = yield* prompter.text({
-        message: 'Project name?',
-        placeholder: DEFAULT_NAME,
-        defaultValue: DEFAULT_NAME,
-        validate: validateProjectName,
-      });
-    }
-
-    if (directory === undefined) {
-      return 1;
-    }
-
-    const targetDir = path.resolve(cwd, directory);
-    const appName = path.basename(targetDir);
-
-    if (!(yield* isEmptyDir(targetDir))) {
-      return yield* new TargetNotEmpty({ directory });
-    }
-
-    const git = yield* resolveConfirm(
-      args.git,
-      args.yes,
-      prompter.confirm({ message: 'Initialize a git repository?', initialValue: true }),
-    );
-    const commitHooks = git
-      ? yield* resolveConfirm(
-          args.commitHooks,
-          args.yes,
-          prompter.confirm({
-            message: 'Add commit hooks (husky + lint-staged + commitlint)?',
-            initialValue: true,
-          }),
-        )
-      : false;
-    const agentSkills = yield* resolveConfirm(
-      args.agentSkills,
-      args.yes,
-      prompter.confirm({
-        message: 'Add agent coding standards (.agents/skills)?',
-        initialValue: true,
-      }),
-    );
-    const ciJobs = yield* resolveCiJobs(args.githubActions, args.ciJobs, args.yes);
-    const install = yield* resolveConfirm(
-      args.install,
-      args.yes,
-      prompter.confirm({ message: 'Install dependencies now?', initialValue: true }),
-    );
-
-    const pm = args.pm ?? resolvePm({ userAgent: options.userAgent, fallback: 'pnpm' });
-
-    yield* prompter.message(
-      [
-        `${pc.dim('directory')}     ${directory}`,
-        `${pc.dim('package mgr')}   ${pm}`,
-        `${pc.dim('git')}           ${git ? 'yes' : 'no'}`,
-        `${pc.dim('commit hooks')}  ${git ? (commitHooks ? 'yes' : 'no') : pc.dim('n/a')}`,
-        `${pc.dim('agent skills')}  ${agentSkills ? 'yes' : 'no'}`,
-        `${pc.dim('ci jobs')}       ${ciJobs.length > 0 ? ciJobs.join(', ') : 'no'}`,
-        `${pc.dim('install')}       ${install ? 'yes' : 'no'}`,
-      ].join('\n'),
-    );
-
-    yield* scaffold({
-      targetDir,
-      appName,
-      pm,
-      packageManagerField: packageManagerField(pm, options.userAgent),
-      git,
-      commitHooks,
-      agentSkills,
-      ciJobs,
-      install,
-      templatesRoot: options.templatesRoot,
-    });
-
-    const steps = [
-      ...(directory === '.' ? [] : [`cd ${directory}`]),
-      ...(install ? [] : [`${pm} install`]),
-      `${pm} run dev`,
-    ];
-    yield* prompter.outro(pc.green(`Done! Next steps:\n  ${steps.join('\n  ')}`));
-
-    return 0;
-  });
-
-const reportError = (message: string) =>
-  Effect.gen(function* () {
-    const prompter = yield* Prompter;
-    yield* prompter.error(message);
+  const parsed = parseArgs(argv);
+  if (!parsed.ok) {
+    yield* prompter.error(parsed.message);
     return 1;
+  }
+  const args = parsed.args;
+
+  if (args.help) {
+    yield* prompter.message(HELP);
+    return 0;
+  }
+  if (args.version) {
+    yield* prompter.message(pkgVersion);
+    return 0;
+  }
+
+  // A directory passed as a flag/positional is validated up front (the prompt
+  // path validates interactively via clack).
+  if (args.directory !== undefined) {
+    const invalid = validateProjectName(args.directory);
+    if (invalid !== undefined) {
+      yield* prompter.error(invalid);
+      return 1;
+    }
+  }
+
+  yield* prompter.intro(pc.magenta('🧋 create-chanom-app'));
+
+  let directory: string | undefined;
+
+  if (args.directory !== undefined) {
+    directory = toKebabCase(args.directory);
+  } else if (args.yes) {
+    directory = DEFAULT_NAME;
+  } else {
+    directory = yield* prompter.text({
+      message: 'Project name?',
+      placeholder: DEFAULT_NAME,
+      defaultValue: DEFAULT_NAME,
+      validate: validateProjectName,
+    });
+  }
+
+  if (directory === undefined) {
+    return 1;
+  }
+
+  const targetDir = path.resolve(cwd, directory);
+  const appName = path.basename(targetDir);
+
+  if (!(yield* isEmptyDir(targetDir))) {
+    return yield* new TargetNotEmpty({ directory });
+  }
+
+  const git = yield* resolveConfirm(
+    args.git,
+    args.yes,
+    prompter.confirm({ message: 'Initialize a git repository?', initialValue: true }),
+  );
+  const commitHooks = git
+    ? yield* resolveConfirm(
+        args.commitHooks,
+        args.yes,
+        prompter.confirm({
+          message: 'Add commit hooks (husky + lint-staged + commitlint)?',
+          initialValue: true,
+        }),
+      )
+    : false;
+  const agentSkills = yield* resolveConfirm(
+    args.agentSkills,
+    args.yes,
+    prompter.confirm({
+      message: 'Add agent coding standards (.agents/skills)?',
+      initialValue: true,
+    }),
+  );
+  const ciJobs = yield* resolveCiJobs(args.githubActions, args.ciJobs, args.yes);
+  const install = yield* resolveConfirm(
+    args.install,
+    args.yes,
+    prompter.confirm({ message: 'Install dependencies now?', initialValue: true }),
+  );
+
+  const pm = args.pm ?? resolvePm({ userAgent: options.userAgent, fallback: 'pnpm' });
+
+  yield* prompter.message(
+    [
+      `${pc.dim('directory')}     ${directory}`,
+      `${pc.dim('package mgr')}   ${pm}`,
+      `${pc.dim('git')}           ${git ? 'yes' : 'no'}`,
+      `${pc.dim('commit hooks')}  ${git ? (commitHooks ? 'yes' : 'no') : pc.dim('n/a')}`,
+      `${pc.dim('agent skills')}  ${agentSkills ? 'yes' : 'no'}`,
+      `${pc.dim('ci jobs')}       ${ciJobs.length > 0 ? ciJobs.join(', ') : 'no'}`,
+      `${pc.dim('install')}       ${install ? 'yes' : 'no'}`,
+    ].join('\n'),
+  );
+
+  yield* scaffold({
+    targetDir,
+    appName,
+    pm,
+    packageManagerField: packageManagerField(pm, options.userAgent),
+    git,
+    commitHooks,
+    agentSkills,
+    ciJobs,
+    install,
+    templatesRoot: options.templatesRoot,
   });
+
+  const steps = [
+    ...(directory === '.' ? [] : [`cd ${directory}`]),
+    ...(install ? [] : [`${pm} install`]),
+    `${pm} run dev`,
+  ];
+  yield* prompter.outro(pc.green(`Done! Next steps:\n  ${steps.join('\n  ')}`));
+
+  return 0;
+});
+
+const reportError = Effect.fnUntraced(function* (message: string) {
+  const prompter = yield* Prompter;
+  yield* prompter.error(message);
+  return 1;
+});
 
 /** Runs the scaffolder and returns the process exit code. */
 export const run = (argv: readonly string[], cwd: string, options: RunOptions) => {

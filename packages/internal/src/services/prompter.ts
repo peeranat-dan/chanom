@@ -1,8 +1,8 @@
 import * as clack from '@clack/prompts';
-import { Context, Data, Effect, Layer } from 'effect';
+import { Context, Effect, Layer, Schema } from 'effect';
 import pc from 'picocolors';
 
-export class Cancelled extends Data.TaggedError('Cancelled') {}
+export class Cancelled extends Schema.TaggedError<Cancelled>()('Cancelled', {}) {}
 
 export interface PromptOption<T> {
   readonly value: T;

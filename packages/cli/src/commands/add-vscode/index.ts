@@ -1,15 +1,18 @@
 import type { ExtensionsPlan, SettingsPlan } from '@chanom/internal';
 
 import { Prompter } from '@chanom/internal';
-import { Effect, FileSystem, Option, Path } from 'effect';
+import { Effect, FileSystem, Option, Path, Schema } from 'effect';
 
 import { chanomSettings, planExtensions, planSettings, RECOMMENDED_EXTENSIONS } from './logic.ts';
 
 export { chanomSettings, planExtensions, planSettings, RECOMMENDED_EXTENSIONS } from './logic.ts';
 
-interface ExtensionsJson {
-  readonly recommendations?: readonly string[];
-}
+const SettingsJson = Schema.Record(Schema.String, Schema.Unknown);
+
+const ExtensionsJson = Schema.StructWithRest(
+  Schema.Struct({ recommendations: Schema.optionalKey(Schema.Array(Schema.String)) }),
+  [Schema.Record(Schema.String, Schema.Unknown)],
+);
 
 const writeJson = Effect.fn('add-vscode.writeJson')(function* (filePath: string, value: unknown) {
   const fs = yield* FileSystem.FileSystem;
@@ -22,15 +25,15 @@ const writeJson = Effect.fn('add-vscode.writeJson')(function* (filePath: string,
  * hand-wrote with comments. Returns `None` for both "absent" and "unparseable";
  * the caller distinguishes them via `fs.exists` to warn appropriately.
  */
-const readJson = Effect.fn('add-vscode.readJson')(function* <T>(filePath: string) {
+const readJson = Effect.fn('add-vscode.readJson')(function* <A>(
+  filePath: string,
+  schema: Schema.Codec<A, unknown>,
+) {
   const fs = yield* FileSystem.FileSystem;
-  if (!(yield* fs.exists(filePath))) return Option.none<T>();
+  if (!(yield* fs.exists(filePath))) return Option.none<A>();
 
   const contents = yield* fs.readFileString(filePath);
-  return yield* Effect.try(() => JSON.parse(contents) as T).pipe(
-    Effect.map(Option.some),
-    Effect.orElseSucceed(() => Option.none<T>()),
-  );
+  return Schema.decodeUnknownOption(Schema.fromJsonString(schema))(contents);
 });
 
 const applySettings = Effect.fn('add-vscode.applySettings')(function* (
@@ -43,7 +46,7 @@ const applySettings = Effect.fn('add-vscode.applySettings')(function* (
 
   const filePath = path.join(vscodeDir, 'settings.json');
   const existed = yield* fs.exists(filePath);
-  const existing = yield* readJson<Record<string, unknown>>(filePath);
+  const existing = yield* readJson(filePath, SettingsJson);
 
   if (existed && Option.isNone(existing)) {
     yield* prompter.warn(
@@ -73,7 +76,7 @@ const applyExtensions = Effect.fn('add-vscode.applyExtensions')(function* (vscod
 
   const filePath = path.join(vscodeDir, 'extensions.json');
   const existed = yield* fs.exists(filePath);
-  const existing = yield* readJson<ExtensionsJson>(filePath);
+  const existing = yield* readJson(filePath, ExtensionsJson);
 
   if (existed && Option.isNone(existing)) {
     yield* prompter.warn(

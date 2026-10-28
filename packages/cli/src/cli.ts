@@ -1,11 +1,11 @@
 import { Cancelled, Prompter } from '@chanom/internal';
-import { Cause, Data, Effect, References } from 'effect';
+import { Cause, Effect, References, Schema } from 'effect';
 
 import { brew } from './commands/brew/index.ts';
 
-export class UnknownCommand extends Data.TaggedError('UnknownCommand')<{
-  readonly command: string | undefined;
-}> {}
+export class UnknownCommand extends Schema.TaggedError<UnknownCommand>()('UnknownCommand', {
+  command: Schema.UndefinedOr(Schema.String),
+}) {}
 
 export interface RunOptions {
   /** When true, emits debug logs for each step and a full failure trace on error. */
@@ -16,32 +16,29 @@ const commands = {
   brew,
 } as const;
 
-const dispatch = (name: string | undefined, cwd: string) =>
-  Effect.gen(function* () {
-    if (name !== undefined && Object.hasOwn(commands, name)) {
-      return yield* commands[name as keyof typeof commands](cwd).pipe(Effect.withSpan(name));
-    }
-    return yield* new UnknownCommand({ command: name });
-  });
+const dispatch = Effect.fn('cli.dispatch')(function* (name: string | undefined, cwd: string) {
+  if (name !== undefined && Object.hasOwn(commands, name)) {
+    return yield* commands[name as keyof typeof commands](cwd).pipe(Effect.withSpan(name));
+  }
+  return yield* new UnknownCommand({ command: name });
+});
 
-const reportError = (message: string) =>
-  Effect.gen(function* () {
-    const prompter = yield* Prompter;
-    yield* prompter.error(message);
-    return 1;
-  });
+const reportError = Effect.fnUntraced(function* (message: string) {
+  const prompter = yield* Prompter;
+  yield* prompter.error(message);
+  return 1;
+});
 
 const isCancellation = (cause: Cause.Cause<unknown>) =>
   !cause.reasons.some(Cause.isDieReason) &&
   cause.reasons.filter(Cause.isFailReason).every((reason) => reason.error instanceof Cancelled);
 
 /** Prints the fully rendered cause, including the span trace of the failing step. */
-const traceFailure = (cause: Cause.Cause<unknown>) =>
-  Effect.gen(function* () {
-    if (isCancellation(cause)) return;
-    const prompter = yield* Prompter;
-    yield* prompter.debug(Cause.pretty(cause));
-  });
+const traceFailure = Effect.fnUntraced(function* (cause: Cause.Cause<unknown>) {
+  if (isCancellation(cause)) return;
+  const prompter = yield* Prompter;
+  yield* prompter.debug(Cause.pretty(cause));
+});
 
 /**
  * Pins the error channel to `never` at this boundary. If `catchTags` above ever

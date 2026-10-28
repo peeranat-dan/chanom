@@ -1,5 +1,5 @@
-import { type CiJob, CommandRunner, Git, type PackageManager, Prompter } from '@chanom/internal';
-import { Data, Effect, FileSystem, Path } from 'effect';
+import { type CiJob, CommandRunner, Git, PackageManager, Prompter } from '@chanom/internal';
+import { Effect, FileSystem, Path, Schema } from 'effect';
 import pc from 'picocolors';
 
 import type { ConfigLink, Contribution } from './domain/contribution.ts';
@@ -17,11 +17,11 @@ import { renderViteConfig } from './generate/vite-config.ts';
 import { TEMPLATE_FILES } from './templates.ts';
 import { selectContributions } from './toppings.ts';
 
-export class InstallFailed extends Data.TaggedError('InstallFailed')<{
-  readonly pm: PackageManager;
+export class InstallFailed extends Schema.TaggedError<InstallFailed>()('InstallFailed', {
+  pm: PackageManager,
   /** Captured package manager output, since it is not streamed to the terminal. */
-  readonly output: string;
-}> {}
+  output: Schema.String,
+}) {}
 
 export interface ScaffoldPlan {
   readonly targetDir: string;

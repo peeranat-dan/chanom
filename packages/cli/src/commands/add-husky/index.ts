@@ -1,13 +1,13 @@
 import { CommandRunner, Prompter } from '@chanom/internal';
-import { Data, Effect, FileSystem, Path } from 'effect';
+import { Effect, FileSystem, Path, Schema } from 'effect';
 
 import { type PackageManager, PM_EXEC } from '../../domain/package-manager.ts';
 
 export { getPackages } from './logic.ts';
 
-export class HuskyInitFailed extends Data.TaggedError('HuskyInitFailed')<{
-  readonly exitCode: number;
-}> {}
+export class HuskyInitFailed extends Schema.TaggedError<HuskyInitFailed>()('HuskyInitFailed', {
+  exitCode: Schema.Number,
+}) {}
 
 export const apply = Effect.fn('add-husky.apply')(function* (cwd: string, pm: PackageManager) {
   const fs = yield* FileSystem.FileSystem;

@@ -14,6 +14,24 @@ describe('readPkg', () => {
     }).pipe(Effect.provide(fs.layer));
   });
 
+  it.effect('keeps fields outside the Pkg schema', () => {
+    const fs = makeTestFs({
+      '/project/package.json': '{"name":"app","private":true,"scripts":{"a":"b"}}',
+    });
+    return Effect.gen(function* () {
+      const { pkg } = yield* readPkg('/project');
+      expect(pkg).toEqual({ name: 'app', private: true, scripts: { a: 'b' } });
+    }).pipe(Effect.provide(fs.layer));
+  });
+
+  it.effect('fails with PkgInvalid when a known field has the wrong shape', () => {
+    const fs = makeTestFs({ '/project/package.json': '{"scripts":["lint"]}' });
+    return Effect.gen(function* () {
+      const error = yield* Effect.flip(readPkg('/project'));
+      expect(error._tag).toBe('PkgInvalid');
+    }).pipe(Effect.provide(fs.layer));
+  });
+
   it.effect('fails with PkgNotFound when package.json is missing', () => {
     const fs = makeTestFs();
     return Effect.gen(function* () {

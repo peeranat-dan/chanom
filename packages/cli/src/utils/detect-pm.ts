@@ -1,23 +1,25 @@
-import { Effect, FileSystem, Path } from 'effect';
+import { Effect, FileSystem, Path, Schema } from 'effect';
 
 import { type PackageManager, resolvePm } from '../domain/package-manager.ts';
 
-export const detectPm = (
+const decodePackageManagerField = Schema.decodeUnknownEffect(
+  Schema.fromJsonString(Schema.Struct({ packageManager: Schema.optionalKey(Schema.String) })),
+);
+
+export const detectPm = Effect.fn('detect-pm.detectPm')(function* (
   cwd: string,
   userAgent: string | undefined = process.env['npm_config_user_agent'],
   fallback: PackageManager = 'pnpm',
-): Effect.Effect<PackageManager, never, FileSystem.FileSystem | Path.Path> =>
-  Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem;
-    const path = yield* Path.Path;
-    const pkgPath = path.join(cwd, 'package.json');
+): Effect.fn.Return<PackageManager, never, FileSystem.FileSystem | Path.Path> {
+  const fs = yield* FileSystem.FileSystem;
+  const path = yield* Path.Path;
+  const pkgPath = path.join(cwd, 'package.json');
 
-    const packageManagerField = yield* fs.readFileString(pkgPath).pipe(
-      Effect.flatMap((contents) =>
-        Effect.try(() => (JSON.parse(contents) as { packageManager?: string }).packageManager),
-      ),
-      Effect.orElseSucceed(() => undefined),
-    );
+  const packageManagerField = yield* fs.readFileString(pkgPath).pipe(
+    Effect.flatMap(decodePackageManagerField),
+    Effect.map((pkg) => pkg.packageManager),
+    Effect.orElseSucceed(() => undefined),
+  );
 
-    return resolvePm({ packageManagerField, userAgent, fallback });
-  });
+  return resolvePm({ packageManagerField, userAgent, fallback });
+});
