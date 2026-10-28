@@ -20,7 +20,7 @@ vi.mock('@clack/prompts', () => clack);
 const CANCEL = Symbol('clack:cancel');
 
 const withLive = <A, E>(effect: Effect.Effect<A, E, Prompter>) =>
-  effect.pipe(Effect.provide(Prompter.Default));
+  effect.pipe(Effect.provide(Prompter.layer));
 
 describe('Prompter (live)', () => {
   it.effect('forwards intro, outro, info, warn, and error to clack', () =>

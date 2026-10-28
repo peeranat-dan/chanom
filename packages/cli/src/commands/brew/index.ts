@@ -1,6 +1,5 @@
 import { Git, Prompter } from '@chanom/internal';
-import { FileSystem, Path } from '@effect/platform';
-import { Data, Effect, Option } from 'effect';
+import { Data, Effect, FileSystem, Option, Path } from 'effect';
 import pc from 'picocolors';
 
 import type { PackageManager } from '../../domain/package-manager.ts';
@@ -56,8 +55,8 @@ const ensureGitIgnore = Effect.fn('brew.ensureGitIgnore')(function* (cwd: string
   const existing = yield* git
     .readGitignore(cwd)
     .pipe(
-      Effect.catchTag('SystemError', (e) =>
-        e.reason === 'NotFound' ? Effect.succeed(undefined) : Effect.fail(e),
+      Effect.catchTag('PlatformError', (e) =>
+        e.reason._tag === 'NotFound' ? Effect.succeed(undefined) : Effect.fail(e),
       ),
     );
 

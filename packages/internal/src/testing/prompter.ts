@@ -50,7 +50,7 @@ export const makeTestPrompter = (answers: Record<string, unknown> = {}): TestPro
   const answer = <T>(message: string): Effect.Effect<T, Cancelled> =>
     message in answers ? Effect.succeed(answers[message] as T) : Effect.fail(new Cancelled());
 
-  const prompter = new Prompter({
+  const prompter = Prompter.of({
     intro: (message) => Effect.sync(() => void log.intros.push(message)),
     outro: (message) => Effect.sync(() => void log.outros.push(message)),
     info: (message) => Effect.sync(() => void log.infos.push(message)),

@@ -1,7 +1,6 @@
-import type { PlatformError } from '@effect/platform/Error';
+import type { PlatformError } from 'effect';
 
-import { FileSystem, Path } from '@effect/platform';
-import { Effect, Option } from 'effect';
+import { Context, Effect, FileSystem, Layer, Option, Path } from 'effect';
 
 import { CommandRunner } from './command-runner.ts';
 
@@ -12,13 +11,16 @@ export interface GitResult {
 }
 
 /** Git operations, built on top of {@link CommandRunner}. */
-export class Git extends Effect.Service<Git>()('internal/Git', {
-  effect: Effect.gen(function* () {
+export class Git extends Context.Service<Git>()('internal/Git', {
+  make: Effect.gen(function* () {
     const runner = yield* CommandRunner;
     const fs = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
 
-    const run = (args: readonly string[], cwd: string): Effect.Effect<GitResult, PlatformError> =>
+    const run = (
+      args: readonly string[],
+      cwd: string,
+    ): Effect.Effect<GitResult, PlatformError.PlatformError> =>
       runner
         .capture('git', args, cwd)
         .pipe(
@@ -61,4 +63,6 @@ export class Git extends Effect.Service<Git>()('internal/Git', {
       readGitignore: (cwd: string) => fs.readFileString(path.join(cwd, '.gitignore')),
     } as const;
   }),
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}

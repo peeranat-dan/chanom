@@ -1,5 +1,4 @@
-import { FileSystem, Path } from '@effect/platform';
-import { Effect } from 'effect';
+import { Effect, FileSystem, Path } from 'effect';
 
 import { type Pkg, PkgInvalid, PkgNotFound } from '../domain/pkg.ts';
 

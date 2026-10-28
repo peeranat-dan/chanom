@@ -1,4 +1,4 @@
-import { NodeContext } from '@effect/platform-node';
+import { NodeServices } from '@effect/platform-node';
 import { describe, expect, it } from '@effect/vitest';
 import { Effect, Layer } from 'effect';
 import { mkdtempSync, readFileSync, readlinkSync } from 'node:fs';
@@ -141,6 +141,6 @@ describe('apply on a real filesystem', () => {
       expect(prompter.log.warnings).toContain(
         '`.claude/skills/coding-standards` already exists - skipping link',
       );
-    }).pipe(Effect.provide(Layer.merge(NodeContext.layer, prompter.layer)));
+    }).pipe(Effect.provide(Layer.merge(NodeServices.layer, prompter.layer)));
   });
 });

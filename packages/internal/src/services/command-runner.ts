@@ -1,7 +1,7 @@
-import type { PlatformError } from '@effect/platform/Error';
+import type { PlatformError } from 'effect';
 
-import { Command, CommandExecutor } from '@effect/platform';
-import { Effect, Stream } from 'effect';
+import { Context, Effect, Layer, Stream } from 'effect';
+import { ChildProcess, ChildProcessSpawner } from 'effect/process';
 
 export interface CommandOutput {
   readonly exitCode: number;
@@ -9,19 +9,16 @@ export interface CommandOutput {
   readonly stderr: string;
 }
 
-const collectText = (stream: Stream.Stream<Uint8Array, PlatformError>) =>
+const collectText = (stream: Stream.Stream<Uint8Array, PlatformError.PlatformError>) =>
   stream.pipe(Stream.decodeText(), Stream.mkString);
 
 /**
  * Low-level process execution. Everything that shells out (git, package
  * managers, husky) goes through this service so commands can be stubbed in tests.
  */
-export class CommandRunner extends Effect.Service<CommandRunner>()('internal/CommandRunner', {
-  effect: Effect.gen(function* () {
-    const executor = yield* CommandExecutor.CommandExecutor;
-
-    const make = (cmd: string, args: readonly string[], cwd: string) =>
-      Command.make(cmd, ...args).pipe(Command.workingDirectory(cwd));
+export class CommandRunner extends Context.Service<CommandRunner>()('internal/CommandRunner', {
+  make: Effect.gen(function* () {
+    const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
 
     const traced = <E>(
       cmd: string,
@@ -38,11 +35,11 @@ export class CommandRunner extends Effect.Service<CommandRunner>()('internal/Com
       cmd: string,
       args: readonly string[],
       cwd: string,
-    ): Effect.Effect<CommandOutput, PlatformError> =>
+    ): Effect.Effect<CommandOutput, PlatformError.PlatformError> =>
       Effect.scoped(
         Effect.gen(function* () {
           yield* Effect.logDebug(`spawning \`${cmd} ${args.join(' ')}\` in ${cwd}`);
-          const proc = yield* executor.start(make(cmd, args, cwd));
+          const proc = yield* spawner.spawn(ChildProcess.make(cmd, args, { cwd }));
           const [exitCode, stdout, stderr] = yield* Effect.all(
             [proc.exitCode, collectText(proc.stdout), collectText(proc.stderr)],
             { concurrency: 3 },
@@ -56,31 +53,20 @@ export class CommandRunner extends Effect.Service<CommandRunner>()('internal/Com
       cmd: string,
       args: readonly string[],
       cwd: string,
-    ): Effect.Effect<number, PlatformError> =>
-      traced(
-        cmd,
-        args,
-        cwd,
-        make(cmd, args, cwd).pipe(
-          Command.exitCode,
-          Effect.provideService(CommandExecutor.CommandExecutor, executor),
-        ),
-      );
+    ): Effect.Effect<number, PlatformError.PlatformError> =>
+      traced(cmd, args, cwd, spawner.exitCode(ChildProcess.make(cmd, args, { cwd })));
 
     const execInherit = (
       cmd: string,
       args: readonly string[],
       cwd: string,
-    ): Effect.Effect<number, PlatformError> =>
+    ): Effect.Effect<number, PlatformError.PlatformError> =>
       traced(
         cmd,
         args,
         cwd,
-        make(cmd, args, cwd).pipe(
-          Command.stdout('inherit'),
-          Command.stderr('inherit'),
-          Command.exitCode,
-          Effect.provideService(CommandExecutor.CommandExecutor, executor),
+        spawner.exitCode(
+          ChildProcess.make(cmd, args, { cwd, stdout: 'inherit', stderr: 'inherit' }),
         ),
       );
 
@@ -93,4 +79,6 @@ export class CommandRunner extends Effect.Service<CommandRunner>()('internal/Com
       execInherit,
     } as const;
   }),
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}

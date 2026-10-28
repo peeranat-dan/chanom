@@ -1,8 +1,7 @@
 import type { Cancelled, CiJob, PackageManager } from '@chanom/internal';
 
 import { CI_JOBS, Prompter, resolvePm } from '@chanom/internal';
-import { FileSystem, Path } from '@effect/platform';
-import { Data, Effect, Logger, LogLevel } from 'effect';
+import { Data, Effect, FileSystem, Path, References } from 'effect';
 import pc from 'picocolors';
 
 import { pkgVersion } from './bundled-versions.ts';
@@ -250,7 +249,7 @@ export const run = (argv: readonly string[], cwd: string, options: RunOptions) =
           [`Dependency installation with ${e.pm} failed.`, e.output].filter(Boolean).join('\n'),
         ),
     }),
-    Effect.catchAll((e) => reportError(`Unexpected error: ${e.message}`)),
-    Logger.withMinimumLogLevel(debug ? LogLevel.Debug : LogLevel.Info),
+    Effect.catch((e) => reportError(`Unexpected error: ${e.message}`)),
+    Effect.provideService(References.MinimumLogLevel, debug ? 'Debug' : 'Info'),
   );
 };

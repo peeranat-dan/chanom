@@ -1,6 +1,5 @@
 import { type CiJob, CommandRunner, Git, type PackageManager, Prompter } from '@chanom/internal';
-import { FileSystem, Path } from '@effect/platform';
-import { Data, Effect } from 'effect';
+import { Data, Effect, FileSystem, Path } from 'effect';
 import pc from 'picocolors';
 
 import type { ConfigLink, Contribution } from './domain/contribution.ts';

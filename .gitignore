@@ -41,3 +41,5 @@ storybook-static
 coverage
 
 .pnpm-store
+# Effect migration reference checkouts
+.repos
