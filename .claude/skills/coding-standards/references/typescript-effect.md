@@ -24,14 +24,14 @@ understand Effect types:
 
   ```ts
   import { Effect, Data, Option, Layer } from 'effect';
-  import { FileSystem, Path } from '@effect/platform';
+  import { FileSystem, Path } from 'effect';
   ```
 
 - Keep type-only Effect imports under `import type`, grouped before value
   imports:
 
   ```ts
-  import type { PlatformError } from '@effect/platform/Error';
+  import type { PlatformError } from 'effect';
 
   import { Effect } from 'effect';
   ```
@@ -42,7 +42,7 @@ understand Effect types:
   `Effect.Effect<A, E, R>` return type; let inference handle locals.
 
   ```ts
-  const read = (key: string): Effect.Effect<string, PlatformError> => …;
+  const read = (key: string): Effect.Effect<string, PlatformError.PlatformError> => …;
   ```
 
 - Type tagged-error payloads with a `readonly` record on `Data.TaggedError`:

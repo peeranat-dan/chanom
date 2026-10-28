@@ -32,12 +32,12 @@ it.effect('runs the command and maps the exit code to ok', () => {
 ## Test layers and stubs
 
 Never hit the real filesystem, process, or terminal. Build the service under
-test from its `.Default` and provide **in-memory stub layers**:
+test from its `.layer` and provide **in-memory stub layers**:
 
 ```ts
 const makeLayer = (handler?: Handler, fs: TestFs = makeTestFs()) => {
   const runner = makeTestRunner(handler);
-  const layer = Service.Default.pipe(Layer.provide(Layer.mergeAll(runner.layer, fs.layer)));
+  const layer = Service.layer.pipe(Layer.provide(Layer.mergeAll(runner.layer, fs.layer)));
   return { layer, runner, fs };
 };
 ```
@@ -57,8 +57,8 @@ there rather than inlining them, and mirror the existing factories' shape.
 
   ```ts
   const error = yield* Effect.flip(svc.read('/missing'));
-  expect(error._tag).toBe('SystemError');
-  expect(error._tag === 'SystemError' && error.reason).toBe('NotFound');
+  expect(error._tag).toBe('PlatformError');
+  expect(error.reason._tag).toBe('NotFound');
   ```
 
 - Script prompt answers and command outputs through the stub factories to cover
