@@ -8,6 +8,8 @@ Shared TypeScript configs for chanom apps.
 pnpm add -D @chanom/tsconfig typescript
 ```
 
+Requires TypeScript 5.8 or later: the presets use `erasableSyntaxOnly` (5.8) and `${configDir}` (5.5).
+
 ## Usage
 
 ### Vite + React app
