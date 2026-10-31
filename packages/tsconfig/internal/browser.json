@@ -1,0 +1,9 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "display": "chanom internal browser lib",
+  "extends": "./base.json",
+  "compilerOptions": {
+    // Browser-facing libs: window/document/console come from DOM, not @types/node.
+    "lib": ["ES2023", "DOM"]
+  }
+}

@@ -24,6 +24,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "devDependencies": {
+    "@tsconfig/node-lts": "catalog:",
+    "@tsconfig/node-ts": "catalog:"
+  },
   "peerDependencies": {
     "typescript": ">=5.8"
   }
