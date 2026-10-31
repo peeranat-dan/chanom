@@ -1,0 +1,27 @@
+{
+  "name": "@chanom/tsconfig",
+  "version": "0.0.0",
+  "description": "Shared TypeScript configs for chanom apps.",
+  "keywords": [
+    "react",
+    "tsconfig",
+    "typescript",
+    "vite"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peeranat-dan/chanom.git",
+    "directory": "packages/tsconfig"
+  },
+  "files": [
+    "base.json",
+    "vite-react.json"
+  ],
+  "exports": {
+    "./base.json": "./base.json",
+    "./vite-react.json": "./vite-react.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
