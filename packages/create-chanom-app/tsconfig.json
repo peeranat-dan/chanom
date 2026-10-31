@@ -1,11 +1,3 @@
 {
-  "extends": ["@tsconfig/node-lts/tsconfig.json", "@tsconfig/node-ts/tsconfig.json"],
-  "compilerOptions": {
-    "types": ["node"],
-    "plugins": [
-      {
-        "name": "@effect/language-service"
-      }
-    ]
-  }
+  "extends": "../tsconfig/internal/node-effect.json"
 }
