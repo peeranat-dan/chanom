@@ -1,0 +1,21 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "display": "chanom Vite + React app",
+  "extends": "./base.json",
+  "compilerOptions": {
+    // ${configDir} resolves to the extending tsconfig's folder, so the build
+    // info lands in the app, not inside node_modules/@chanom/tsconfig.
+    "tsBuildInfoFile": "${configDir}/node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "types": ["vite/client"],
+
+    // Vite bundles and type-checks separately: tsc only checks.
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "allowArbitraryExtensions": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  }
+}
