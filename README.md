@@ -38,6 +38,20 @@ pnpm exec turbo run build lint format:check
 - **Lint / format:** [oxlint](https://oxc.rs/docs/guide/usage/linter) / [oxfmt](https://oxc.rs/docs/guide/usage/formatter)
 - **Build:** [tsdown](https://github.com/rolldown/tsdown), [Vite](https://vitejs.dev/), [TypeScript](https://www.typescriptlang.org/)
 
+## Skills: why split into reference files
+
+A skill loads into the agent's context window in stages:
+
+1. **Session start:** only the skill's name and `description` load.
+2. **Skill invoked:** the full `SKILL.md` body loads and stays in context for the rest of the session.
+3. **On demand:** files under `references/` load only when the agent reads them.
+
+If everything lives in `SKILL.md`, the agent gets every section on each use, including sections that don't apply to the task. If `SKILL.md` stays short and points to reference files, the agent loads only the parts it needs. The rest of the window stays free for code and conversation. When a task needs every reference, the cost is the same as one large file.
+
+![Context window usage of a single SKILL.md vs. SKILL.md with reference files](./assets/skill-references-context.gif)
+
+Token counts in the animation are representative. Run `/context` in Claude Code to see the real numbers for a session.
+
 ## Prerequisites
 
 - Node.js `24.18.0` (see [`.nvmrc`](./.nvmrc))
