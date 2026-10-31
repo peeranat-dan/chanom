@@ -1,8 +1,3 @@
 {
-  "extends": ["@tsconfig/node-lts/tsconfig.json", "@tsconfig/node-ts/tsconfig.json"],
-  "compilerOptions": {
-    // The logger runs in browsers; DOM provides the `console` types without
-    // pulling in @types/node.
-    "lib": ["ES2023", "DOM"]
-  }
+  "extends": "../tsconfig/internal/browser.json"
 }
