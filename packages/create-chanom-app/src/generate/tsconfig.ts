@@ -1,8 +1,8 @@
-// Local tsconfig extending the community @tsconfig/vite-react base (one devDep).
-// Generated rather than copied so a topping could vary it without a
+// Local tsconfig extending the shared @chanom/tsconfig Vite + React preset (one
+// devDep). Generated rather than copied so a topping could vary it without a
 // substitution engine; no topping does yet.
 const TSCONFIG = {
-  extends: '@tsconfig/vite-react/tsconfig.json',
+  extends: '@chanom/tsconfig/vite-react.json',
   compilerOptions: {
     types: ['vite/client', 'vitest/globals'],
   },

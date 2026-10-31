@@ -10,7 +10,6 @@ export const CATALOG_PACKAGES = [
   'react',
   'react-dom',
   '@vitejs/plugin-react',
-  '@tsconfig/vite-react',
   '@types/react',
   '@types/react-dom',
   'typescript',
@@ -32,5 +31,6 @@ export const CATALOG_PACKAGES = [
 /** Workspace config packages whose versions come from their own `package.json`. */
 export const WORKSPACE_PACKAGES = [
   { name: '@chanom/dev-config', dir: 'dev-config' },
+  { name: '@chanom/tsconfig', dir: 'tsconfig' },
   { name: '@chanom/vite-config', dir: 'vite-config' },
 ] as const;
