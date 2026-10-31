@@ -38,6 +38,18 @@ pnpm exec turbo run build lint format:check
 - **Lint / format:** [oxlint](https://oxc.rs/docs/guide/usage/linter) / [oxfmt](https://oxc.rs/docs/guide/usage/formatter)
 - **Build:** [tsdown](https://github.com/rolldown/tsdown), [Vite](https://vitejs.dev/), [TypeScript](https://www.typescriptlang.org/)
 
+## Agent skills: why references are split
+
+The [`coding-standards`](./.claude/skills/coding-standards) skill keeps a short `SKILL.md` that routes the agent to the reference files it needs (`references/typescript.md`, `references/effect-ts.md`, `references/vitest.md`, ...). It is not one large file, because skill text takes up the agent's context window:
+
+- Once loaded, skill text stays in context for the rest of the session and shares space with your code, diffs, and tool output.
+- Rules that don't apply to the task are noise. Effect rules sitting in context can leak into plain TypeScript code.
+- A plain `.ts` fix loads ~1.4k tokens instead of ~4.3k (68% less). A task that needs every reference costs the same as one large file.
+
+![Context window usage of a split vs. unsplit skill](./assets/skill-split-context.gif)
+
+When you add guidance to a skill, put it in the reference file for its topic (or a new one) and add a row to the routing table in `SKILL.md`. Don't grow `SKILL.md` itself.
+
 ## Prerequisites
 
 - Node.js `24.18.0` (see [`.nvmrc`](./.nvmrc))
