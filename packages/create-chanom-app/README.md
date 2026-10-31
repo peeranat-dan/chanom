@@ -74,7 +74,7 @@ A minimal Vite + React + TS app wired to the chanom shared configs:
 
 - `package.json` - dependencies pinned to the versions the scaffolder bundles, plus `dev` / `build` / `preview` / `typecheck` / `lint` / `format` / `format:check` / `test` / `test:watch` scripts
 - `vite.config.ts` - using `@vitejs/plugin-react` and [`@chanom/vite-config`](../vite-config)
-- `tsconfig.json` - extending `@tsconfig/vite-react`
+- `tsconfig.json` - extending the [`@chanom/tsconfig`](../tsconfig) Vite + React preset
 - `oxlint.config.ts` / `oxfmt.config.ts` - re-exporting the [`@chanom/dev-config`](../dev-config) presets
 - `vitest.config.ts` and a sample `src/app.test.tsx`
 - `src/` - `main.tsx`, `app.tsx`, `index.css`, and type declarations

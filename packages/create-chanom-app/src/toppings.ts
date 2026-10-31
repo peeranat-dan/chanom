@@ -27,9 +27,9 @@ export const baseline: Contribution = {
   dependencies: ['react', 'react-dom'],
   devDependencies: [
     '@chanom/dev-config',
+    '@chanom/tsconfig',
     '@chanom/vite-config',
     '@vitejs/plugin-react',
-    '@tsconfig/vite-react',
     '@types/react',
     '@types/react-dom',
     'typescript',

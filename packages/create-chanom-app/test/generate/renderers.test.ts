@@ -23,9 +23,9 @@ export default createViteConfig({ plugins: [react()] });
 });
 
 describe('buildTsconfig', () => {
-  it('extends the vite-react base and includes src', () => {
+  it('extends the chanom vite-react preset and includes src', () => {
     const tsconfig = JSON.parse(buildTsconfig());
-    expect(tsconfig.extends).toBe('@tsconfig/vite-react/tsconfig.json');
+    expect(tsconfig.extends).toBe('@chanom/tsconfig/vite-react.json');
     expect(tsconfig.include).toEqual(['src']);
     expect(tsconfig.compilerOptions.types).toEqual(['vite/client', 'vitest/globals']);
   });
