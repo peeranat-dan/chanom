@@ -30,6 +30,14 @@ pnpm exec turbo run build lint format:check
 | [`@chanom/utils`](./packages/utils)                 | Tree-shakable TypeScript utilities for frontend apps                | [`README`](./packages/utils/README.md)             |
 | [`@chanom/vite-config`](./packages/vite-config)     | Vite config factory for libraries and React apps                    | [`README`](./packages/vite-config/README.md)       |
 
+## Agent skill
+
+The [`chanom-usage`](./skills/chanom-usage/SKILL.md) skill teaches a coding agent to pick the chanom packages a project needs (analytics, logger, utils, Vite config, dev tooling) and wire them in. Install it from the [skills registry](https://skills.sh/):
+
+```sh
+npx skills add peeranat-dan/chanom --skill chanom-usage
+```
+
 ## Tech stack
 
 - **Package manager / workspaces:** [pnpm](https://pnpm.io/workspaces) with [catalogs](https://pnpm.io/catalogs) (`catalogMode: strict`)
