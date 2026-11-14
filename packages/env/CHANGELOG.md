@@ -1,5 +1,11 @@
 # @chanom/env
 
+## 0.1.1
+
+### Patch Changes
+
+- c09feb5: Allow client code to read a variable declared in both `server` and `client`, instead of throwing as if it were server-only.
+
 ## 0.1.0
 
 ### Minor Changes
