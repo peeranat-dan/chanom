@@ -41,7 +41,7 @@ describe('findUnexposedKeys', () => {
 
 describe('envPlugin', () => {
   it('passes when the loaded env matches the schema', () => {
-    const plugin = envPlugin({ schema: { VITE_A: string(), VITE_B: optionalString() } });
+    const plugin = envPlugin({ client: { VITE_A: string(), VITE_B: optionalString() } });
 
     expect(() =>
       runConfigResolved(plugin, { env: { VITE_A: 'x', MODE: 'test' }, envPrefix: 'VITE_' }),
@@ -49,7 +49,7 @@ describe('envPlugin', () => {
   });
 
   it('fails with the validation issues when a variable is invalid', () => {
-    const plugin = envPlugin({ schema: { VITE_A: string() } });
+    const plugin = envPlugin({ client: { VITE_A: string() } });
 
     expect(() => runConfigResolved(plugin, { env: {}, envPrefix: 'VITE_' })).toThrow(
       new EnvValidationError([{ key: 'VITE_A', message: 'expected a string' }]),
@@ -57,7 +57,7 @@ describe('envPlugin', () => {
   });
 
   it('reports unexposed keys before validating values', () => {
-    const plugin = envPlugin({ schema: { SECRET: string() } });
+    const plugin = envPlugin({ client: { SECRET: string() } });
 
     expect(() => runConfigResolved(plugin, { env: {}, envPrefix: undefined })).toThrow(
       /SECRET: not exposed to client code/,

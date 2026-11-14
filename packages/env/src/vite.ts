@@ -6,7 +6,8 @@ import { EnvValidationError } from './env-validation-error.ts';
 import { validateEnv } from './validate-env.ts';
 
 export interface EnvPluginOptions extends ValidateEnvOptions {
-  readonly schema: EnvSchema;
+  /** The `client` schema you give {@link createEnv}. */
+  readonly client: EnvSchema;
 }
 
 /** Keys Vite always sets on `import.meta.env`, whatever `envPrefix` says. */
@@ -39,23 +40,24 @@ export function findUnexposedKeys(
 /**
  * Validate the env Vite loads (`.env*` files plus the process env) when the
  * dev server starts or a build begins, so a missing variable fails the build
- * instead of shipping. Pass the same schema you give {@link createEnv}.
+ * instead of shipping. Server variables are left to {@link createEnv} at
+ * runtime, since the client bundle never sees them.
  *
  * @example
  * // vite.config.ts
  * import { envPlugin } from "@chanom/env/vite";
- * import { envSchema } from "./src/env.schema.ts";
+ * import { clientSchema } from "./src/env.schema.ts";
  *
- * export default createViteConfig({ plugins: [react(), envPlugin({ schema: envSchema })] });
+ * export default createViteConfig({ plugins: [react(), envPlugin({ client: clientSchema })] });
  */
 export function envPlugin(options: EnvPluginOptions): Plugin {
   return {
     name: 'chanom:env',
     configResolved(config) {
-      const unexposed = findUnexposedKeys(options.schema, config.envPrefix);
+      const unexposed = findUnexposedKeys(options.client, config.envPrefix);
       if (unexposed.length > 0) throw new EnvValidationError(unexposed);
 
-      const result = validateEnv(options.schema, config.env, options);
+      const result = validateEnv(options.client, config.env, options);
       if (!result.ok) throw new EnvValidationError(result.issues);
     },
   };

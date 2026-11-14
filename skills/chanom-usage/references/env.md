@@ -13,7 +13,7 @@ without evaluating `import.meta.env`:
 // src/env.schema.ts
 import { z } from 'zod';
 
-export const envSchema = {
+export const clientSchema = {
   VITE_API_URL: z.url(),
   VITE_SENTRY_DSN: z.string().optional(),
 };
@@ -23,9 +23,9 @@ export const envSchema = {
 // src/env.ts
 import { createEnv } from '@chanom/env';
 
-import { envSchema } from './env.schema.ts';
+import { clientSchema } from './env.schema.ts';
 
-export const env = createEnv({ schema: envSchema, runtimeEnv: import.meta.env });
+export const env = createEnv({ client: clientSchema, runtimeEnv: import.meta.env });
 ```
 
 Add the build-time check to `vite.config.ts` plugins:
@@ -33,9 +33,20 @@ Add the build-time check to `vite.config.ts` plugins:
 ```ts
 import { envPlugin } from '@chanom/env/vite';
 
-import { envSchema } from './src/env.schema.ts';
+import { clientSchema } from './src/env.schema.ts';
 
-// plugins: [react(), envPlugin({ schema: envSchema })]
+// plugins: [react(), envPlugin({ client: clientSchema })]
+```
+
+For Node code (Firebase Functions, scripts, an SSR server), put secrets in
+`server` and read `process.env`:
+
+```ts
+export const env = createEnv({
+  server: { DATABASE_URL: z.url() },
+  client: { VITE_API_URL: z.url() }, // only if client code shares this module
+  runtimeEnv: process.env,
+});
 ```
 
 ## Rules
@@ -48,5 +59,5 @@ import { envSchema } from './src/env.schema.ts';
 - Use `z.coerce.number()` / `z.stringbool()` for non-string values: env values
   are always strings.
 - Add new variables to `.env.example` too, if the project has one.
-- Never put secrets in the schema of a client app; everything in it ships to
-  the browser.
+- Secrets go in `server`, never `client`; everything in `client` ships to the
+  browser. Reading a `server` key on the client throws.

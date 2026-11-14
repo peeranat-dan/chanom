@@ -20,9 +20,23 @@ export interface ValidateEnvOptions {
   readonly emptyStringAsUndefined?: boolean;
 }
 
-export interface CreateEnvOptions<Schema extends EnvSchema> extends ValidateEnvOptions {
-  readonly schema: Schema;
+/** A schema with no variables, the default for an omitted `server` or `client`. */
+export type EmptyEnvSchema = Readonly<Record<never, never>>;
+
+export interface CreateEnvOptions<
+  Server extends EnvSchema = EmptyEnvSchema,
+  Client extends EnvSchema = EmptyEnvSchema,
+> extends ValidateEnvOptions {
+  /** Variables only server code may read, e.g. secrets. Never validated on the client. */
+  readonly server?: Server;
+  /** Variables safe to ship to the browser. Validated on both sides. */
+  readonly client?: Client;
   readonly runtimeEnv: RuntimeEnv;
+  /**
+   * Whether this code runs on the server. On the client, `server` variables are
+   * skipped and reading one throws. Defaults to `true` when there is no global `window`.
+   */
+  readonly isServer?: boolean;
 }
 
 /** A variable that failed validation. Never carries the value, which may be a secret. */
