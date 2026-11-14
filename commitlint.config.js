@@ -15,6 +15,7 @@ export default {
         'utils', // packages/utils
         'vc', // packages/vite-config
         'vscode', // .vscode
+        'zed', // .zed
       ],
     ],
   },
