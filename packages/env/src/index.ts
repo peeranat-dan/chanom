@@ -4,6 +4,7 @@ export { validateEnv } from './validate-env.ts';
 export type { StandardSchemaV1 } from './standard-schema.ts';
 export type {
   CreateEnvOptions,
+  EmptyEnvSchema,
   Env,
   EnvIssue,
   EnvSchema,
