@@ -1,6 +1,6 @@
 {
   "name": "@chanom/env",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Typed, validated environment variables for Vite apps: bring any Standard Schema validator (zod, valibot, arktype), fail fast at startup and at build time.",
   "keywords": [
     "dotenv",
