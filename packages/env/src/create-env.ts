@@ -58,7 +58,10 @@ export function createEnv<
   if (!result.ok) throw new EnvValidationError(result.issues);
 
   // On the server both schemas were validated; on the client the server keys are
-  // absent and the proxy throws on any read of them.
+  // absent and the proxy throws on any read of them. A key declared in both
+  // schemas was validated as a client var, so it stays readable.
   const env = result.env as Env<Server & Client>;
-  return isServer ? env : guardServerKeys(env, new Set(Object.keys(server)));
+  if (isServer) return env;
+  const serverOnlyKeys = Object.keys(server).filter((key) => !(key in client));
+  return guardServerKeys(env, new Set(serverOnlyKeys));
 }
