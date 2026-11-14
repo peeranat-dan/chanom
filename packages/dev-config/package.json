@@ -79,6 +79,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@chanom/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "knip": "catalog:",
     "oxfmt": "catalog:",

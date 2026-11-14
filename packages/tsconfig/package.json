@@ -19,9 +19,14 @@
   ],
   "exports": {
     "./base.json": "./base.json",
-    "./vite-react.json": "./vite-react.json"
+    "./vite-react.json": "./vite-react.json",
+    "./internal/*": "./internal/*"
   },
   "publishConfig": {
+    "exports": {
+      "./base.json": "./base.json",
+      "./vite-react.json": "./vite-react.json"
+    },
     "access": "public"
   },
   "devDependencies": {

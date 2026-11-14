@@ -1,3 +1,3 @@
 {
-  "extends": "../tsconfig/internal/node-effect.json"
+  "extends": "@chanom/tsconfig/internal/node-effect.json"
 }

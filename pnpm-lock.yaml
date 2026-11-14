@@ -339,6 +339,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.74.0
@@ -379,6 +382,9 @@ importers:
       '@chanom/internal':
         specifier: workspace:*
         version: link:../internal
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.4
@@ -425,6 +431,9 @@ importers:
       '@chanom/internal':
         specifier: workspace:*
         version: link:../internal
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.4
@@ -449,6 +458,9 @@ importers:
 
   packages/dev-config:
     devDependencies:
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
@@ -489,6 +501,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.4
@@ -516,6 +531,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.74.0
@@ -554,6 +572,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.74.0
@@ -579,6 +600,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.74.0

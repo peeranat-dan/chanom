@@ -34,6 +34,7 @@
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
     "@chanom/internal": "workspace:*",
+    "@chanom/tsconfig": "workspace:*",
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
     "@types/node": "catalog:",

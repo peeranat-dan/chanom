@@ -57,6 +57,7 @@
   },
   "devDependencies": {
     "@chanom/dev-config": "workspace:*",
+    "@chanom/tsconfig": "workspace:*",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "rollup-plugin-visualizer": "catalog:",
