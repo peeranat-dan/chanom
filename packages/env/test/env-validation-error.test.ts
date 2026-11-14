@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { EnvValidationError } from '../src/env-validation-error.ts';
 
 describe('EnvValidationError', () => {
-  it('exposes the issues and formats one line per issue', () => {
+  it('should expose the issues and format one line per issue', () => {
     const issues = [
       { key: 'VITE_A', message: 'required' },
       { key: 'VITE_B', message: 'expected a URL' },
@@ -17,7 +17,7 @@ describe('EnvValidationError', () => {
     );
   });
 
-  it('appends the issue path to the key', () => {
+  it('should append the issue path to the key', () => {
     const error = new EnvValidationError([
       { key: 'VITE_CONFIG', message: 'expected a number', path: ['db', 0] },
     ]);
