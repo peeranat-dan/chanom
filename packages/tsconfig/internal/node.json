@@ -1,0 +1,8 @@
+{
+  "$schema": "https://www.schemastore.org/tsconfig",
+  "display": "chanom internal Node lib",
+  "extends": "./base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  }
+}

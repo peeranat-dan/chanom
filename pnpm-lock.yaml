@@ -339,12 +339,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.74.0
@@ -385,18 +382,15 @@ importers:
       '@chanom/internal':
         specifier: workspace:*
         version: link:../internal
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.4
       '@effect/vitest':
         specifier: 'catalog:'
         version: 4.0.6(effect@4.0.6)(vitest@5.0.5)
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
@@ -437,18 +431,15 @@ importers:
       '@chanom/internal':
         specifier: workspace:*
         version: link:../internal
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.4
       '@effect/vitest':
         specifier: 'catalog:'
         version: 4.0.6(effect@4.0.6)(vitest@5.0.5)
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
@@ -467,12 +458,9 @@ importers:
 
   packages/dev-config:
     devDependencies:
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
@@ -513,6 +501,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@effect/language-service':
         specifier: 'catalog:'
         version: 0.86.4
@@ -522,12 +513,6 @@ importers:
       '@effect/vitest':
         specifier: 'catalog:'
         version: 4.0.6(effect@4.0.6)(vitest@5.0.5)
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
       '@types/node':
         specifier: 'catalog:'
         version: 26.0.1
@@ -546,12 +531,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.74.0
@@ -568,6 +550,19 @@ importers:
         specifier: 'catalog:'
         version: 5.0.5(@types/node@26.0.1)(@vitest/coverage-v8@5.0.5)(jsdom@30.0.0)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
 
+  packages/tsconfig:
+    dependencies:
+      typescript:
+        specifier: '>=5.8'
+        version: 7.0.2
+    devDependencies:
+      '@tsconfig/node-lts':
+        specifier: 'catalog:'
+        version: 24.0.0
+      '@tsconfig/node-ts':
+        specifier: 'catalog:'
+        version: 23.6.4
+
   packages/utils:
     dependencies:
       cn:
@@ -577,12 +572,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.74.0
@@ -608,12 +600,9 @@ importers:
       '@chanom/dev-config':
         specifier: workspace:*
         version: link:../dev-config
-      '@tsconfig/node-lts':
-        specifier: 'catalog:'
-        version: 24.0.0
-      '@tsconfig/node-ts':
-        specifier: 'catalog:'
-        version: 23.6.4
+      '@chanom/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       oxfmt:
         specifier: 'catalog:'
         version: 0.74.0
