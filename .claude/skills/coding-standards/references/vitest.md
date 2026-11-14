@@ -13,9 +13,30 @@ read `vitest-effect.md` in addition to this file.
 import { describe, expect, it } from 'vitest';
 ```
 
-Group with `describe` per unit-under-test (usually one per exported function),
-and write behaviour-focused `it` names ("flags mismatches in both directions",
-"is true when the diff exits non-zero").
+Group with one `describe` per unit-under-test (usually one per exported
+function). Name each `it` as `'should ... [when ...]'`, putting the condition in
+the name rather than in a nested block:
+
+```ts
+describe('validateEnv', () => {
+  it('should freeze the returned env', () => {});
+  it('should keep empty strings when emptyStringAsUndefined is false', () => {});
+});
+```
+
+Nest a `describe('when ...')` only to share setup between several tests, never
+just to group by condition:
+
+```ts
+describe('createEnv', () => {
+  describe('when running on the client', () => {
+    const clientEnv = () => createEnv({ ..., isServer: false });
+
+    it('should skip server variables', () => {});
+    it('should throw when client code reads a server variable', () => {});
+  });
+});
+```
 
 ## Testing pure functions
 
