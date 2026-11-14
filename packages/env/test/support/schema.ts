@@ -35,3 +35,27 @@ export const asyncString = (): StandardSchemaV1<unknown, string> => ({
     validate: async (value) => ({ value: String(value) }),
   },
 });
+
+/** Always fails at `path`, like a JSON schema rejecting one field of the parsed object. */
+export const nested = (path: StandardSchemaV1.Issue['path']): StandardSchemaV1<unknown, never> =>
+  schema(() => ({ issues: [{ message: 'expected a number', path }] }));
+
+/**
+ * Validates asynchronously but returns a hand-made thenable instead of a real
+ * Promise, like a promise from another realm would look to `instanceof`.
+ */
+export const thenableString = (): StandardSchemaV1<unknown, string> => {
+  const thenable = (value: unknown) => ({
+    then: (resolve: (result: StandardSchemaV1.Result<string>) => void) =>
+      resolve({ value: String(value) }),
+  });
+
+  return {
+    '~standard': {
+      version: 1,
+      vendor: 'test',
+      // The spec types the async return as a real Promise, so a plain thenable needs a cast.
+      validate: (value) => thenable(value) as unknown as Promise<StandardSchemaV1.Result<string>>,
+    },
+  };
+};

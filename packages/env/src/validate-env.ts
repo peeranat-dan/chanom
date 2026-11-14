@@ -8,7 +8,30 @@ import type {
   ValidateEnvResult,
 } from './types.ts';
 
-const isPromise = (value: unknown): value is Promise<unknown> => value instanceof Promise;
+/**
+ * True when `value` looks like a promise. We check for a `then` method instead
+ * of using `instanceof Promise`, because promises from another realm (an
+ * iframe, a VM context) or a custom promise library fail `instanceof`.
+ */
+const isPromiseLike = (value: unknown): value is PromiseLike<unknown> => {
+  if (typeof value !== 'object' || value === null) return false;
+  return 'then' in value && typeof value.then === 'function';
+};
+
+/** A path segment is either a plain key or an object wrapping one; return the key. */
+const segmentKey = (segment: PropertyKey | StandardSchemaV1.PathSegment): PropertyKey =>
+  typeof segment === 'object' ? segment.key : segment;
+
+/**
+ * Convert a schema issue into our own issue shape. The path is only kept when
+ * it has segments, i.e. when the schema outputs a nested value and the failure
+ * is somewhere inside it.
+ */
+const toEnvIssue = (key: string, issue: StandardSchemaV1.Issue): EnvIssue => {
+  const path = issue.path ?? [];
+  if (path.length === 0) return { key, message: issue.message };
+  return { key, message: issue.message, path: path.map(segmentKey) };
+};
 
 const readValue = (runtimeEnv: RuntimeEnv, key: string, emptyAsUndefined: boolean): unknown => {
   const value = runtimeEnv[key];
@@ -22,7 +45,7 @@ const validateOne = (
 ): StandardSchemaV1.Result<unknown> => {
   const result = schema['~standard'].validate(value);
   // Env is read at module load, before anything could await it.
-  if (isPromise(result)) {
+  if (isPromiseLike(result)) {
     throw new TypeError(`Schema for "${key}" is async; env schemas must validate synchronously.`);
   }
   return result;
@@ -47,7 +70,7 @@ export function validateEnv<Schema extends EnvSchema>(
     if (result.issues === undefined) {
       env[key] = result.value;
     } else {
-      issues.push(...result.issues.map((issue) => ({ key, message: issue.message })));
+      issues.push(...result.issues.map((issue) => toEnvIssue(key, issue)));
     }
   }
 

@@ -85,7 +85,7 @@ envPlugin({ schema, emptyStringAsUndefined? }): Plugin // from '@chanom/env/vite
 | `runtimeEnv`             | -       | `import.meta.env`, `process.env`, or any record                                                      |
 | `emptyStringAsUndefined` | `true`  | `VITE_FOO=` in a `.env` file counts as missing, so `.optional()` and `.default()` behave as expected |
 
-- `createEnv` throws an `EnvValidationError` with an `issues: { key, message }[]` array. It collects every failure, not just the first.
+- `createEnv` throws an `EnvValidationError` with an `issues: { key, message, path? }[]` array (`path` locates the failure inside a nested schema output). It collects every failure, not just the first.
 - `validateEnv` is the non-throwing version, for when you want to render your own error screen.
 - Error messages name the variable and the validator's message, never the value, since env vars often hold tokens.
 - Schemas must validate synchronously (env is read at module load); an async schema throws a `TypeError`.

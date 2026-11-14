@@ -16,4 +16,14 @@ describe('EnvValidationError', () => {
       'Invalid environment variables:\n  - VITE_A: required\n  - VITE_B: expected a URL',
     );
   });
+
+  it('appends the issue path to the key', () => {
+    const error = new EnvValidationError([
+      { key: 'VITE_CONFIG', message: 'expected a number', path: ['db', 0] },
+    ]);
+
+    expect(error.message).toBe(
+      'Invalid environment variables:\n  - VITE_CONFIG.db.0: expected a number',
+    );
+  });
 });

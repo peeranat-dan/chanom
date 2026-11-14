@@ -29,6 +29,8 @@ export interface CreateEnvOptions<Schema extends EnvSchema> extends ValidateEnvO
 export interface EnvIssue {
   readonly key: string;
   readonly message: string;
+  /** Location inside the parsed value, for schemas that output nested objects. */
+  readonly path?: readonly PropertyKey[];
 }
 
 export type ValidateEnvResult<Schema extends EnvSchema> =

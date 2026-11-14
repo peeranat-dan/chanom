@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { validateEnv } from '../src/validate-env.ts';
-import { asyncString, optionalString, port, string } from './support/schema.ts';
+import {
+  asyncString,
+  nested,
+  optionalString,
+  port,
+  string,
+  thenableString,
+} from './support/schema.ts';
 
 describe('validateEnv', () => {
   it('returns each schema output and drops keys outside the schema', () => {
@@ -61,5 +68,26 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ VITE_KEY: asyncString() }, { VITE_KEY: 'x' })).toThrow(
       'Schema for "VITE_KEY" is async; env schemas must validate synchronously.',
     );
+  });
+
+  it('throws for schemas returning a non-native thenable', () => {
+    expect(() => validateEnv({ VITE_KEY: thenableString() }, { VITE_KEY: 'x' })).toThrow(
+      'Schema for "VITE_KEY" is async; env schemas must validate synchronously.',
+    );
+  });
+
+  it('keeps issue paths, unwrapping path segment objects', () => {
+    const result = validateEnv({ VITE_CONFIG: nested(['db', { key: 'port' }]) }, {});
+
+    expect(result).toEqual({
+      ok: false,
+      issues: [{ key: 'VITE_CONFIG', message: 'expected a number', path: ['db', 'port'] }],
+    });
+  });
+
+  it('omits the path when the issue has none', () => {
+    const result = validateEnv({ VITE_CONFIG: nested([]) }, {});
+
+    expect(!result.ok && result.issues[0]).not.toHaveProperty('path');
   });
 });
