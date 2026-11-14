@@ -1,0 +1,3 @@
+{
+  "extends": "@chanom/tsconfig/internal/browser.json"
+}

@@ -9,6 +9,7 @@ export default {
         'cli', // packages/cli
         'cca', // packages/create-chanom-app
         'dc', // packages/dev-config
+        'env', // packages/env
         'internal', // packages/internal
         'logger', // packages/logger
         'tsconfig', // packages/tsconfig
