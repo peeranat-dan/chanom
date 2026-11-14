@@ -1,6 +1,6 @@
 ---
 name: chanom-usage
-description: Picks, installs, and wires the chanom (`@chanom/*`) packages into a frontend project. Use when starting a new Vite + React app, when a project needs analytics, logging, utils, lint/format, Vite/Vitest config, or CI/commit hooks, or when code imports `@chanom/*`.
+description: Picks, installs, and wires the chanom (`@chanom/*`) packages into a frontend project. Use when starting a new Vite + React app, when a project needs analytics, logging, typed env vars, utils, lint/format, Vite/Vitest config, or CI/commit hooks, or when code imports `@chanom/*`.
 ---
 
 # chanom-usage
@@ -27,6 +27,7 @@ usually hits several.
 | Need (what you hear or see)                                                                                       | Package                       | Install as           | Reference                   |
 | ----------------------------------------------------------------------------------------------------------------- | ----------------------------- | -------------------- | --------------------------- |
 | Track events / page views, GA, GTM, PostHog, consent, `gtag(...)` or `posthog.capture` calls                      | `@chanom/analytics`           | dependency           | `references/analytics.md`   |
+| Env vars, `import.meta.env`, `.env` files, missing config at startup, typed config                                | `@chanom/env`                 | dependency           | `references/env.md`         |
 | Logging, debug output, `console.log` scattered around, Sentry breadcrumbs, quiet logs in prod                     | `@chanom/logger`              | dependency           | `references/logger.md`      |
 | `cn`/class merging, debounce, throttle, retry, timeout, clipboard, storage, download, deep equal                  | `@chanom/utils`               | dependency           | `references/utils.md`       |
 | Vite or Vitest config for an app or library, bundle visualizer, coverage                                          | `@chanom/vite-config`         | dev                  | `references/vite-config.md` |

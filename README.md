@@ -26,6 +26,7 @@ pnpm exec turbo run build lint format:check
 | [`@chanom/cli`](./packages/cli)                     | Interactive CLI that brews dev tooling config into your project     | [`README`](./packages/cli/README.md)               |
 | [`create-chanom-app`](./packages/create-chanom-app) | Scaffold a Vite + React + TS app wired to the chanom shared configs | [`README`](./packages/create-chanom-app/README.md) |
 | [`@chanom/dev-config`](./packages/dev-config)       | Shared [oxlint](https://oxc.rs/) + [oxfmt](https://oxc.rs/) presets | [`README`](./packages/dev-config/README.md)        |
+| [`@chanom/env`](./packages/env)                     | Typed, validated env vars from any Standard Schema validator        | [`README`](./packages/env/README.md)               |
 | [`@chanom/logger`](./packages/logger)               | Console logger with environment gating and level filtering          | [`README`](./packages/logger/README.md)            |
 | [`@chanom/tsconfig`](./packages/tsconfig)           | Shared TypeScript configs for Vite + React apps                     | [`README`](./packages/tsconfig/README.md)          |
 | [`@chanom/utils`](./packages/utils)                 | Tree-shakable TypeScript utilities for frontend apps                | [`README`](./packages/utils/README.md)             |
@@ -33,7 +34,7 @@ pnpm exec turbo run build lint format:check
 
 ## Agent skill
 
-The [`chanom-usage`](./skills/chanom-usage/SKILL.md) skill teaches a coding agent to pick the chanom packages a project needs (analytics, logger, utils, Vite config, dev tooling) and wire them in. Install it from the [skills registry](https://skills.sh/):
+The [`chanom-usage`](./skills/chanom-usage/SKILL.md) skill teaches a coding agent to pick the chanom packages a project needs (analytics, env, logger, utils, Vite config, dev tooling) and wire them in. Install it from the [skills registry](https://skills.sh/):
 
 ```sh
 npx skills add peeranat-dan/chanom --skill chanom-usage
