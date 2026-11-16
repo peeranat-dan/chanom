@@ -111,7 +111,7 @@ The plugin checks only `client`: server variables are read at runtime, where `cr
 ```ts
 createEnv({ server?, client?, runtimeEnv, isServer?, emptyStringAsUndefined? }): Env<Server & Client>
 validateEnv(schema, runtimeEnv, { emptyStringAsUndefined? }): { ok: true, env } | { ok: false, issues }
-envPlugin({ client, emptyStringAsUndefined? }): Plugin // from '@chanom/env/vite'
+envPlugin({ client, emptyStringAsUndefined?, skipValidation? }): Plugin // from '@chanom/env/vite'
 ```
 
 | Option                   | Default | Notes                                                                                                |
@@ -121,6 +121,7 @@ envPlugin({ client, emptyStringAsUndefined? }): Plugin // from '@chanom/env/vite
 | `isServer`               | auto    | `true` when there is no global `window`                                                              |
 | `runtimeEnv`             | -       | `import.meta.env`, `process.env`, or any record                                                      |
 | `emptyStringAsUndefined` | `true`  | `VITE_FOO=` in a `.env` file counts as missing, so `.optional()` and `.default()` behave as expected |
+| `skipValidation`         | `false` | `envPlugin` only. Skip value checks (e.g. a CI build with no real env); the prefix check still runs  |
 
 - `createEnv` throws an `EnvValidationError` with an `issues: { key, message, path? }[]` array (`path` locates the failure inside a nested schema output). It collects every failure, not just the first.
 - `validateEnv` is the non-throwing version, for when you want to render your own error screen.
