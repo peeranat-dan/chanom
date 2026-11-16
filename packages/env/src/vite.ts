@@ -8,6 +8,11 @@ import { validateEnv } from './validate-env.ts';
 export interface EnvPluginOptions extends ValidateEnvOptions {
   /** The `client` schema you give {@link createEnv}. */
   readonly client: EnvSchema;
+  /**
+   * Skip validating values, e.g. for a CI build that has no real env.
+   * The prefix check still runs, since it needs only the schema.
+   */
+  readonly skipValidation?: boolean;
 }
 
 /** Keys Vite always sets on `import.meta.env`, whatever `envPrefix` says. */
@@ -56,6 +61,8 @@ export function envPlugin(options: EnvPluginOptions): Plugin {
     configResolved(config) {
       const unexposed = findUnexposedKeys(options.client, config.envPrefix);
       if (unexposed.length > 0) throw new EnvValidationError(unexposed);
+
+      if (options.skipValidation) return;
 
       const result = validateEnv(options.client, config.env, options);
       if (!result.ok) throw new EnvValidationError(result.issues);

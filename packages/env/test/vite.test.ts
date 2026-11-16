@@ -63,4 +63,18 @@ describe('envPlugin', () => {
       /SECRET: not exposed to client code/,
     );
   });
+
+  it('should skip value validation when skipValidation is true', () => {
+    const plugin = envPlugin({ client: { VITE_A: string() }, skipValidation: true });
+
+    expect(() => runConfigResolved(plugin, { env: {}, envPrefix: 'VITE_' })).not.toThrow();
+  });
+
+  it('should still report unexposed keys when skipValidation is true', () => {
+    const plugin = envPlugin({ client: { SECRET: string() }, skipValidation: true });
+
+    expect(() => runConfigResolved(plugin, { env: {}, envPrefix: 'VITE_' })).toThrow(
+      /SECRET: not exposed to client code/,
+    );
+  });
 });
