@@ -1,5 +1,11 @@
 # @chanom/env
 
+## 0.2.0
+
+### Minor Changes
+
+- 4e04f3f: Add a `skipValidation` option to `envPlugin`, for builds without a real env (e.g. CI). The `envPrefix` check still runs.
+
 ## 0.1.1
 
 ### Patch Changes
